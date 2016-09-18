@@ -24,4 +24,10 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:24.1.1'
     compile 'com.android.support:design:24.1.1'
+    compile 'com.google.android.gms:play-services:9.4.0'
+    // see firebase.google.com/docs/android/setup for more dependencies as needed
+    compile 'com.google.firebase:firebase-core:9.4.0'
+
 }
+
+apply plugin: 'com.google.gms.google-services'

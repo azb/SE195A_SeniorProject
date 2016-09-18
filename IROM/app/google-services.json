@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "81887061452",
+    "firebase_url": "https://irom-142905.firebaseio.com",
+    "project_id": "irom-142905",
+    "storage_bucket": "irom-142905.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:81887061452:android:1a5d1a958a640dbf",
+        "android_client_info": {
+          "package_name": "com.sjsu.se195.irom"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "81887061452-o9te5vif7hse1t0kdc0qrkr6elv89g1i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCw1l1FieENI_y70YgLwGr4rOyGANe6gtg"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
