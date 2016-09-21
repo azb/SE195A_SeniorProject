@@ -27,6 +27,7 @@ dependencies {
     compile 'com.google.android.gms:play-services:9.4.0'
     // see firebase.google.com/docs/android/setup for more dependencies as needed
     compile 'com.google.firebase:firebase-core:9.4.0'
+    compile 'com.google.firebase:firebase-auth:9.4.0'
 
 }
 

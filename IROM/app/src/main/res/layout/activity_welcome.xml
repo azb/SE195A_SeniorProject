@@ -15,7 +15,42 @@
         android:id="@+id/imageView"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
-        android:src="@drawable/a12633702" />
+        android:src="@drawable/a12633702"
+        android:contentDescription="cartoon girl shocked at laptop" />
+
+    <Button
+        android:text="Log Out"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/log_out_button"
+        android:contentDescription="log out button"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+
+
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/textView"
+        android:layout_alignStart="@+id/textView"
+        android:layout_alignEnd="@+id/textView"
+        android:layout_above="@+id/log_out_button"
+        android:id="@+id/label_holder">
+
+        <TextView
+            android:text="current user email:"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/currentEmailLabel" />
+        <TextView
+            android:text="NOT a first name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/currentEmailPasteHere" />
+
+    </LinearLayout>
 
     <TextView
         android:layout_width="wrap_content"
@@ -25,4 +60,5 @@
         android:id="@+id/textView"
         android:layout_below="@+id/imageView"
         android:layout_centerHorizontal="true" />
+
 </RelativeLayout>

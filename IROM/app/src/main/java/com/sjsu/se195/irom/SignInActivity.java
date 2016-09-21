@@ -36,6 +36,8 @@ public class SignInActivity extends AppCompatActivity {
 
         //auth client for firebase user
         mAuth = FirebaseAuth.getInstance();
+        //this is redundant because of the stuff in the buttons. i think.
+        // TODO fix the redundancies in the sign in button and the auth user here
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -63,14 +65,9 @@ public class SignInActivity extends AppCompatActivity {
                     Toast.makeText(view.getContext(),"enter email and password",Toast.LENGTH_SHORT).show();
                 }else{
                     signIn(email.getText().toString(), password.getText().toString());
-                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                    if (user!=null){
-                        Intent intent = new Intent( getBaseContext(), WelcomeActivity.class);
-                        startActivity(intent);
-                    }
+
 
                 }
-                Toast.makeText(view.getContext(),"you clicked sign in",Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -97,6 +94,10 @@ public class SignInActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
                 if (task.isSuccessful()){
+
+                        Intent intent = new Intent( getBaseContext(), WelcomeActivity.class);
+                        startActivity(intent);
+
                 }
                 //if the task isn't successful
                 if(!task.isSuccessful()){
