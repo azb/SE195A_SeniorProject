@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.sjsu.se195.irom">
+
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -22,8 +23,9 @@
         <activity
             android:name=".SignInActivity"
             android:label="@string/title_activity_sign_in"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
-        <activity android:name=".WelcomeActivity"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".WelcomeActivity" />
+        <activity android:name=".CloudVisionTestActivity" />
     </application>
 
 </manifest>

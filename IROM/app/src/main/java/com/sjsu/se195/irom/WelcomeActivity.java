@@ -8,19 +8,20 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.vision.text.Text;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 public class WelcomeActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
         Button logOutButton = (Button) findViewById(R.id.log_out_button);
         TextView email = (TextView) findViewById(R.id.currentEmailPasteHere);
+        Button cloudVisionTestButton = (Button) findViewById(R.id.visionTestButton);
 
         email.setText(FirebaseAuth.getInstance().getCurrentUser().getEmail());
 
@@ -39,6 +40,15 @@ public class WelcomeActivity extends AppCompatActivity {
                     Toast.makeText(WelcomeActivity.this, "Log out failed", Toast.LENGTH_SHORT).show();
                 }
 
+            }
+        });
+
+        // Set up temp Vision Test button
+        cloudVisionTestButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getBaseContext(), CloudVisionTestActivity.class);
+                startActivity(intent);
             }
         });
     }
