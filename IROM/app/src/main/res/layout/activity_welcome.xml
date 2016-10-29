@@ -19,11 +19,11 @@
         android:contentDescription="cartoon girl shocked at laptop" />
 
     <Button
-        android:text="Log Out"
+        android:text="Sign Out"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/log_out_button"
-        android:contentDescription="log out button"
+        android:contentDescription="sign out button"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
 
@@ -56,7 +56,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="You logged in!!"
+        android:text="You signed in!!"
         android:id="@+id/textView"
         android:layout_below="@+id/imageView"
         android:layout_centerHorizontal="true" />
