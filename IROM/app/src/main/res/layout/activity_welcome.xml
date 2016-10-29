@@ -16,14 +16,14 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
         android:src="@drawable/a12633702"
-        android:contentDescription="cartoon girl shocked at laptop" />
+        android:contentDescription="@string/cartoon_girl_shocked_at_laptop" />
 
     <Button
-        android:text="Sign Out"
+        android:text="@string/log_out"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/log_out_button"
-        android:contentDescription="sign out button"
+        android:contentDescription="@string/log_out_button"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
 
@@ -40,12 +40,12 @@
         android:id="@+id/label_holder">
 
         <TextView
-            android:text="current user email:"
+            android:text="@string/current_user_email"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/currentEmailLabel" />
         <TextView
-            android:text="NOT a first name"
+            android:text="@string/not_a_first_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/currentEmailPasteHere" />
@@ -60,5 +60,14 @@
         android:id="@+id/textView"
         android:layout_below="@+id/imageView"
         android:layout_centerHorizontal="true" />
+
+    <Button
+        android:text="@string/cloud_vision_test"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:id="@+id/visionTestButton"
+        android:layout_alignParentTop="true"
+        android:layout_alignStart="@+id/textView" />
 
 </RelativeLayout>

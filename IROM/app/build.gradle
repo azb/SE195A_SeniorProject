@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.1"
+    buildToolsVersion "24.0.2"
 
     defaultConfig {
         applicationId "com.sjsu.se195.irom"
@@ -17,18 +17,29 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    return void // Deal with error for not returning a value apparently?
+}
+
+repositories {
+    mavenCentral()
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:24.1.1'
-    compile 'com.android.support:design:24.1.1'
-    compile 'com.google.android.gms:play-services:9.4.0'
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.android.support:design:24.2.1'
+    compile 'com.google.android.gms:play-services:9.6.1'
     // see firebase.google.com/docs/android/setup for more dependencies as needed
     compile 'com.google.firebase:firebase-core:9.4.0'
     compile 'com.google.firebase:firebase-auth:9.4.0'
+    compile 'com.google.apis:google-api-services-vision:v1-rev24-1.22.0'
+    compile 'com.google.api-client:google-api-client-android:1.22.0'
+    compile 'com.google.http-client:google-http-client-gson:1.22.0'
+}
 
+configurations {
+    compile.exclude group: 'org.apache.httpcomponents', module: 'httpclient'
 }
 
 apply plugin: 'com.google.gms.google-services'
