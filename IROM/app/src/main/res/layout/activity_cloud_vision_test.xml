@@ -17,6 +17,30 @@
         android:layout_marginTop="37dp"
         android:layout_above="@+id/send_request_button">
 
+        <Button
+            android:text="@string/load_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/button2"
+            android:layout_below="@+id/imageView"
+            android:layout_alignParentStart="true" />
+
+        <Button
+            android:text="@string/capture_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/button3"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true" />
+
+        <Button
+            android:text="@string/test_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/send_request_button"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true" />
+
         <TextView
             android:text="@string/google_cloud_vision_response"
             android:layout_width="match_parent"
@@ -27,6 +51,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/resultsReplace" />
+
     </LinearLayout>
 
     <ImageView
@@ -35,17 +60,8 @@
         android:src="@drawable/vision_test"
         android:id="@+id/imageView"
         android:adjustViewBounds="true"
+        android:contentDescription="@string/picture_of_dog_looking_at_camera"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="28dp"
-        android:contentDescription="@string/picture_of_dog_looking_at_camera" />
-
-    <Button
-        android:text="@string/test_image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/send_request_button"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_alignParentStart="true" />
 
 </RelativeLayout>

@@ -18,6 +18,8 @@
     <string name="title_activity_cloud_vision_test">CloudVisionTestActivity</string>
     <string name="picture_of_dog_looking_at_camera">picture of dog looking at camera</string>
     <string name="test_image">Test Image</string>
+    <string name="load_image">Load Image</string>
+    <string name="capture_image">Open Camera</string>
     <string name="google_cloud_vision_response">Google Cloud Vision Response:</string>
     <string name="cloud_vision_test">Cloud Vision Test</string>
     <string name="log_out">Log Out</string>
