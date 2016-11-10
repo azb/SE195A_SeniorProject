@@ -70,4 +70,12 @@
         android:layout_alignParentTop="true"
         android:layout_alignStart="@+id/textView" />
 
+    <Button
+        android:text="Inventory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/visionTestButton"
+        android:layout_alignStart="@+id/log_out_button"
+        android:id="@+id/goto_inventory" />
+
 </RelativeLayout>
