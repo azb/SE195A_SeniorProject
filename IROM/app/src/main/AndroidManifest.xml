@@ -29,10 +29,15 @@
             android:label="@string/title_activity_sign_in"
             android:theme="@style/AppTheme.NoActionBar" />
 
-        <activity android:name=".WelcomeActivity"
+        <activity
+            android:name=".WelcomeActivity"
+            android:label="Welcome"
             android:theme="@style/AppTheme.NoActionBar"/>
 
-        <activity android:name=".CloudVisionTestActivity" />
+        <activity
+            android:name=".CloudVisionTestActivity"
+            android:label="CloudVisionTest"
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <activity
             android:name=".NavigationDrawerActivity"

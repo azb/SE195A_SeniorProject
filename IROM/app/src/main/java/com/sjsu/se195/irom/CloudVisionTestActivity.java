@@ -11,7 +11,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -39,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class CloudVisionTestActivity extends AppCompatActivity {
+public class CloudVisionTestActivity extends NavigationDrawerActivity {
     private static final String CLOUD_VISION_API_KEY = "AIzaSyAHnhDlz-V1OTUivtflxsQwFShuAzeh-6w";
     private static final String TAG = CloudVisionTestActivity.class.getSimpleName();
     private static final int GALLERY_IMAGE_REQUEST = 1;
@@ -103,12 +102,14 @@ public class CloudVisionTestActivity extends AppCompatActivity {
                 Uri selectedImage = data.getData();
                 String[] filePathColumn = { MediaStore.Images.Media.DATA };
                 try (Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null)) {
-                    cursor.moveToFirst();
-                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                    String picturePath = cursor.getString(columnIndex);
+                    if (cursor != null) {
+                        cursor.moveToFirst();
+                        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                        String picturePath = cursor.getString(columnIndex);
 
-                    ImageView imageView = (ImageView) findViewById(R.id.imageView);
-                    imageView.setImageBitmap(BitmapFactory.decodeFile(picturePath));
+                        ImageView imageView = (ImageView) findViewById(R.id.imageView);
+                        imageView.setImageBitmap(BitmapFactory.decodeFile(picturePath));
+                    }
                 } catch (java.lang.NullPointerException e) {
                     Log.d(TAG, "Null pointer exception with local image: " + e.getMessage());
                 }
