@@ -10,13 +10,13 @@ import android.widget.TextView;
  */
 
 public class InventoryActivity extends NavigationDrawerActivity {
-  TextView it;
 
    @Override
     protected void onCreate(Bundle savedInstanceState) {
-      it = (TextView) it.findViewById(R.id.inventory_text);
         super.onCreate(savedInstanceState);
-    }
+       TextView it = (TextView) findViewById(R.id.inventory_text);
+
+   }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

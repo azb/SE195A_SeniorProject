@@ -27,7 +27,8 @@
             android:label="@string/title_activity_sign_in"
             android:theme="@style/AppTheme.NoActionBar" />
 
-        <activity android:name=".WelcomeActivity" />
+        <activity android:name=".WelcomeActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
 
         <activity android:name=".CloudVisionTestActivity" />
 
@@ -41,7 +42,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ProfileActivity"
-            android:label="Inventory"
+            android:label="Profile"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".InventoryActivity"

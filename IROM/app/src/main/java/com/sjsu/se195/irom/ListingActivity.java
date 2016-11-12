@@ -8,11 +8,11 @@ import android.widget.TextView;
  */
 
 public class ListingActivity extends NavigationDrawerActivity{
-    TextView lt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
-        lt = (TextView) lt.findViewById(R.id.listing_text);
         super.onCreate(savedInstanceState);
+        TextView lt = (TextView) findViewById(R.id.listing_text);
+
     }
 }

@@ -8,11 +8,12 @@ import android.widget.TextView;
  */
 
 public class ItemActivity extends NavigationDrawerActivity{
-    TextView itemt;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        itemt = (TextView) itemt.findViewById(R.id.item_text);
         super.onCreate(savedInstanceState);
+       TextView itemt = (TextView) findViewById(R.id.item_text);
+
     }
 
 }
