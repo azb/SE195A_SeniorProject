@@ -21,25 +21,19 @@
             android:text="@string/load_image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/button2"
-            android:layout_below="@+id/imageView"
-            android:layout_alignParentStart="true" />
+            android:id="@+id/load_image_button" />
 
         <Button
             android:text="@string/capture_image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/button3"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true" />
+            android:id="@+id/camera_button" />
 
         <Button
             android:text="@string/test_image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/send_request_button"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true" />
+            android:id="@+id/send_request_button" />
 
         <TextView
             android:text="@string/google_cloud_vision_response"

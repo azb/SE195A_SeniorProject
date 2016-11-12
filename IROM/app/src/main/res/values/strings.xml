@@ -28,5 +28,6 @@
     <string name="cartoon_girl_shocked_at_laptop">cartoon girl shocked at laptop</string>
     <string name="current_user_email">current user email:</string>
     <string name="log_out_button">log out button</string>
+    <string name="loading_text">Loading...</string>
 
 </resources>

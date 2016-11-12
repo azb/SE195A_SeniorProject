@@ -1,15 +1,20 @@
 package com.sjsu.se195.irom;
 
+import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
@@ -35,6 +40,7 @@ import java.util.Locale;
 public class CloudVisionTestActivity extends AppCompatActivity {
     private static final String CLOUD_VISION_API_KEY = "AIzaSyAHnhDlz-V1OTUivtflxsQwFShuAzeh-6w";
     private static final String TAG = CloudVisionTestActivity.class.getSimpleName();
+    private static final int GALLERY_IMAGE_REQUEST = 1;
     private TextView resultField;
 
     @Override
@@ -43,6 +49,7 @@ public class CloudVisionTestActivity extends AppCompatActivity {
         setContentView(R.layout.activity_cloud_vision_test);
         Button requestButton = (Button) findViewById(R.id.send_request_button);
         resultField = (TextView) findViewById(R.id.resultsReplace);
+        Button loadImageButton = (Button) findViewById(R.id.load_image_button);
 
         requestButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -50,11 +57,44 @@ public class CloudVisionTestActivity extends AppCompatActivity {
                 uploadImage();
             }
         });
+
+        loadImageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startGalleryChooser();
+            }
+        });
+    }
+
+    public void startGalleryChooser() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(intent, GALLERY_IMAGE_REQUEST);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK && data != null) {
+            if (requestCode == GALLERY_IMAGE_REQUEST) {
+                Uri selectedImage = data.getData();
+                String[] filePathColumn = { MediaStore.Images.Media.DATA };
+                Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
+                cursor.moveToFirst();
+                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                String picturePath = cursor.getString(columnIndex);
+                cursor.close();
+
+                ImageView imageView = (ImageView) findViewById(R.id.imageView);
+                imageView.setImageBitmap(BitmapFactory.decodeFile(picturePath));
+            }
+        }
     }
 
     public void uploadImage() {
         try {
-            Drawable drawable = ContextCompat.getDrawable(getBaseContext(), R.drawable.vision_test);
+            ImageView imageView = (ImageView) findViewById(R.id.imageView);
+            Drawable drawable = imageView.getDrawable();
             Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
             bitmap = scaleBitmapDown(bitmap, 1200);
 
@@ -66,7 +106,7 @@ public class CloudVisionTestActivity extends AppCompatActivity {
 
     private void callCloudVision(final Bitmap bitmap) throws IOException {
         // Change text to show loading
-        resultField.setText("Loading...");
+        resultField.setText(R.string.loading_text);
 
         new AsyncTask<Object, Void, String>() {
             @Override
