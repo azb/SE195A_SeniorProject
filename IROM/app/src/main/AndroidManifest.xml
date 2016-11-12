@@ -29,7 +29,8 @@
             android:label="@string/title_activity_sign_in"
             android:theme="@style/AppTheme.NoActionBar" />
 
-        <activity android:name=".WelcomeActivity" />
+        <activity android:name=".WelcomeActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
 
         <activity android:name=".CloudVisionTestActivity" />
 
@@ -37,15 +38,25 @@
             android:name=".NavigationDrawerActivity"
             android:label="@string/title_activity_navigation_drawer"
             android:theme="@style/AppTheme.NoActionBar" />
-
+        <activity
+            android:name=".ItemActivity"
+            android:label="Item"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".ProfileActivity"
+            android:label="Profile"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".InventoryActivity"
             android:label="Inventory"
             android:theme="@style/AppTheme.NoActionBar" />
-
+        <activity
+            android:name=".ListingActivity"
+            android:label="Listing"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings"></activity>
+            android:label="@string/title_activity_settings"/>
 
     </application>
 

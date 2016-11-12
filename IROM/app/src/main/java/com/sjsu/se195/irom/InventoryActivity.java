@@ -3,16 +3,20 @@ package com.sjsu.se195.irom;
 import android.os.Bundle;
 import android.view.Menu;
 import android.widget.SearchView;
+import android.widget.TextView;
 
 /**
  * Created by Arthur on 11/9/2016.
  */
 
 public class InventoryActivity extends NavigationDrawerActivity {
-    @Override
+
+   @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-    }
+       TextView it = (TextView) findViewById(R.id.inventory_text);
+
+   }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

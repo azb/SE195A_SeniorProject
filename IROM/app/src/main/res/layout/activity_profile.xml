@@ -11,6 +11,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical" >
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="13dp"
+                android:layout_gravity="center_vertical|center_horizontal"
+                android:text="This is the profile page! TBD"
+                android:gravity="center"
+                android:id="@+id/profile_page_text" />
 
         </LinearLayout>
     </ScrollView>
