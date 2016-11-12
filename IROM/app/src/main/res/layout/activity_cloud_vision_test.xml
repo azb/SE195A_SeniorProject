@@ -9,53 +9,77 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.sjsu.se195.irom.CloudVisionTestActivity">
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/imageView"
-        android:layout_marginTop="37dp"
-        android:layout_above="@+id/send_request_button">
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true">
 
-        <Button
-            android:text="@string/load_image"
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/load_image_button" />
+            android:layout_height="match_parent"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="300dp">
 
-        <Button
-            android:text="@string/capture_image"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/camera_button" />
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/vision_test"
+                android:id="@+id/imageView"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/picture_of_dog_looking_at_camera"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentStart="true" />
+            <Button
+                android:text="@string/load_image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/button2"
+                android:layout_below="@+id/imageView"
+                android:layout_alignParentStart="true" />
 
-        <Button
-            android:text="@string/test_image"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/send_request_button" />
+            <Button
+                android:text="@string/capture_image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/button3"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true" />
 
-        <TextView
-            android:text="@string/google_cloud_vision_response"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/resultsLabel" />
+            <Button
+                android:text="@string/test_image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/send_request_button"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/resultsReplace" />
+            <TextView
+                android:text="@string/google_cloud_vision_response"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/resultsLabel"
+                />
 
-    </LinearLayout>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/resultsReplace"
+                android:text="Default Text"
+                android:textColor="#000000"
+                android:visibility="visible" />
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/vision_test"
-        android:id="@+id/imageView"
-        android:adjustViewBounds="true"
-        android:contentDescription="@string/picture_of_dog_looking_at_camera"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
+            <Button
+                android:text="@string/test_image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/test"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true" />
+
+        </LinearLayout>
+
+    </ScrollView>
 
 </RelativeLayout>

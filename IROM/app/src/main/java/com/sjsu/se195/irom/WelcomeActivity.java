@@ -22,6 +22,8 @@ public class WelcomeActivity extends AppCompatActivity {
         Button logOutButton = (Button) findViewById(R.id.log_out_button);
         TextView email = (TextView) findViewById(R.id.currentEmailPasteHere);
         Button cloudVisionTestButton = (Button) findViewById(R.id.visionTestButton);
+        Button gotoInventory = (Button) findViewById(R.id.goto_inventory);
+
 
         email.setText(FirebaseAuth.getInstance().getCurrentUser().getEmail());
 
@@ -40,6 +42,15 @@ public class WelcomeActivity extends AppCompatActivity {
                     Toast.makeText(WelcomeActivity.this, "Log out failed", Toast.LENGTH_SHORT).show();
                 }
 
+            }
+        });
+
+        //set up log out button and function
+        gotoInventory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getBaseContext(), InventoryActivity.class);
+                startActivity(intent);
             }
         });
 
