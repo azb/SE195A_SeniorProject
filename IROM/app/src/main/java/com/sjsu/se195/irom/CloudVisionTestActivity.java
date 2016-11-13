@@ -1,5 +1,6 @@
 package com.sjsu.se195.irom;
 
+import android.Manifest;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -42,7 +43,9 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
     private static final String CLOUD_VISION_API_KEY = "AIzaSyAHnhDlz-V1OTUivtflxsQwFShuAzeh-6w";
     private static final String TAG = CloudVisionTestActivity.class.getSimpleName();
     private static final int GALLERY_IMAGE_REQUEST = 1;
-    private static final int CAMERA_IMAGE_REQUEST = 2;
+    private static final int GALLERY_PERMISSIONS_REQUEST = 2;
+    private static final int CAMERA_IMAGE_REQUEST = 3;
+    private static final int CAMERA_PERMISSIONS_REQUEST = 4;
     public static final String FILE_NAME = "temp.jpg";
     private TextView resultField;
 
@@ -78,14 +81,18 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
     }
 
     public void startGalleryChooser() {
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(intent, GALLERY_IMAGE_REQUEST);
+        if (PermissionUtils.requestPermission(this, CAMERA_PERMISSIONS_REQUEST, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            startActivityForResult(intent, GALLERY_IMAGE_REQUEST);
+        }
     }
 
     public void startCamera() {
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(getCameraFile()));
-        startActivityForResult(intent, CAMERA_IMAGE_REQUEST);
+        if (PermissionUtils.requestPermission(this, CAMERA_PERMISSIONS_REQUEST, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA)) {
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(getCameraFile()));
+            startActivityForResult(intent, CAMERA_IMAGE_REQUEST);
+        }
     }
 
     public File getCameraFile() {
@@ -124,6 +131,18 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
                     Log.d(TAG, "Image selection failed: " + e.getMessage());
                 }
             }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (PermissionUtils.permissionGranted(requestCode, GALLERY_PERMISSIONS_REQUEST, grantResults)) {
+            startGalleryChooser();
+        }
+        if (PermissionUtils.permissionGranted(requestCode, CAMERA_PERMISSIONS_REQUEST, grantResults)) {
+            startCamera();
         }
     }
 
