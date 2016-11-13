@@ -1,15 +1,20 @@
 package com.sjsu.se195.irom;
 
+import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
@@ -27,6 +32,7 @@ import com.google.api.services.vision.v1.model.Feature;
 import com.google.api.services.vision.v1.model.Image;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +41,9 @@ import java.util.Locale;
 public class CloudVisionTestActivity extends NavigationDrawerActivity {
     private static final String CLOUD_VISION_API_KEY = "AIzaSyAHnhDlz-V1OTUivtflxsQwFShuAzeh-6w";
     private static final String TAG = CloudVisionTestActivity.class.getSimpleName();
+    private static final int GALLERY_IMAGE_REQUEST = 1;
+    private static final int CAMERA_IMAGE_REQUEST = 2;
+    public static final String FILE_NAME = "temp.jpg";
     private TextView resultField;
 
     @Override
@@ -42,6 +51,8 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cloud_vision_test);
         Button requestButton = (Button) findViewById(R.id.send_request_button);
+        Button loadImageButton = (Button) findViewById(R.id.load_image_button);
+        Button openCameraButton = (Button) findViewById(R.id.open_camera_button);
         resultField = (TextView) findViewById(R.id.resultsReplace);
 
         requestButton.setOnClickListener(new View.OnClickListener() {
@@ -50,11 +61,76 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
                 uploadImage();
             }
         });
+
+        loadImageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startGalleryChooser();
+            }
+        });
+
+        openCameraButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startCamera();
+            }
+        });
+    }
+
+    public void startGalleryChooser() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(intent, GALLERY_IMAGE_REQUEST);
+    }
+
+    public void startCamera() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(getCameraFile()));
+        startActivityForResult(intent, CAMERA_IMAGE_REQUEST);
+    }
+
+    public File getCameraFile() {
+        File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        return new File(dir, FILE_NAME);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK) {
+            if (requestCode == GALLERY_IMAGE_REQUEST && data != null) {
+                Uri selectedImage = data.getData();
+                String[] filePathColumn = { MediaStore.Images.Media.DATA };
+                try (Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null)) {
+                    if (cursor != null) {
+                        cursor.moveToFirst();
+                        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                        String picturePath = cursor.getString(columnIndex);
+
+                        ImageView imageView = (ImageView) findViewById(R.id.imageView);
+                        imageView.setImageBitmap(BitmapFactory.decodeFile(picturePath));
+                    }
+                } catch (java.lang.NullPointerException e) {
+                    Log.d(TAG, "Null pointer exception with local image: " + e.getMessage());
+                }
+            }
+            if (requestCode == CAMERA_IMAGE_REQUEST) {
+                Uri selectedImage = Uri.fromFile(getCameraFile());
+                try {
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
+                    ImageView imageView = (ImageView) findViewById(R.id.imageView);
+                    imageView.setImageBitmap(bitmap);
+                } catch (java.io.IOException e) {
+                    Log.d(TAG, "Image selection failed: " + e.getMessage());
+                }
+            }
+        }
     }
 
     public void uploadImage() {
         try {
-            Drawable drawable = ContextCompat.getDrawable(getBaseContext(), R.drawable.vision_test);
+            ImageView imageView = (ImageView) findViewById(R.id.imageView);
+            Drawable drawable = imageView.getDrawable();
             Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
             bitmap = scaleBitmapDown(bitmap, 1200);
 
@@ -66,7 +142,7 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
 
     private void callCloudVision(final Bitmap bitmap) throws IOException {
         // Change text to show loading
-        resultField.setText("Loading...");
+        resultField.setText(R.string.loading_text);
 
         new AsyncTask<Object, Void, String>() {
             @Override
