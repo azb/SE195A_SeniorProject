@@ -1,8 +1,10 @@
 package com.sjsu.se195.irom;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -18,7 +20,11 @@ public class WelcomeActivity extends NavigationDrawerActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_welcome);
+        //INSTEAD OF setContentView(R.layout.activity_welcome); USE NEXT 3 LINES IF YOU WANT TH NAV BAR TO WORK
+        LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View contentView = inflater.inflate(R.layout.activity_welcome, null, false);
+        drawer.addView(contentView, 0);
+        //set up buttons n stuff
         Button logOutButton = (Button) findViewById(R.id.log_out_button);
         TextView email = (TextView) findViewById(R.id.currentEmailPasteHere);
         Button cloudVisionTestButton = (Button) findViewById(R.id.visionTestButton);
@@ -31,17 +37,8 @@ public class WelcomeActivity extends NavigationDrawerActivity {
         logOutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                FirebaseAuth.getInstance().signOut();
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                if(user==null){
-                    //correctly logged out
-                    Intent intent = new Intent( getBaseContext(), SignUpActivity.class);
-                    startActivity(intent);
-                }else{
-                    //there was a problem
-                    Toast.makeText(WelcomeActivity.this, "Log out failed", Toast.LENGTH_SHORT).show();
-                }
-
+             //see nav drawer activity for logout funct
+               logout();
             }
         });
 

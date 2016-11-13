@@ -5,7 +5,7 @@
         <item
             android:id="@+id/nav_item"
             android:icon="@drawable/ic_menu_camera"
-            android:title="Import (item)" />
+            android:title="Item" />
         <item
             android:id="@+id/nav_inventory"
             android:icon="@drawable/ic_menu_gallery"
@@ -19,6 +19,10 @@
             android:id="@+id/nav_manage"
             android:icon="@drawable/ic_menu_manage"
             android:title="Tools" />
+        <item
+            android:id="@+id/nav_vision"
+            android:title="Google Vision Test" />
+        <!--android:icon="@drawable/ic_menu_send"-->
     </group>
 
     <item android:title="Account">
@@ -27,11 +31,6 @@
                 android:id="@+id/nav_profile"
                 android:title="Profile" />
             <!--android:icon="@drawable/ic_menu_share"//put inside above item if wanted-->
-
-            <!--<item-->
-                <!--android:id="@+id/nav_send"-->
-                <!--&lt;!&ndash;android:icon="@drawable/ic_menu_send"&ndash;&gt;-->
-                <!--android:title="Send" />-->
         </menu>
     </item>
 
