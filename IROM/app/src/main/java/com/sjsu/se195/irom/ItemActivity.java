@@ -12,10 +12,6 @@ public class ItemActivity extends NavigationDrawerActivity{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-<<<<<<< HEAD
-        TextView itemt = (TextView) findViewById(R.id.item_text);
-=======
->>>>>>> 601392dbd5ff0c395115ac07c00a78f11be0506b
         super.onCreate(savedInstanceState);
        TextView itemt = (TextView) findViewById(R.id.item_text);
 
