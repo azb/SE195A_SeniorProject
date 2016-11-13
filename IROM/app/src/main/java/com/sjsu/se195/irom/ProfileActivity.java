@@ -8,12 +8,12 @@ import android.widget.TextView;
  */
 
 public class ProfileActivity extends NavigationDrawerActivity {
-    TextView ppt;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ppt = (TextView) ppt.findViewById(R.id.profile_page_text);
+        TextView ppt = (TextView) findViewById(R.id.profile_page_text);
 
 
     }

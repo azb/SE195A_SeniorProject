@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class CloudVisionTestActivity extends AppCompatActivity {
+public class CloudVisionTestActivity extends NavigationDrawerActivity {
     private static final String CLOUD_VISION_API_KEY = "AIzaSyAHnhDlz-V1OTUivtflxsQwFShuAzeh-6w";
     private static final String TAG = CloudVisionTestActivity.class.getSimpleName();
     private TextView resultField;
