@@ -9,6 +9,7 @@ public class Profile {
     public String firstName;
     public  String lastName;
     public String currency;
+
     // TODO: add timezone, location
 
     public Profile(){

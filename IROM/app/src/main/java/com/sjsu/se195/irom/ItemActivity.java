@@ -75,8 +75,7 @@ public class ItemActivity extends NavigationDrawerActivity{
             public void onClick(View view) {
                 //check fields
                 if(validityCheck()){
-                    //manually insert items. TODO make this a constructor.
-                    //TODO figure out iid
+                    //manually insert items.
                     com.sjsu.se195.irom.Item newItem = new com.sjsu.se195.irom.Item(
                             mUser.getUid(),
                             new Date(),
