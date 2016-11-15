@@ -20,11 +20,11 @@
                 android:text="This is the profile page! TBD"
                 android:gravity="center"
                 android:id="@+id/profile_page_text" />
-            <Spinner
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/currency_spinner"
-                android:prompt="currency"/>
+            <!--<Spinner-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:id="@+id/currency_spinner"-->
+                <!--android:prompt="currency"/>-->
 
 
         </LinearLayout>

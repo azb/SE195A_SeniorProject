@@ -16,7 +16,7 @@ import java.util.Set;
 
 public class ProfileActivity extends NavigationDrawerActivity {
 
-    private Spinner currency;
+    //private Spinner currency;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,7 +28,7 @@ public class ProfileActivity extends NavigationDrawerActivity {
         //initialize
             //yay you can use get available currencies
 
-        currency = (Spinner) findViewById(R.id.currency_spinner);
+  //      currency = (Spinner) findViewById(R.id.currency_spinner);
 
        TextView ppt = (TextView) findViewById(R.id.profile_page_text);
     }
