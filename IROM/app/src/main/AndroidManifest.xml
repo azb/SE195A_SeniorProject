@@ -70,6 +70,10 @@
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"/>
+        <activity
+            android:name=".AmazonActivity"
+            android:label="Amazon"
+            android:theme="@style/AppTheme.NoActionBar" />
 
     </application>
 
