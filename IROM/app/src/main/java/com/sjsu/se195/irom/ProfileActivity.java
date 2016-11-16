@@ -38,7 +38,8 @@ public class ProfileActivity extends NavigationDrawerActivity {
     private EditText mFirstNameEditText;
     private EditText mLastNameEditText;
     private Spinner mCurrencySpinner;
-
+    private TextView mFirstNameTextView;
+    private TextView mLastNameTextView;
 
 
     //private Spinner currency;
@@ -76,6 +77,8 @@ public class ProfileActivity extends NavigationDrawerActivity {
         editForm = (ScrollView) findViewById(R.id.profile_edit_form);
         mLastNameEditText = (EditText) findViewById(R.id.last_name_edit_text);
         mFirstNameEditText = (EditText) findViewById(R.id.first_name_edit_text);
+        mFirstNameTextView = (TextView) findViewById(R.id.first_name_label);
+        mLastNameTextView = (TextView) findViewById(R.id.last_name_label);
         //set up spinner
         mCurrencySpinner = (Spinner) findViewById(R.id.currency_spinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
@@ -106,12 +109,14 @@ public class ProfileActivity extends NavigationDrawerActivity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Profile profile = new Profile(mUser.getUid(),
-                        mFirstNameEditText.getText().toString(),
-                        mLastNameEditText.getText().toString(),
-                        mCurrencySpinner.getSelectedItem().toString());
+                String fn = mFirstNameEditText.getText().toString();
+                String ln =  mLastNameEditText.getText().toString();
+                Profile profile = new Profile(mUser.getUid(), fn, ln, mCurrencySpinner.getSelectedItem().toString());
                 writeProfile(profile);
                 Toast.makeText(ProfileActivity.this, "you clicked save!", Toast.LENGTH_SHORT).show();
+                //update labels
+                mFirstNameTextView.setText( "first name: " + fn);
+                mLastNameTextView.setText("last name: " + ln);
             }
 
             private void writeProfile(Profile profile) {

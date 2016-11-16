@@ -6,9 +6,9 @@
     <string name="enter_password_hint">enter password</string>
     <string name="re_enter_password_label">Re-enter Password*</string>
     <string name="re_enter_password_hint">re-enter password</string>
-    <string name="first_name_label">First Name</string>
+    <string name="first_name_label">First Name: </string>
     <string name="first_name_hint">enter first name</string>
-    <string name="last_name_label">Last Name</string>
+    <string name="last_name_label">Last Name: </string>
     <string name="enter_last_name_hint">enter last name</string>
     <string name="sign_up_button">Sign Up</string>
     <string name="have_an_account_sign_in_button">Have an account? Sign in!</string>
