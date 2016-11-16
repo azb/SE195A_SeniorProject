@@ -4,63 +4,11 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ListingActivity"
-    android:weightSum="1">
+    tools:context=".ListingActivity">
 
     <TextView
         android:text="Listing Page"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/listing_header_label"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
-
-    <TextView
-        android:text="Select Item To List"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/listing_item_label" />
-
-    <Spinner
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/listing_item_spinner"
-        android:spinnerMode="dropdown"
-        android:layout_weight="0.04" />
-
-    <TextView
-        android:text="Description"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/listing_description_label" />
-
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:ems="10"
-        android:id="@+id/listing_description_text"
-        android:hint="Enter Description Here"
-        style="@style/Widget.AppCompat.AutoCompleteTextView"
-        android:layout_weight="0.06" />
-
-    <TextView
-        android:text="Price"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/listing_price_label" />
-
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="numberDecimal"
-        android:ems="10"
-        android:id="@+id/listing_price_text"
-        android:hint="Enter Selling Price Here" />
-
-    <Button
-        android:text="Submit"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/listing_submit_button" />
-
+        android:id="@+id/listing_text" />
 </LinearLayout>
