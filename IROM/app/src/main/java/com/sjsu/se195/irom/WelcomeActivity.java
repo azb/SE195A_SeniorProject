@@ -25,14 +25,14 @@ public class WelcomeActivity extends NavigationDrawerActivity {
         View contentView = inflater.inflate(R.layout.activity_welcome, null, false);
         drawer.addView(contentView, 0);
         //set up buttons n stuff
-        Button logOutButton = (Button) findViewById(R.id.log_out_button);
+        //Button logOutButton = (Button) findViewById(R.id.log_out_button);
         TextView email = (TextView) findViewById(R.id.currentEmailPasteHere);
-        Button cloudVisionTestButton = (Button) findViewById(R.id.visionTestButton);
-        Button gotoInventory = (Button) findViewById(R.id.goto_inventory);
+        //Button cloudVisionTestButton = (Button) findViewById(R.id.visionTestButton);
+        //Button gotoInventory = (Button) findViewById(R.id.goto_inventory);
 
 
         email.setText(FirebaseAuth.getInstance().getCurrentUser().getEmail());
-
+/*
         //set up log out button and function
         logOutButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -59,5 +59,6 @@ public class WelcomeActivity extends NavigationDrawerActivity {
                 startActivity(intent);
             }
         });
+        */
     }
 }
