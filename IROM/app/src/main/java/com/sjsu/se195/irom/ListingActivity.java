@@ -21,9 +21,7 @@ public class ListingActivity extends NavigationDrawerActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View contentView = inflater.inflate(R.layout.activity_item, null, false);
-        drawer.addView(contentView, 0);
+        setContentView(R.layout.activity_listing);
 
         //initialize things
         lDescription = (EditText) findViewById(R.id.listing_description_text);
