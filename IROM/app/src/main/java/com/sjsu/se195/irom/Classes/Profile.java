@@ -1,4 +1,4 @@
-package com.sjsu.se195.irom;
+package com.sjsu.se195.irom.Classes;
 
 import com.google.firebase.database.Exclude;
 

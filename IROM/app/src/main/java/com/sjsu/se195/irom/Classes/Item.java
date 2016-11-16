@@ -1,4 +1,4 @@
-package com.sjsu.se195.irom;
+package com.sjsu.se195.irom.Classes;
 
 import com.google.firebase.database.Exclude;
 
@@ -103,14 +103,15 @@ public class Item {
 
     @Override
     public String toString() {
-        return "Item{" +
-                "uID='" + uID + '\'' +
-                ", dateAdded=" + dateAdded +
-                ", name='" + name + '\'' +
-                ", quantity=" + quantity +
-                ", note='" + note + '\'' +
-                ", tag='" + tag + '\'' +
-                ", isForSale=" + isForSale +
-                '}';
+        return name;
+//        return "Item{" +
+//                "uID='" + uID + '\'' +
+//                ", dateAdded=" + dateAdded +
+//                ", name='" + name + '\'' +
+//                ", quantity=" + quantity +
+//                ", note='" + note + '\'' +
+//                ", tag='" + tag + '\'' +
+//                ", isForSale=" + isForSale +
+//                '}';
     }
 }

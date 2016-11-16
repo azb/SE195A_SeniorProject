@@ -101,7 +101,8 @@ public class NavigationDrawerActivity extends AppCompatActivity
             Intent intent = new Intent(getBaseContext(), ListingActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_manage) {
-           // Toast.makeText(NavigationDrawerActivity.this,"this will be amazon's section",Toast.LENGTH_SHORT).show();
+            //TODO amazon activity intent
+            Toast.makeText(NavigationDrawerActivity.this,"This is currently under construction",Toast.LENGTH_SHORT).show();
         } else if (id == R.id.nav_profile) {
             Intent intent = new Intent(getBaseContext(), ProfileActivity.class);
             startActivity(intent);

@@ -7,18 +7,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ScrollView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.sjsu.se195.irom.Classes.Item;
 
-import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * This is to test adding an item to the database.
@@ -76,7 +73,7 @@ public class ItemActivity extends NavigationDrawerActivity{
                 //check fields
                 if(validityCheck()){
                     //manually create items.
-                    com.sjsu.se195.irom.Item newItem = new com.sjsu.se195.irom.Item(
+                    Item newItem = new Item(
                             mUser.getUid(),
                             new Date(),
                             mName.getText().toString(),
@@ -91,7 +88,7 @@ public class ItemActivity extends NavigationDrawerActivity{
         });
     }
 
-    private void writeNewManualItem(com.sjsu.se195.irom.Item i) {
+    private void writeNewManualItem(Item i) {
         String key = mDatabase.child("items").push().getKey();
         System.out.println(i.toString());
         mDatabase.child("items").child(key).setValue(i);

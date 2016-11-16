@@ -1,4 +1,4 @@
-package com.sjsu.se195.irom;
+package com.sjsu.se195.irom.Classes;
 
 import java.util.Date;
 
@@ -10,10 +10,36 @@ public class Listing {
     public String listID;
     public Date dateCreated;
     public String creator;
-    public com.sjsu.se195.irom.Item item;
+    public Item item;
     public String description;
     public Boolean isLive;
     public Double price;
     //maybe have tags as an array list of strings?
     public String tag;
+
+    public Listing(){
+
+    }
+
+    public Listing(String c, Item i, String d, Double p){
+        creator = c;
+        item = i;
+        description = d;
+        price = p;
+        isLive=true;
+    }
+
+    @Override
+    public String toString() {
+        return "Listing{" +
+                "creator='" + creator + '\'' +
+                ", listID='" + listID + '\'' +
+                ", dateCreated=" + dateCreated +
+                ", item=" + item.toString() +
+                ", description='" + description + '\'' +
+                ", isLive=" + isLive +
+                ", price=" + price +
+                ", tag='" + tag + '\'' +
+                '}';
+    }
 }
