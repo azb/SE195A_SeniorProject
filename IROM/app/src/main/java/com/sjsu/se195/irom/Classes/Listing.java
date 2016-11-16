@@ -10,7 +10,7 @@ public class Listing {
     public String listID;
     public Date dateCreated;
     public String creator;
-    public Item item;
+    public com.sjsu.se195.irom.Item item;
     public String description;
     public Boolean isLive;
     public Double price;
