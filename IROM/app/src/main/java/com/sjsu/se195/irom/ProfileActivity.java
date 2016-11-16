@@ -78,6 +78,8 @@ public class ProfileActivity extends NavigationDrawerActivity {
         mFirstNameEditText = (EditText) findViewById(R.id.first_name_edit_text);
         mFirstNameTextView = (TextView) findViewById(R.id.first_name_label);
         mLastNameTextView = (TextView) findViewById(R.id.last_name_label);
+        //TODO PULL FROM PROFILE FOR NAMES
+
         //set up spinner
         mCurrencySpinner = (Spinner) findViewById(R.id.currency_spinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,

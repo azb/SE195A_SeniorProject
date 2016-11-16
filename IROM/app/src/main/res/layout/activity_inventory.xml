@@ -4,9 +4,13 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingTop="?android:actionBarSize"
     tools:context=".InventoryActivity">
-
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/inventory_text"
+        android:text="You are on the inventory page!"/>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -15,15 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical" >
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/inventory_text"
-                android:text="You are on the inventory page!"/>
-            <!--<SearchView-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="match_parent"-->
-                <!--android:id="@+id/inventory_search" />-->
+
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

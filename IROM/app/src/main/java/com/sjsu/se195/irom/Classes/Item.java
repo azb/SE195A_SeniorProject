@@ -19,7 +19,7 @@ public class Item {
     public String note;
     //maybe have tag as an arraylist of strings?
     public String tag;
-    public boolean isForSale;
+    public boolean forSale;
 
     public String getuID() {
         return uID;
@@ -81,11 +81,11 @@ public class Item {
     }
 
     public Boolean getForSale() {
-        return isForSale;
+        return forSale;
     }
 
-    public void setForSale(Boolean fs) {
-        isForSale = fs;
+    public void setForSale(boolean fs) {
+        forSale = fs;
     }
 
     @Exclude
@@ -96,7 +96,7 @@ public class Item {
         result.put("name",name);
         result.put("notes",note);
         result.put("tags",tag);
-        result.put("isForSale",isForSale);
+        result.put("forSale",forSale);
 
         return result;
     }
