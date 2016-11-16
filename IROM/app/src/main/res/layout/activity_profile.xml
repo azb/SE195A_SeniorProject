@@ -5,28 +5,68 @@
     android:layout_width="match_parent"
     android:paddingTop="?android:actionBarSize"
     android:layout_height="match_parent">
-
+    <ImageView
+        android:layout_height="107dp"
+        android:layout_width="135dp"
+        android:src="@drawable/a12633702"
+        android:layout_gravity="center"
+        android:id="@+id/profile_picture" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:text="Current User's profile"
+        android:gravity="center"
+        android:id="@+id/profile_page__user_welcome" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="edit profile"
+        android:layout_gravity="center_horizontal"
+        android:id="@+id/profile_edit_form_button" />
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <LinearLayout
+        android:layout_height="match_parent"
+        android:background="@color/dollardollarbillyall"
+        android:id="@+id/profile_edit_form"
+        android:visibility="invisible">
+        <TableLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical" >
+
             <TextView
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="@string/first_name"
+                android:labelFor="@+id/first_name_edit_text"
+                android:id="@+id/first_name_label"/>
+            <EditText
+                android:layout_height="wrap_content"
                 android:layout_width="match_parent"
-                android:layout_height="13dp"
-                android:layout_gravity="center_vertical|center_horizontal"
-                android:text="This is the profile page! TBD"
-                android:gravity="center"
-                android:id="@+id/profile_page_text" />
-            <!--<Spinner-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:id="@+id/currency_spinner"-->
-                <!--android:prompt="currency"/>-->
+                android:id="@+id/first_name_edit_text"/>
+            <TextView
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="last name: "
+                android:labelFor="@+id/last_name_edit_text"
+                android:id="@+id/last_name_label"/>
+            <EditText
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:id="@+id/last_name_edit_text"/>
 
+            <Spinner
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/currency_spinner"
+                android:prompt="@string/currency_spinner_prompt"/>
 
-        </LinearLayout>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="save"
+            android:id="@+id/profile_save_button"/>
+        </TableLayout>
     </ScrollView>
 </LinearLayout>

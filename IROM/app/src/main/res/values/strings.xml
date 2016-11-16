@@ -29,7 +29,7 @@
     <string name="current_user_email">current user email:</string>
     <string name="log_out_button">log out button</string>
     <string name="title_activity_navigation_drawer">NavigationDrawerActivity</string>
-
+    <string name="currency_spinner_prompt">choose a currency</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
@@ -110,5 +110,6 @@
     <string name="loading_text">Loading...</string>
     <string name="default_text">Default Text</string>
     <string name="no_request_sent">No request sent...</string>
+    <string name="first_name">first name:</string>
 
 </resources>
