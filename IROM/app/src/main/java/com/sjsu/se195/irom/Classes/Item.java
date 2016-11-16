@@ -19,7 +19,7 @@ public class Item {
     public String note;
     //maybe have tag as an arraylist of strings?
     public String tag;
-    public Boolean isForSale;
+    public boolean isForSale;
 
     public String getuID() {
         return uID;
@@ -29,14 +29,12 @@ public class Item {
         this.uID = uID;
     }
 
-    public Item(String uid, Date d, String n, Integer q, String  note, String tag, Boolean forSale){
+    public Item(String uid, Date d, String n, Integer q, String  note){
         this.uID = uid;
         this.dateAdded = d;
         this.name = n;
         this.quantity = q;
         this.note = note;
-        this.tag = tag;
-        this.isForSale = forSale;
     }
 
     public Item(){
@@ -86,8 +84,8 @@ public class Item {
         return isForSale;
     }
 
-    public void setForSale(Boolean forSale) {
-        isForSale = forSale;
+    public void setForSale(Boolean fs) {
+        isForSale = fs;
     }
 
     @Exclude
@@ -98,8 +96,21 @@ public class Item {
         result.put("name",name);
         result.put("notes",note);
         result.put("tags",tag);
-        result.put("forSale",isForSale);
+        result.put("isForSale",isForSale);
 
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Item{" +
+                "uID='" + uID + '\'' +
+                ", dateAdded=" + dateAdded +
+                ", name='" + name + '\'' +
+                ", quantity=" + quantity +
+                ", note='" + note + '\'' +
+                ", tag='" + tag + '\'' +
+                ", isForSale=" + isForSale +
+                '}';
     }
 }

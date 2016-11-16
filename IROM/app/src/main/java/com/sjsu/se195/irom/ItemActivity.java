@@ -75,15 +75,13 @@ public class ItemActivity extends NavigationDrawerActivity{
             public void onClick(View view) {
                 //check fields
                 if(validityCheck()){
-                    //manually insert items.
+                    //manually create items.
                     com.sjsu.se195.irom.Item newItem = new com.sjsu.se195.irom.Item(
                             mUser.getUid(),
                             new Date(),
                             mName.getText().toString(),
                             Integer.getInteger(mQuantity.getText().toString()),
-                            mNotes.getText().toString(),
-                            "thisisatag",
-                            false);
+                            mNotes.getText().toString());
                     writeNewManualItem(newItem);
                 }
                 else{
@@ -94,11 +92,10 @@ public class ItemActivity extends NavigationDrawerActivity{
     }
 
     private void writeNewManualItem(com.sjsu.se195.irom.Item i) {
-        Map<String, Object> data = new HashMap<>();
         String key = mDatabase.child("items").push().getKey();
-        data.put(key,i);
-
-        mDatabase.child("items").updateChildren(data);
+        System.out.println(i.toString());
+        mDatabase.child("items").child(key).setValue(i);
+        //updateChildren(data) is for updating an item
     }
 
     private Boolean validityCheck() {
