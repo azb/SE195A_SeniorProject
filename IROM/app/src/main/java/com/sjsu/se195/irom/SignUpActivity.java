@@ -15,6 +15,9 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.sjsu.se195.irom.Classes.Profile;
 
 public class SignUpActivity extends AppCompatActivity {
     private EditText email;
@@ -24,9 +27,10 @@ public class SignUpActivity extends AppCompatActivity {
     private EditText lastName;
     private Button signUpButton;
     private Button signInButton;
-
+    private DatabaseReference mDatabase;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
+
     private static final String TAG = "emailpassword";
 
 
@@ -37,6 +41,7 @@ public class SignUpActivity extends AppCompatActivity {
         setUpFieldsAndButtons();
 
         mAuth = FirebaseAuth.getInstance();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
 
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -89,7 +94,8 @@ public class SignUpActivity extends AppCompatActivity {
                                                 Toast.LENGTH_SHORT).show();
                                     }
 
-                                    // ...
+                                    Profile p = new Profile(mAuth.getCurrentUser().getUid(),firstName.getText().toString(),lastName.getText().toString());
+                                    mDatabase.child("profile").child(mAuth.getCurrentUser().getUid()).setValue(p);
 
                                 }
                             });

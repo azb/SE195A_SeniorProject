@@ -26,6 +26,11 @@ public class Profile {
         lastName = last;
         currency = curr;
     }
+    public Profile(String uid, String first, String last){
+        uID = uid;
+        firstName = first;
+        lastName = last;
+    }
 
     public String getFirstName() {
         return firstName;
