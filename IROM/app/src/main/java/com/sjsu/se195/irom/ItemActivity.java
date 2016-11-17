@@ -76,10 +76,10 @@ public class ItemActivity extends NavigationDrawerActivity{
                     Item newItem = new Item(
                             mUser.getUid(),
                             new Date(),
-                            mName.getText().toString(),
-                            Integer.getInteger(mQuantity.getText().toString()),
+                            mName.getText().toString(),Integer.parseInt(mQuantity.getText().toString()),
                             mNotes.getText().toString());
                     writeNewManualItem(newItem);
+                    Toast.makeText(ItemActivity.this, "You made an item", Toast.LENGTH_SHORT).show();
                 }
                 else{
                     Toast.makeText(ItemActivity.this, "something wasnt filled. something broke", Toast.LENGTH_SHORT).show();
@@ -90,7 +90,7 @@ public class ItemActivity extends NavigationDrawerActivity{
 
     private void writeNewManualItem(Item i) {
         String key = mDatabase.child("items").push().getKey();
-        System.out.println(i.toString());
+        System.out.println(i.toAllString());
         mDatabase.child("items").child(key).setValue(i);
         //updateChildren(data) is for updating an item
     }

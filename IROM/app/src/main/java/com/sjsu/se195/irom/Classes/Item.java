@@ -1,7 +1,5 @@
 package com.sjsu.se195.irom.Classes;
 
-import com.google.firebase.database.Exclude;
-
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -88,30 +86,33 @@ public class Item {
         forSale = fs;
     }
 
-    @Exclude
-    public Map<String,Object> toMap(){
-        HashMap<String, Object> result = new HashMap<>();
-        result.put("uID", uID);
-        result.put("dateAdded", dateAdded);
-        result.put("name",name);
-        result.put("notes",note);
-        result.put("tags",tag);
-        result.put("forSale",forSale);
-
-        return result;
-    }
+//    @Exclude
+//    public Map<String,Object> toMap(){
+//        HashMap<String, Object> result = new HashMap<>();
+//        result.put("uID", uID);
+//        result.put("dateAdded", dateAdded);
+//        result.put("name",name);
+//        result.put("notes",note);
+//        result.put("tags",tag);
+//        result.put("forSale",forSale);
+//
+//        return result;
+//    }
 
     @Override
     public String toString() {
         return name;
-//        return "Item{" +
-//                "uID='" + uID + '\'' +
-//                ", dateAdded=" + dateAdded +
-//                ", name='" + name + '\'' +
-//                ", quantity=" + quantity +
-//                ", note='" + note + '\'' +
-//                ", tag='" + tag + '\'' +
-//                ", isForSale=" + isForSale +
-//                '}';
+    }
+
+    public String toAllString(){
+        return "Item{" +
+                "uID='" + uID + '\'' +
+                ", dateAdded=" + dateAdded +
+                ", name='" + name + '\'' +
+                ", quantity=" + quantity +
+                ", note='" + note + '\'' +
+                ", tag='" + tag + '\'' +
+                ", forSale=" + forSale +
+                '}';
     }
 }
