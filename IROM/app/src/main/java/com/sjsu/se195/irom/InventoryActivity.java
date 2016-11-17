@@ -3,7 +3,6 @@ package com.sjsu.se195.irom;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.sjsu.se195.irom.Classes.Item;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,10 +29,11 @@ public class InventoryActivity extends NavigationDrawerActivity {
     private FirebaseUser mUser;
     private RecyclerView itemRecyclerView;
     private ItemAdapter itemAdapter;
-    private ArrayList<com.sjsu.se195.irom.Item> mItemList = new ArrayList<>();
+    private ArrayList<Item> mItemList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
        //INSTEAD OF setContentView(R.layout.activity_welcome); USE NEXT 3 LINES IF YOU WANT TH NAV BAR TO WORK
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View contentView = inflater.inflate(R.layout.item_list,null,false);
@@ -44,29 +45,34 @@ public class InventoryActivity extends NavigationDrawerActivity {
        itemRecyclerView.setLayoutManager( new LinearLayoutManager(this) );
        //get items from database
        //TODO not use generated data.
-       com.sjsu.se195.irom.Item tempItem = new com.sjsu.se195.irom.Item(mUser.getUid(),
+       Item tempItem = new Item(mUser.getUid(),
                new Date(),
                "Horse",
                1,
                "my horse is amazing");
        tempItem.setForSale(true);
        mItemList.add(tempItem);
-       tempItem = new com.sjsu.se195.irom.Item(mUser.getUid(),
+       tempItem = new Item(mUser.getUid(),
                new Date(),
                "tea bag",
                12,
                "the green kind");
        mItemList.add(tempItem);
+        tempItem = new Item(mUser.getUid(),
+                new Date(),
+                "item 3",
+                1,
+                "a basic item");
+        mItemList.add(tempItem);
         this.setTitle("My Inventory");
+
        itemAdapter = new ItemAdapter(mItemList);
        itemRecyclerView.setAdapter(itemAdapter);
    }
 
-    @Override public void onStart(){}
-
     private class ItemHolder extends RecyclerView.ViewHolder {
 
-        com.sjsu.se195.irom.Item item;
+        Item item;
         Bundle bundle = new Bundle();
 
         //set up layout of each thing on a row for an item
@@ -88,13 +94,13 @@ public class InventoryActivity extends NavigationDrawerActivity {
         }
 
         // Bind item to the holder and set name accordingly
-        public void bindItem(com.sjsu.se195.irom.Item i) {
+        public void bindItem(Item i) {
             //pss the object to the main activity so the individual item can be pulled
             item = i;
             //set the info for the current item
             itemName.setText(item.getName());
-            itemQuantity.setText(item.getQuantity());
-            itemForSale.setText(item.getForSale().toString());
+            itemQuantity.setText(item.getQuantity().toString());
+            itemForSale.setText("for sale: " + item.getForSale().toString());
             if(Objects.equals(itemForSale.getText().toString(), "true")){
                 //is for sale, cannot be used
                 itemForSale.setTextColor(Color.RED);
@@ -109,8 +115,8 @@ public class InventoryActivity extends NavigationDrawerActivity {
     }
 
     private class ItemAdapter extends RecyclerView.Adapter<ItemHolder>{
-        private ArrayList<com.sjsu.se195.irom.Item> mList;
-        public ItemAdapter(ArrayList<com.sjsu.se195.irom.Item> list){
+        private ArrayList<Item> mList;
+        public ItemAdapter(ArrayList<Item>list){
             mList = list;
         }
 
@@ -124,7 +130,7 @@ public class InventoryActivity extends NavigationDrawerActivity {
 
         @Override
         public void onBindViewHolder(ItemHolder holder, int position) {
-            com.sjsu.se195.irom.Item item = mList.get(position);
+            Item item = mList.get(position);
             holder.bindItem(item);
         }
 
