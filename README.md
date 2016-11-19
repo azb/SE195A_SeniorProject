@@ -1,7 +1,10 @@
 # SE195A_SeniorProject
 IROM Prototype
+
 Authors: Arthur Baney, Jack Dubil, Charles Oliver, Krystle Weinrich
+
 Date: November 18, 2016
+
 Github: https://github.com/azb/SE195A_SeniorProject
 
 
