@@ -7,12 +7,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ScrollView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.sjsu.se195.irom.Classes.Item;
 
 import java.util.Date;
@@ -27,7 +29,7 @@ public class ItemActivity extends NavigationDrawerActivity{
     private EditText mName;
     private EditText mQuantity;
     private EditText mNotes;
-    private DatabaseReference mDatabase;
+    private DatabaseReference mDatabaseRef;
     private FirebaseUser mUser;
 
     @Override
@@ -48,8 +50,15 @@ public class ItemActivity extends NavigationDrawerActivity{
 
         //get current user
         mUser = FirebaseAuth.getInstance().getCurrentUser();
-        //get database reference
-        mDatabase = FirebaseDatabase.getInstance().getReference();
+        //get database
+        final FirebaseDatabase db = FirebaseDatabase.getInstance();
+        //get ref
+        mDatabaseRef = db.getReference("items");
+        Query myItemsQuery = mDatabaseRef.equalTo(mUser.getUid());
+        System.out.println(myItemsQuery.toString());
+        TextView tvtest = (TextView) findViewById(R.id.testtext);
+        tvtest.setText(myItemsQuery.toString());
+
         //button click functions
         manuallyAddItemButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -89,9 +98,9 @@ public class ItemActivity extends NavigationDrawerActivity{
     }
 
     private void writeNewManualItem(Item i) {
-        String key = mDatabase.child("items").push().getKey();
+        String key = mDatabaseRef.child("items").push().getKey();
         System.out.println(i.toAllString());
-        mDatabase.child("items").child(key).setValue(i);
+        mDatabaseRef.child(key).setValue(i);
         //updateChildren(data) is for updating an item
     }
 
