@@ -2,7 +2,6 @@ package com.sjsu.se195.irom;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.graphics.Color;
@@ -13,7 +12,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.google.android.gms.vision.text.Text;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -21,12 +19,9 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 import com.sjsu.se195.irom.Classes.Item;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -56,30 +51,8 @@ public class InventoryActivity extends NavigationDrawerActivity {
         itemRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         //get reference of items from database
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        // everything under items is in ref
         DatabaseReference ref = database.getReference("items");
-
-        //query your own items TODO add sort by date added
-        Query myItemsQuery = ref.equalTo(mUser.getUid());
-//
-//        myItemsQuery.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                Item item = dataSnapshot.getValue(Item.class);
-//                if(item!=null){
-//                    mItemList.add(item);
-//                    System.out.println("THIS IS AN ITEM" + item.toAllString());
-//
-//                }else{
-//                    System.out.print("null item. fix me");
-//                }
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//                //get item failed, log a message
-//                Toast.makeText(InventoryActivity.this, "Cancelled. Refresh", Toast.LENGTH_SHORT).show();
-//            }
-//        });
 
         //pull any changes as they are made, whether a new item is added, changed, or removed.
         ref.addChildEventListener(new ChildEventListener() {
@@ -90,7 +63,6 @@ public class InventoryActivity extends NavigationDrawerActivity {
                 if(item.getuID().equals(mUser.getUid())){
                     mItemList.add(item);
                 }
-               // System.out.println("THIS IS AN ITEM" + item.getuID());
             }
 
             @Override
@@ -100,7 +72,9 @@ public class InventoryActivity extends NavigationDrawerActivity {
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
-
+                //item to be removed
+                Item item = dataSnapshot.getValue(Item.class);
+                //iterate through the list, remove the one that is the same as item
             }
 
             @Override
@@ -115,28 +89,7 @@ public class InventoryActivity extends NavigationDrawerActivity {
             }
         });
 
-//        //TODO not use generated data.
-//        Item tempItem = new Item(mUser.getUid(),
-//                new Date(),
-//                "Horse",
-//                1,
-//                "my horse is amazing");
-//        tempItem.setForSale(true);
-//        mItemList.add(tempItem);
-//        tempItem = new Item(mUser.getUid(),
-//                new Date(),
-//                "tea bag",
-//                12,
-//                "the green kind");
-//        mItemList.add(tempItem);
-//        tempItem = new Item(mUser.getUid(),
-//                new Date(),
-//                "item 3",
-//                1,
-//                "a basic item");
-//        mItemList.add(tempItem);
-//        this.setTitle("My Inventory");
-
+        //add your items to the view
         itemAdapter = new ItemAdapter(mItemList);
         itemRecyclerView.setAdapter(itemAdapter);
     }
