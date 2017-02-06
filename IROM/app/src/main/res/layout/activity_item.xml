@@ -7,6 +7,13 @@
     android:paddingTop="?android:actionBarSize"
     tools:context=".ItemActivity">
 
+    <TextView
+        android:text="NOTHING YET"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/testtext"
+        android:textSize="30sp" />
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

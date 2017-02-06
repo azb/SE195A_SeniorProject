@@ -2,6 +2,7 @@ package com.sjsu.se195.irom;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.graphics.Color;
@@ -10,8 +11,18 @@ import android.widget.TextView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
+import com.google.android.gms.vision.text.Text;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.sjsu.se195.irom.Classes.Item;
 
 import java.util.ArrayList;
@@ -21,7 +32,7 @@ import java.util.Objects;
 /**
  * Created by Arthur on 11/9/2016.
  *
- * This is adapted from Krystle's code from 137 project
+ * This is adapted from Krystle's code from 137 project (the adapter, and holder)
  */
 
 public class InventoryActivity extends NavigationDrawerActivity {
@@ -43,28 +54,88 @@ public class InventoryActivity extends NavigationDrawerActivity {
         itemRecyclerView = (RecyclerView) findViewById(R.id.item_recycler_view);
         //this might be base parent?
         itemRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        //get items from database
-        //TODO not use generated data.
-        Item tempItem = new Item(mUser.getUid(),
-                new Date(),
-                "Horse",
-                1,
-                "my horse is amazing");
-        tempItem.setForSale(true);
-        mItemList.add(tempItem);
-        tempItem = new Item(mUser.getUid(),
-                new Date(),
-                "tea bag",
-                12,
-                "the green kind");
-        mItemList.add(tempItem);
-        tempItem = new Item(mUser.getUid(),
-                new Date(),
-                "item 3",
-                1,
-                "a basic item");
-        mItemList.add(tempItem);
-        this.setTitle("My Inventory");
+        //get reference of items from database
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("items");
+
+        //query your own items TODO add sort by date added
+        Query myItemsQuery = ref.equalTo(mUser.getUid());
+//
+//        myItemsQuery.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                Item item = dataSnapshot.getValue(Item.class);
+//                if(item!=null){
+//                    mItemList.add(item);
+//                    System.out.println("THIS IS AN ITEM" + item.toAllString());
+//
+//                }else{
+//                    System.out.print("null item. fix me");
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//                //get item failed, log a message
+//                Toast.makeText(InventoryActivity.this, "Cancelled. Refresh", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+
+        //pull any changes as they are made, whether a new item is added, changed, or removed.
+        ref.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                Item item = dataSnapshot.getValue(Item.class);
+                //TODO make this not so bad. it pulls ALL data then only adds yours. this needs to be optimized!
+                if(item.getuID().equals(mUser.getUid())){
+                    mItemList.add(item);
+                }
+               // System.out.println("THIS IS AN ITEM" + item.getuID());
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                //get item failed, log a message
+                Toast.makeText(InventoryActivity.this, "Cancelled. Refresh", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+//        //TODO not use generated data.
+//        Item tempItem = new Item(mUser.getUid(),
+//                new Date(),
+//                "Horse",
+//                1,
+//                "my horse is amazing");
+//        tempItem.setForSale(true);
+//        mItemList.add(tempItem);
+//        tempItem = new Item(mUser.getUid(),
+//                new Date(),
+//                "tea bag",
+//                12,
+//                "the green kind");
+//        mItemList.add(tempItem);
+//        tempItem = new Item(mUser.getUid(),
+//                new Date(),
+//                "item 3",
+//                1,
+//                "a basic item");
+//        mItemList.add(tempItem);
+//        this.setTitle("My Inventory");
 
         itemAdapter = new ItemAdapter(mItemList);
         itemRecyclerView.setAdapter(itemAdapter);
