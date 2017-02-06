@@ -50,6 +50,4 @@ configurations {
     compile.exclude group: 'org.apache.httpcomponents', module: 'httpclient'
 }
 
-
-
 apply plugin: 'com.google.gms.google-services'
