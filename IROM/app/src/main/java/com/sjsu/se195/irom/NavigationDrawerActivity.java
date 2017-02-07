@@ -23,6 +23,8 @@ public class NavigationDrawerActivity extends AppCompatActivity
     protected FirebaseUser usr;
     protected DrawerLayout drawer;
     protected TextView navHeaderEmail;
+    protected TextView navHeaderName;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,8 +44,11 @@ public class NavigationDrawerActivity extends AppCompatActivity
 
         usr = FirebaseAuth.getInstance().getCurrentUser();
         navHeaderEmail = (TextView) header.findViewById(R.id.nav_header_user_email);
+        navHeaderName = (TextView) header.findViewById(R.id.nav_header_user_name);
         if(usr!=null){
             navHeaderEmail.setText(usr.getEmail());
+            String name = usr.getDisplayName();
+            navHeaderName.setText(name);
         }
     }
 
