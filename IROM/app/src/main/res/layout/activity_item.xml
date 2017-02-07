@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingTop="?android:actionBarSize"
-    tools:context=".ItemActivity">
+    tools:context=".ItemActivity"
+    android:weightSum="1"
+    android:gravity="center"
+    >
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Manually add item"
-        android:id="@+id/manually_add_item_button"/>
+    <SearchView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:visibility="invisible"
         android:id="@+id/manually_add_item_form">
         <LinearLayout
@@ -26,6 +29,7 @@
                 android:layout_height="wrap_content"
                 android:text="Name:"
                 android:id="@+id/item_name_label"/>
+
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -50,6 +54,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/item_note_text"
                 android:lines="4"/>
+
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -57,5 +62,21 @@
                 android:id="@+id/submit_item_button"/>
         </LinearLayout>
     </ScrollView>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Manually add item"
+        android:id="@+id/manually_add_item_button"/>
+
+    <android.support.design.widget.FloatingActionButton
+        android:layout_width="94dp"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        app:fabSize="mini"
+        app:srcCompat="@drawable/camera_add"
+        android:id="@+id/add_item_from_camera_button"
+        app:backgroundTint="@color/dollardollarbillyall"
+        android:layout_weight="0.39" />
 
 </LinearLayout>
