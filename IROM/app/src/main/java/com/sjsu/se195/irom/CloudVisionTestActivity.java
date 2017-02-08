@@ -54,18 +54,18 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-       //INSTEAD OF setContentView(R.layout.layout_name) USE NEXT 3 LINES
+        // INSTEAD OF setContentView(R.layout.layout_name) USE NEXT 3 LINES
         LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View contentView = inflater.inflate(R.layout.activity_cloud_vision_test, null, false);
         drawer.addView(contentView, 0);
 
-        //set up buttons
+        // set up buttons
         Button requestButton = (Button) findViewById(R.id.send_request_button);
         Button loadImageButton = (Button) findViewById(R.id.load_image_button);
         Button openCameraButton = (Button) findViewById(R.id.open_camera_button);
         resultField = (TextView) findViewById(R.id.resultsReplace);
 
-        //set up listeners.
+        // set up listeners.
         requestButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -202,7 +202,15 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
                             Feature labelDetection = new Feature();
                             labelDetection.setType("LABEL_DETECTION");
                             labelDetection.setMaxResults(10);
+                            Feature logoDetection = new Feature();
+                            logoDetection.setType("LOGO_DETECTION");
+                            logoDetection.setMaxResults(10);
+                            Feature textDetection = new Feature();
+                            textDetection.setType("TEXT_DETECTION");
+                            textDetection.setMaxResults(10);
                             add(labelDetection);
+                            add(logoDetection);
+                            add(textDetection);
                         }});
 
                         // Add image list to request
@@ -254,6 +262,7 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
    private String convertResponseToString(BatchAnnotateImagesResponse response) {
         String message = "I found these things:\n\n";
 
+       message += "Labels:\n";
         List<EntityAnnotation> labels = response.getResponses().get(0).getLabelAnnotations();
         if (labels != null) {
             for (EntityAnnotation label : labels) {
@@ -261,8 +270,30 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
                 message += "\n";
             }
         } else {
-            message += "nothing";
+            message += "Nothing\n";
         }
+
+       message += "\nLogos:\n";
+       List<EntityAnnotation> logos = response.getResponses().get(0).getLogoAnnotations();
+       if (logos != null) {
+           for (EntityAnnotation logo : logos) {
+               message += String.format(Locale.US, "%.3f: %s", logo.getScore(), logo.getDescription());
+               message += "\n";
+           }
+       } else {
+           message += "Nothing\n";
+       }
+
+       message += "\nTexts:\n";
+       List<EntityAnnotation> texts = response.getResponses().get(0).getTextAnnotations();
+       if (texts != null) {
+           for (EntityAnnotation text : texts) {
+               message += String.format(Locale.US, "%.3f: %s", text.getScore(), text.getDescription());
+               message += "\n";
+           }
+       } else {
+           message += "Nothing";
+       }
 
         return message;
     }
