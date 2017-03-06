@@ -24,6 +24,7 @@ public class WelcomeActivity extends NavigationDrawerActivity {
         LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View contentView = inflater.inflate(R.layout.activity_welcome, null, false);
         drawer.addView(contentView, 0);
+
         //set up buttons n stuff
         //Button logOutButton = (Button) findViewById(R.id.log_out_button);
         TextView email = (TextView) findViewById(R.id.currentEmailPasteHere);
