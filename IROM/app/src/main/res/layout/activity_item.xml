@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!-- Edit Item Activity
+TODO: Make add item from camera button work
+TODO: When user clicks "Manually Add Item" button it and the "add item from camera button" should disappear (should come back if user hits back button on their phone)
+-->
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"

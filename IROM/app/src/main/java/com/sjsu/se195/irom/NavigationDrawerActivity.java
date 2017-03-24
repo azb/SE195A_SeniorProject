@@ -120,6 +120,8 @@ public class NavigationDrawerActivity extends AppCompatActivity
         } else if (id == R.id.nav_manage) {
             //TODO amazon activity intent
             Toast.makeText(NavigationDrawerActivity.this,"This is currently under construction",Toast.LENGTH_SHORT).show();
+            //Intent intent = new Intent(getBaseContext(), AmazonActivity.class);
+            //startActivity(intent);
         } else if (id == R.id.nav_profile) {
             Intent intent = new Intent(getBaseContext(), ProfileActivity.class);
             startActivity(intent);

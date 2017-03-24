@@ -40,7 +40,6 @@ public class ItemActivity extends NavigationDrawerActivity{
         View contentView = inflater.inflate(R.layout.activity_item, null, false);
         drawer.addView(contentView, 0);
 
-        //initialize things
         Button manuallyAddItemButton = (Button) findViewById(R.id.manually_add_item_button);
         manAddItemForm = (ScrollView) findViewById(R.id.manually_add_item_form);
        Button submitItemButton = (Button) findViewById(R.id.submit_item_button);
