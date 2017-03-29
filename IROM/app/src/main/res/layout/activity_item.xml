@@ -17,78 +17,95 @@ TODO: When user clicks "Manually Add Item" button it and the "add item from came
     android:gravity="center"
     >
 
-    <SearchView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <TextView
-        android:id="@+id/testtext"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="testtext" />
-
     <ScrollView
+        android:id="@+id/manually_add_item_form"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:visibility="invisible"
-        android:id="@+id/manually_add_item_form">
+        android:layout_weight="0.54">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/imageView2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/cast_mini_controller_img_placeholder" />
+
             <TextView
+                android:id="@+id/item_name_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Name:"
-                android:id="@+id/item_name_label"/>
+                android:text="Name:" />
 
             <EditText
+                android:id="@+id/item_name_text"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/item_name_text" />
+                android:layout_height="wrap_content" />
+
             <TextView
+                android:id="@+id/item_quantity_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Quantity:"
-                android:id="@+id/item_quantity_label"/>
+                android:text="Quantity:" />
+
             <EditText
+                android:id="@+id/item_quantity_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="number"
-                android:id="@+id/item_quantity_text" />
+                android:inputType="number" />
+
             <TextView
+                android:id="@+id/item_note_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Notes:"
-                android:id="@+id/item_note_label"/>
+                android:text="Notes:" />
+
             <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
                 android:id="@+id/item_note_text"
-                android:lines="4"/>
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lines="4" />
 
             <Button
+                android:id="@+id/submit_item_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="submit"
-                android:id="@+id/submit_item_button"/>
+                android:text="submit" />
         </LinearLayout>
     </ScrollView>
 
-    <Button
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Manually add item"
-        android:id="@+id/manually_add_item_button"/>
+        android:orientation="horizontal"
+        android:layout_weight="0.09"
+        android:gravity="right">
 
-    <android.support.design.widget.FloatingActionButton
-        android:layout_width="94dp"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        app:fabSize="mini"
-        app:srcCompat="@drawable/camera_add"
-        android:id="@+id/add_item_from_camera_button"
-        app:backgroundTint="@color/dollardollarbillyall"
-        android:layout_weight="0.39" />
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/add_item_from_gallery_button"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="0.03"
+            android:clickable="true"
+            android:layout_marginRight="10dp"
+            app:backgroundTint="@color/dollardollarbillyall"
+            app:fabSize="mini"
+            app:srcCompat="@drawable/ic_menu_gallery" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/add_item_from_camera_button"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="0.00"
+            android:clickable="true"
+            android:layout_marginRight="10dp"
+            app:backgroundTint="@color/dollardollarbillyall"
+            app:fabSize="mini"
+            app:srcCompat="@drawable/camera_add" />
+    </LinearLayout>
 
 </LinearLayout>

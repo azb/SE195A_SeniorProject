@@ -103,6 +103,15 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
         }
     }
 
+    public File createImageFile() throws IOException {
+        // Create a name first
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        String imageFileName = "JPEG_" + timestamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+
+        return File.createTempFile(imageFileName, ".jpg", storageDir);
+    }
+
     public void startCamera() throws IOException {
         if (PermissionUtils.requestPermission(this, CAMERA_PERMISSIONS_REQUEST, Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.CAMERA)) {
@@ -135,19 +144,8 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
         }
     }
 
-    public File createImageFile() throws IOException {
-        // Create a name first
-        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-        String imageFileName = "JPEG_" + timestamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-
-        return File.createTempFile(imageFileName, ".jpg", storageDir);
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //super.onActivityResult(requestCode, resultCode, data);
-
         if (resultCode == RESULT_OK) {
             if (requestCode == GALLERY_IMAGE_REQUEST && data != null) {
                 Uri selectedImage = data.getData();
