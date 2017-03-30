@@ -28,9 +28,18 @@
             android:id="@+id/item_detail_desc"
             android:text="desc"/>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/item_detail_date"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/item_detail_quantity"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:id="@+id/item_detail_button"
             android:text="create listing" />
 
 

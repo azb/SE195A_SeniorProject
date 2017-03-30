@@ -72,6 +72,10 @@
             android:label="Listing"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
+            android:name=".ListingDetailActivity"
+            android:label="ListingDetail"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"/>
         <activity

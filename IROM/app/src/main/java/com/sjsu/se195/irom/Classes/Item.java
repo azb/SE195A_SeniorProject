@@ -12,6 +12,7 @@ import java.util.Map;
  */
 
 public class Item implements Parcelable{
+    public String itemID;
     public String uID;
     public Date dateAdded;
     public String name;
@@ -44,11 +45,11 @@ public class Item implements Parcelable{
 
     //for parcelable
     public Item(Parcel in){
-        Object[] data = new Object[ITEM_ATTRIBUTE_SIZE];
+        this.itemID = in.readString();
         this.uID = in.readString();
         this.name = in.readString();
-        this.dateAdded = (Date) in.readValue(getClass().getClassLoader());
-        this.forSale = (Boolean) in.readValue(getClass().getClassLoader());
+       // this.dateAdded = (Date) in.readValue(getClass().getClassLoader());
+        this.forSale = (boolean) in.readValue(boolean.class.getClassLoader());
         this.note = in.readString();
         this.quantity = in.readInt();
 
@@ -56,6 +57,12 @@ public class Item implements Parcelable{
 
     }
 
+    public String getItemID(){
+        return itemID;
+    }
+    public void setItemID(String id){
+        itemID =id;
+    }
     public Date getDateAdded() {
         return dateAdded;
     }
@@ -119,12 +126,9 @@ public class Item implements Parcelable{
 
     @Override
     public String toString() {
-        return name;
-    }
-
-    public String toAllString(){
         return "Item{" +
-                "uID='" + uID + '\'' +
+                "itemID=" + itemID +'\''+
+                ", uID=" + uID + '\'' +
                 ", dateAdded=" + dateAdded +
                 ", name='" + name + '\'' +
                 ", quantity=" + quantity +
@@ -134,6 +138,8 @@ public class Item implements Parcelable{
                 '}';
     }
 
+
+
     @Override
     public int describeContents() {
         return 0;
@@ -141,9 +147,11 @@ public class Item implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(this.itemID);
         parcel.writeString(this.uID);
         parcel.writeString(this.name);
-        parcel.writeValue(this.dateAdded);
+       // TODO FIX DATE
+       // parcel.writeValue(this.dateAdded);
         parcel.writeValue(this.forSale);
         parcel.writeString(this.note);
         parcel.writeInt(this.quantity);
