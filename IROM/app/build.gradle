@@ -34,9 +34,10 @@ dependencies {
     // see firebase.google.com/docs/android/setup for more dependencies as needed
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.android.support:design:24.2.1'
+    compile 'com.google.android.gms:play-services:9.8.0'
     compile 'com.google.firebase:firebase-core:9.8.0'
     compile 'com.google.firebase:firebase-auth:9.8.0'
-    compile 'com.google.android.gms:play-services:9.8.0'
+    compile 'com.google.firebase:firebase-storage:9.8.0'
     compile 'com.google.apis:google-api-services-vision:v1-rev347-1.22.0'
     compile 'com.google.api-client:google-api-client-android:1.22.0'
     compile 'com.google.http-client:google-http-client-gson:1.22.0'

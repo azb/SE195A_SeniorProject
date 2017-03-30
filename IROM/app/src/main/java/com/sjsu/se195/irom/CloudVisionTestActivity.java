@@ -13,8 +13,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +22,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -32,18 +34,38 @@ import com.google.api.services.vision.v1.VisionRequestInitializer;
 import com.google.api.services.vision.v1.model.AnnotateImageRequest;
 import com.google.api.services.vision.v1.model.BatchAnnotateImagesRequest;
 import com.google.api.services.vision.v1.model.BatchAnnotateImagesResponse;
-import com.google.api.services.vision.v1.model.EntityAnnotation;
 import com.google.api.services.vision.v1.model.Feature;
+import com.google.api.services.vision.v1.model.EntityAnnotation;
+import com.google.api.services.vision.v1.model.ColorInfo;
+import com.google.api.services.vision.v1.model.DominantColorsAnnotation;
 import com.google.api.services.vision.v1.model.Image;
+import com.google.api.services.vision.v1.model.ImageProperties;
+
+
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Vector;
+
+import com.google.api.services.vision.v1.model.WebDetection;
+import com.google.api.services.vision.v1.model.WebEntity;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.StorageTask;
+import com.google.firebase.storage.UploadTask;
+import com.sjsu.se195.irom.Classes.IROMazon;
 
 public class CloudVisionTestActivity extends NavigationDrawerActivity {
     private static final String CLOUD_VISION_API_KEY = "AIzaSyAHnhDlz-V1OTUivtflxsQwFShuAzeh-6w";
@@ -52,8 +74,17 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
     private static final int GALLERY_PERMISSIONS_REQUEST = 2;
     private static final int CAMERA_IMAGE_REQUEST = 3;
     private static final int CAMERA_PERMISSIONS_REQUEST = 4;
+    public static final String FILE_NAME = "temp.jpg";
     private TextView resultField;
-    private Uri currentPhotoURI;
+
+    //IROMazon stuff
+    private FirebaseDatabase cFirebaseEntry;
+    private DatabaseReference cWebEntitySearch;
+    private FirebaseStorage cStorageEntry;
+    private StorageReference cImageUpload;
+    private Bitmap imageToUpload;
+    private ArrayList<IROMazon> cEntryList = new ArrayList<>();
+    private boolean createNewIROMazon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,13 +94,13 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
         View contentView = inflater.inflate(R.layout.activity_cloud_vision_test, null, false);
         drawer.addView(contentView, 0);
 
-        // Set up buttons
+        // set up buttons
         Button requestButton = (Button) findViewById(R.id.send_request_button);
         Button loadImageButton = (Button) findViewById(R.id.load_image_button);
         Button openCameraButton = (Button) findViewById(R.id.open_camera_button);
         resultField = (TextView) findViewById(R.id.resultsReplace);
 
-        // Set up listeners.
+        // set up listeners.
         requestButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -87,71 +118,102 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
         openCameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try {
-                    startCamera();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                startCamera();
+            }
+        });
+
+        //IROMazon stuff
+        cFirebaseEntry = FirebaseDatabase.getInstance();
+        cWebEntitySearch = cFirebaseEntry.getReference().child("IROMazon");
+        cStorageEntry = FirebaseStorage.getInstance();
+        cImageUpload = cStorageEntry.getReference().child("IROMazon/");
+        cWebEntitySearch.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                IROMazon entry = new IROMazon(); //dataSnapshot.getValue();
+                entry.name = (String) dataSnapshot.child("name").getValue();
+                entry.price = (Double) dataSnapshot.child("price").getValue();
+                entry.key = (String) dataSnapshot.getKey().toString();
+                for (DataSnapshot textSnapshot : dataSnapshot.child("text").getChildren()) {
+                    entry.text.add(textSnapshot.getValue().toString());
                 }
+                for (DataSnapshot textSnapshot : dataSnapshot.child("logo").getChildren()) {
+                    entry.logo.add(textSnapshot.getValue().toString());
+                }
+                for (DataSnapshot textSnapshot : dataSnapshot.child("label").getChildren()) {
+                    entry.label.add(textSnapshot.getValue().toString());
+                }
+                cEntryList.add(entry);
+                /*System.out.println("Key");
+                System.out.println(entry.key);
+                System.out.println("Object Name");
+                System.out.println(entry.name);
+                System.out.println("Price");
+                System.out.println(String.format("%.2f",entry.price));
+                if (entry.text.size() != 0) {
+                    System.out.println("Text of Object");
+                    System.out.println(entry.text.get(0));
+                }
+                if (entry.logo.size() != 0) {
+                    System.out.println("Logo of Object");
+                    System.out.println(entry.logo.get(0));
+                }
+                if(entry.label.size() != 0){
+                    System.out.println("Label of Object");
+                    System.out.println(entry.label.get(0));
+                }*/
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
             }
         });
     }
 
     public void startGalleryChooser() {
-        if (PermissionUtils.requestPermission(this, GALLERY_PERMISSIONS_REQUEST, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+        if (PermissionUtils.requestPermission(this, CAMERA_PERMISSIONS_REQUEST, Manifest.permission.READ_EXTERNAL_STORAGE)) {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             startActivityForResult(intent, GALLERY_IMAGE_REQUEST);
         }
     }
 
-    public void startCamera() throws IOException {
-        if (PermissionUtils.requestPermission(this, CAMERA_PERMISSIONS_REQUEST, Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.CAMERA)) {
+    public void startCamera() {
+        if (PermissionUtils.requestPermission(this, CAMERA_PERMISSIONS_REQUEST, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA)) {
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            // Make sure camera activity available
-            if (intent.resolveActivity(getPackageManager()) != null) {
-                // Create the file
-                File photoFile = null;
-                try {
-                    photoFile = createImageFile();
-                } catch (IOException e) {
-                    // Error in file creation
-                    e.printStackTrace();
-                }
-
-                // If file created
-                if (photoFile != null) {
-                    Uri photoURI = FileProvider.getUriForFile(this, "com.sjsu.se195.irom.fileprovider", photoFile);
-                    currentPhotoURI = photoURI;
-                    intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                    startActivityForResult(intent, CAMERA_IMAGE_REQUEST);
-                } else {
-                    Log.d(TAG, "File not created.");
-                }
-            } else {
-                Log.d(TAG, "Not resolving camera activity.");
-            }
-        } else {
-            Log.d(TAG, "Permissions incorrect.");
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(getCameraFile()));
+            startActivityForResult(intent, CAMERA_IMAGE_REQUEST);
         }
     }
 
-    public File createImageFile() throws IOException {
-        // Create a name first
-        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-        String imageFileName = "JPEG_" + timestamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-
-        return File.createTempFile(imageFileName, ".jpg", storageDir);
+    public File getCameraFile() {
+        File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        return new File(dir, FILE_NAME);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //super.onActivityResult(requestCode, resultCode, data);
+        super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK) {
             if (requestCode == GALLERY_IMAGE_REQUEST && data != null) {
                 Uri selectedImage = data.getData();
-                String[] filePathColumn = {MediaStore.Images.Media.DATA};
+                String[] filePathColumn = { MediaStore.Images.Media.DATA };
                 try (Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null)) {
                     if (cursor != null) {
                         cursor.moveToFirst();
@@ -166,32 +228,27 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
                 }
             }
             if (requestCode == CAMERA_IMAGE_REQUEST) {
+                Uri selectedImage = Uri.fromFile(getCameraFile());
                 try {
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), currentPhotoURI);
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
                     ImageView imageView = (ImageView) findViewById(R.id.imageView);
                     imageView.setImageBitmap(bitmap);
                 } catch (java.io.IOException e) {
                     Log.d(TAG, "Image selection failed: " + e.getMessage());
                 }
             }
-        } else {
-            Log.d(TAG, "Result is not ok for some reason.");
         }
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (PermissionUtils.permissionGranted(requestCode, GALLERY_PERMISSIONS_REQUEST, grantResults)) {
             startGalleryChooser();
         }
         if (PermissionUtils.permissionGranted(requestCode, CAMERA_PERMISSIONS_REQUEST, grantResults)) {
-            try {
-                startCamera();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            startCamera();
         }
     }
 
@@ -201,6 +258,7 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
             Drawable drawable = imageView.getDrawable();
             Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
             bitmap = scaleBitmapDown(bitmap, 1200);
+            imageToUpload = bitmap;
 
             callCloudVision(bitmap);
         } catch (IOException e) {
@@ -249,9 +307,18 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
                             Feature textDetection = new Feature();
                             textDetection.setType("TEXT_DETECTION");
                             textDetection.setMaxResults(10);
+                            Feature imageProperties = new Feature();
+                            imageProperties.setType("IMAGE_PROPERTIES");
+                            imageProperties.setMaxResults(10);
+                            Feature webEntities = new Feature();
+                            webEntities.setType("WEB_DETECTION");
+                            webEntities.setMaxResults(10);
                             add(labelDetection);
                             add(logoDetection);
                             add(textDetection);
+                            add(imageProperties);
+                            add(webEntities);
+
                         }});
 
                         // Add image list to request
@@ -265,7 +332,23 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
                     Log.d(TAG, "Created Cloud Vision request object, sending request");
 
                     BatchAnnotateImagesResponse response = annotateRequest.execute();
-                    return convertResponseToString(response);
+
+                    ArrayList<IROMazon> entityR = new ArrayList<IROMazon>();
+                    ArrayList<IROMazon> textR = new ArrayList<IROMazon>();
+                    entityR = getIROMazon_Entity(response);
+                    textR = getIROMazon_Text(response);
+                    if(entityR.size() == 0 && textR.size() == 0){
+                        createNewIROMazon = true;
+                    }
+                    else{
+                        createNewIROMazon = false;
+                    }
+                    //return convertResponseToString(response);
+                    String result = resultstoString(entityR,textR);
+                    result += "\n";
+                    result += convertResponseToString(response);
+                    return result;
+
                 } catch (GoogleJsonResponseException e) {
                     Log.d(TAG, "Failed to make API request because " + e.getContent());
                 } catch (IOException e) {
@@ -301,7 +384,11 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
     }
 
    private String convertResponseToString(BatchAnnotateImagesResponse response) {
-        String message = "I found these things:\n\n";
+       ArrayList<String> labelResults = new ArrayList<>();
+       ArrayList<String> logoResults = new ArrayList<>();
+       ArrayList<String> textResults = new ArrayList<>();
+       ArrayList<String> entityResults = new ArrayList<>();
+       String message = "I found these things:\n\n";
 
        message += "Labels:\n";
         List<EntityAnnotation> labels = response.getResponses().get(0).getLabelAnnotations();
@@ -309,6 +396,9 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
             for (EntityAnnotation label : labels) {
                 message += String.format(Locale.US, "%.3f: %s", label.getScore(), label.getDescription());
                 message += "\n";
+                if(label.getDescription() != null){
+                    labelResults.add(label.getDescription());
+                }
             }
         } else {
             message += "Nothing\n";
@@ -320,6 +410,9 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
            for (EntityAnnotation logo : logos) {
                message += String.format(Locale.US, "%.3f: %s", logo.getScore(), logo.getDescription());
                message += "\n";
+               if(logo.getDescription() != null){
+                   logoResults.add(logo.getDescription());
+               }
            }
        } else {
            message += "Nothing\n";
@@ -331,11 +424,158 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
            for (EntityAnnotation text : texts) {
                message += String.format(Locale.US, "%.3f: %s", text.getScore(), text.getDescription());
                message += "\n";
+               if(text.getDescription() != null){
+                    textResults.add(text.getDescription());
+               }
            }
        } else {
            message += "Nothing";
        }
 
+       message += "\nWeb Entities:\n";
+       WebDetection webDetection = response.getResponses().get(0).getWebDetection();
+       if(webDetection != null){
+           for(WebEntity entity : webDetection.getWebEntities()){
+               message += String.format(Locale.US, "%s: %.3f", entity.getDescription(), entity.getScore());
+               message += "\n";
+               if(entity.getDescription() != null){
+                   entityResults.add(entity.getDescription());
+               }
+           }
+
+           if(createNewIROMazon){
+               IROMazon newEntry = new IROMazon(entityResults.get(0),textResults,logoResults,labelResults,19.95d);
+               createIROMazonEntry(newEntry);
+               createNewIROMazon = false;
+           }
+           }
         return message;
     }
+
+    private void createIROMazonEntry(final IROMazon newEntry){
+        System.out.println("Creating IROMazon Entry");
+        System.out.println("\n");
+        final String key = cWebEntitySearch.child("IROMazon").push().getKey();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        imageToUpload.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] data = baos.toByteArray();
+        StorageReference upload = cImageUpload.child(key);
+        UploadTask uploadTask = upload.putBytes(data);
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                //Handle unsucessful upload
+                System.out.println("Failed to upload picture");
+                System.out.println("\n");
+                cWebEntitySearch.child(key).setValue(null);//deletes data
+            }
+        });
+        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                System.out.println("Upload Successful.");
+                System.out.println("\n");
+                cWebEntitySearch.child(key).setValue(newEntry);//sets data
+            }
+        });
+        //String key = cWebEntitySearch.child("IROMazon").push().getKey();
+        //cWebEntitySearch.child(key).setValue(newEntry);
+    }
+
+    private String resultstoString(ArrayList<IROMazon> entityResults,ArrayList<IROMazon> textResults){
+        String result = "";
+        result += "Entity Matches";
+        result += "\n";
+        for(int i = 0;i<entityResults.size();i++){
+            result += i;
+            result += ". ";
+            result += entityResults.get(i).name;
+            result += entityResults.get(i).key;
+            result += "\n";
+        }
+        result += "\n";
+        result += "Text Matches";
+        result += "\n";
+        for(int i = 0;i<textResults.size();i++){
+            result += i;
+            result += ". ";
+            result += textResults.get(i).name;
+            result += textResults.get(i).key;
+            result += "\n";
+        }
+        return result;
+    }
+
+    private ArrayList<IROMazon> getIROMazon_Entity(BatchAnnotateImagesResponse response){
+        ArrayList<IROMazon> result = new ArrayList<IROMazon>();
+        ArrayList<String> entityResults = new ArrayList<String>();
+        WebDetection webDetection = response.getResponses().get(0).getWebDetection();
+
+        //Store Cloud Vision Web Entity Results into ArrayList<String>. Only return results with Score > 0.5
+        if(webDetection != null) {
+            for (WebEntity entity : webDetection.getWebEntities()) {
+                if (entity.getDescription() != null && entity.getScore() >= 0.5) {
+                    entityResults.add(entity.getDescription());
+                    System.out.println("Adding to entityResults");
+                    System.out.println(entity.getDescription());
+                    System.out.println("\n");
+                }
+            }
+        }
+
+        for(int i = 0;i<cEntryList.size();i++){
+            for(int j = 0;j<entityResults.size();j++){
+                if(cEntryList.get(i).name.equals(entityResults.get(j))){
+                    result.add(cEntryList.get(i));
+                    System.out.println("Adding to result");
+                    System.out.println(cEntryList.get(i).name);
+                    System.out.println("\n");
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private ArrayList<IROMazon> getIROMazon_Text(BatchAnnotateImagesResponse response){
+        ArrayList<IROMazon> result = new ArrayList<IROMazon>();
+        ArrayList<String> textResults = new ArrayList<String>();
+        List<EntityAnnotation> texts = response.getResponses().get(0).getTextAnnotations();
+        if (texts != null) {
+            for (EntityAnnotation text : texts) {
+               if(text.getDescription() != null){
+                    textResults.add(text.getDescription());
+               }
+            }
+        }
+        for(int i = 0;i<cEntryList.size();i++){
+                if(getIROMazon_TLLScore(textResults,cEntryList.get(i).text) >= 0.5){
+                    result.add(cEntryList.get(i));
+                }
+        }
+        return result;
+    }
+
+    private double getIROMazon_TLLScore(ArrayList<String> a,ArrayList<String> b){
+        int found = 0;
+        System.out.println("Check Text: ");
+        System.out.println(b.get(0));
+        System.out.println("\n");
+        for(int i = 0;i<a.size();i++){
+            if(b.get(0).contains(a.get(i))) {
+                System.out.println("Found Text ");
+                System.out.println(a.get(i));
+                System.out.println("\n");
+                found += 1;
+                System.out.println(found);
+                System.out.println("\n");
+            }
+        }
+        System.out.println("Score: ");
+        System.out.println(((double)found)/(((double)a.size())));
+        System.out.println("\n");
+        return ((double)found)/(((double)a.size()));
+    }
+
 }
