@@ -64,6 +64,10 @@
             android:label="Inventory"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
+            android:name=".InventoryItemDetailActivity"
+            android:label="Details"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
             android:name=".ListingActivity"
             android:label="Listing"
             android:theme="@style/AppTheme.NoActionBar" />

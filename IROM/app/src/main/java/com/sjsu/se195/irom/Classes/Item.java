@@ -1,5 +1,8 @@
 package com.sjsu.se195.irom.Classes;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,7 +11,7 @@ import java.util.Map;
  * Created by Krystle on 10/28/2016.
  */
 
-public class Item {
+public class Item implements Parcelable{
     public String uID;
     public Date dateAdded;
     public String name;
@@ -16,8 +19,9 @@ public class Item {
     public Integer quantity;
     public String note;
     //maybe have tag as an arraylist of strings?
-    public String tag;
+    //public String tag;
     public boolean forSale;
+    private static final int ITEM_ATTRIBUTE_SIZE = 6;
 
     public String getuID() {
         return uID;
@@ -36,6 +40,20 @@ public class Item {
     }
 
     public Item(){
+    }
+
+    //for parcelable
+    public Item(Parcel in){
+        Object[] data = new Object[ITEM_ATTRIBUTE_SIZE];
+        this.uID = in.readString();
+        this.name = in.readString();
+        this.dateAdded = (Date) in.readValue(getClass().getClassLoader());
+        this.forSale = (Boolean) in.readValue(getClass().getClassLoader());
+        this.note = in.readString();
+        this.quantity = in.readInt();
+
+
+
     }
 
     public Date getDateAdded() {
@@ -70,13 +88,13 @@ public class Item {
         this.note = note;
     }
 
-    public String getTag() {
-        return tag;
-    }
-
-    public void setTag(String tag) {
-        this.tag = tag;
-    }
+//    public String getTag() {
+//        return tag;
+//    }
+//
+//    public void setTag(String tag) {
+//        this.tag = tag;
+//    }
 
     public Boolean getForSale() {
         return forSale;
@@ -111,8 +129,32 @@ public class Item {
                 ", name='" + name + '\'' +
                 ", quantity=" + quantity +
                 ", note='" + note + '\'' +
-                ", tag='" + tag + '\'' +
+                //", tag='" + tag + '\'' +
                 ", forSale=" + forSale +
                 '}';
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(this.uID);
+        parcel.writeString(this.name);
+        parcel.writeValue(this.dateAdded);
+        parcel.writeValue(this.forSale);
+        parcel.writeString(this.note);
+        parcel.writeInt(this.quantity);
+    }
+
+    public static final Parcelable.Creator CREATOR = new Parcelable.Creator(){
+        public Item createFromParcel(Parcel in){
+            return new Item(in);
+        }
+        public Item[] newArray(int size){
+            return new Item[size];
+        }
+    };
 }
