@@ -5,24 +5,38 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.FileProvider;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ScrollView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.Manifest;
 
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.services.vision.v1.Vision;
+import com.google.api.services.vision.v1.VisionRequestInitializer;
+import com.google.api.services.vision.v1.model.AnnotateImageRequest;
+import com.google.api.services.vision.v1.model.BatchAnnotateImagesRequest;
+import com.google.api.services.vision.v1.model.BatchAnnotateImagesResponse;
+import com.google.api.services.vision.v1.model.EntityAnnotation;
+import com.google.api.services.vision.v1.model.Feature;
+import com.google.api.services.vision.v1.model.Image;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -30,10 +44,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.sjsu.se195.irom.Classes.Item;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -47,8 +64,9 @@ public class ItemActivity extends NavigationDrawerActivity{
     private static final int CAMERA_IMAGE_REQUEST = 3;
     private static final int CAMERA_PERMISSIONS_REQUEST = 4;
     private static final String TAG = ItemActivity.class.getSimpleName();
+    private static final String CLOUD_VISION_API_KEY = "AIzaSyAHnhDlz-V1OTUivtflxsQwFShuAzeh-6w";
     private Uri currentPhotoURI;
-    private ScrollView manAddItemForm;
+    private RelativeLayout manAddItemForm;
     private EditText mName;
     private EditText mQuantity;
     private EditText mNotes;
@@ -64,13 +82,14 @@ public class ItemActivity extends NavigationDrawerActivity{
         drawer.addView(contentView, 0);
 
         // Initialize add item buttons and input fields
-        manAddItemForm = (ScrollView) findViewById(R.id.manually_add_item_form);
-        Button submitItemButton = (Button) findViewById(R.id.submit_item_button);
-        mName = (EditText) findViewById(R.id.item_name_text);
-        mQuantity = (EditText) findViewById(R.id.item_quantity_text);
-        mNotes = (EditText) findViewById(R.id.item_note_text);
-        FloatingActionButton cameraItemButton = (FloatingActionButton) findViewById(R.id.add_item_from_camera_button);
-        FloatingActionButton galleryItemButton = (FloatingActionButton) findViewById(R.id.add_item_from_gallery_button);
+        manAddItemForm = (RelativeLayout) findViewById(R.id.addItemForm);
+        Button submitItemButton = (Button) findViewById(R.id.submitButton);
+        mName = (EditText) findViewById(R.id.nameText);
+        mQuantity = (EditText) findViewById(R.id.quantityText);
+        mNotes = (EditText) findViewById(R.id.notesText);
+        Button cameraButton = (Button) findViewById(R.id.cameraButton);
+        Button galleryButton = (Button) findViewById(R.id.galleryButton);
+        Button cloudVisionButton = (Button) findViewById(R.id.cloudVisionButton);
 
         // Get current user
         mUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -86,7 +105,7 @@ public class ItemActivity extends NavigationDrawerActivity{
             @Override
             public void onClick(View view) {
                 // Check fields
-                if(validityCheck()){
+                if(validityCheck()) {
                     // Manually create items
                     Item newItem = new Item(
                             mUser.getUid(),
@@ -97,12 +116,12 @@ public class ItemActivity extends NavigationDrawerActivity{
                     Toast.makeText(ItemActivity.this, "You made an item", Toast.LENGTH_SHORT).show();
                 }
                 else{
-                    Toast.makeText(ItemActivity.this, "something wasnt filled. something broke", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ItemActivity.this, "Something wasn't filled. Something broke", Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
-        cameraItemButton.setOnClickListener(new View.OnClickListener() {
+        cameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 try {
@@ -113,15 +132,22 @@ public class ItemActivity extends NavigationDrawerActivity{
             }
         });
 
-        galleryItemButton.setOnClickListener(new View.OnClickListener() {
+        galleryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startGalleryChooser();
             }
         });
+
+        cloudVisionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                uploadImage();
+            }
+        });
     }
 
-    public File createImageFile() throws IOException {
+    private File createImageFile() throws IOException {
         // Create a name first
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         String imageFileName = "JPEG_" + timestamp + "_";
@@ -130,7 +156,7 @@ public class ItemActivity extends NavigationDrawerActivity{
         return File.createTempFile(imageFileName, ".jpg", storageDir);
     }
 
-    public void startCamera() throws IOException {
+    private void startCamera() throws IOException {
         if (PermissionUtils.requestPermission(this, CAMERA_PERMISSIONS_REQUEST, Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.CAMERA)) {
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -162,7 +188,7 @@ public class ItemActivity extends NavigationDrawerActivity{
         }
     }
 
-    public void startGalleryChooser() {
+    private void startGalleryChooser() {
         if (PermissionUtils.requestPermission(this, GALLERY_PERMISSIONS_REQUEST, Manifest.permission.READ_EXTERNAL_STORAGE)) {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             startActivityForResult(intent, GALLERY_IMAGE_REQUEST);
@@ -181,8 +207,8 @@ public class ItemActivity extends NavigationDrawerActivity{
                         int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
                         String picturePath = cursor.getString(columnIndex);
 
-                        ImageView imageView = (ImageView) findViewById(R.id.imageView2);
-                        imageView.setImageBitmap(BitmapFactory.decodeFile(picturePath));
+                        ImageView imageHolder = (ImageView) findViewById(R.id.imageHolder);
+                        imageHolder.setImageBitmap(BitmapFactory.decodeFile(picturePath));
                         manAddItemForm.setVisibility(View.VISIBLE);
                     }
                 } catch (java.lang.NullPointerException e) {
@@ -192,13 +218,9 @@ public class ItemActivity extends NavigationDrawerActivity{
             if (requestCode == CAMERA_IMAGE_REQUEST) {
                 try {
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), currentPhotoURI);
-                    ImageView imageView = (ImageView) findViewById(R.id.imageView2);
-                    imageView.setImageBitmap(bitmap);
+                    ImageView imageHolder = (ImageView) findViewById(R.id.imageHolder);
+                    imageHolder.setImageBitmap(bitmap);
                     manAddItemForm.setVisibility(View.VISIBLE);
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setMessage(R.string.loading_text);
-                    AlertDialog dialogue = builder.create();
-                    dialogue.show();
                 } catch (java.io.IOException e) {
                     Log.d(TAG, "Image selection failed: " + e.getMessage());
                 }
@@ -224,6 +246,150 @@ public class ItemActivity extends NavigationDrawerActivity{
         }
     }
 
+    public void uploadImage() {
+        try {
+            ImageView imageView = (ImageView) findViewById(R.id.imageHolder);
+            Drawable drawable = imageView.getDrawable();
+            Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+            bitmap = scaleBitmapDown(bitmap, 1200);
+
+            callCloudVision(bitmap);
+        } catch (IOException e) {
+            Log.d(TAG, "Image picking failed because " + e.getMessage());
+        }
+    }
+
+    private void callCloudVision(final Bitmap bitmap) throws IOException {
+        // Show loading
+        Toast.makeText(ItemActivity.this, R.string.loading_text, Toast.LENGTH_SHORT).show();
+
+        new AsyncTask<Object, Void, String>() {
+            @Override
+            protected String doInBackground(Object... params) {
+                try {
+                    HttpTransport httpTransport = AndroidHttp.newCompatibleTransport();
+                    JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
+
+                    Vision.Builder builder = new Vision.Builder(httpTransport, jsonFactory, null);
+                    builder.setVisionRequestInitializer(new VisionRequestInitializer(CLOUD_VISION_API_KEY));
+                    Vision vision = builder.build();
+
+                    BatchAnnotateImagesRequest batchAnnotateImagesRequest = new BatchAnnotateImagesRequest();
+                    batchAnnotateImagesRequest.setRequests(new ArrayList<AnnotateImageRequest>() {{
+                        AnnotateImageRequest annotateImageRequest = new AnnotateImageRequest();
+
+                        // Add image
+                        Image base64EncodedImage = new Image();
+                        // Convert to JPEG
+                        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, byteArrayOutputStream);
+                        byte[] imageBytes = byteArrayOutputStream.toByteArray();
+
+                        // Encode JPEG
+                        base64EncodedImage.encodeContent(imageBytes);
+                        annotateImageRequest.setImage(base64EncodedImage);
+
+                        // Add features we want from Cloud Vision Request
+                        annotateImageRequest.setFeatures(new ArrayList<Feature>() {{
+                            Feature labelDetection = new Feature();
+                            labelDetection.setType("LABEL_DETECTION");
+                            labelDetection.setMaxResults(10);
+                            Feature logoDetection = new Feature();
+                            logoDetection.setType("LOGO_DETECTION");
+                            logoDetection.setMaxResults(10);
+                            Feature textDetection = new Feature();
+                            textDetection.setType("TEXT_DETECTION");
+                            textDetection.setMaxResults(10);
+                            add(labelDetection);
+                            add(logoDetection);
+                            add(textDetection);
+                        }});
+
+                        // Add image list to request
+                        add(annotateImageRequest);
+                    }});
+
+                    Vision.Images.Annotate annotateRequest = vision.images().annotate(batchAnnotateImagesRequest);
+
+                    // Protect against Vision API GZip bug
+                    annotateRequest.setDisableGZipContent(true);
+                    Log.d(TAG, "Created Cloud Vision request object, sending request");
+
+                    BatchAnnotateImagesResponse response = annotateRequest.execute();
+                    return convertResponseToString(response);
+                } catch (GoogleJsonResponseException e) {
+                    Log.d(TAG, "Failed to make API request because " + e.getContent());
+                } catch (IOException e) {
+                    Log.d(TAG, "Failed to make API request because of other exception " + e.getMessage());
+                }
+                return "Cloud Vision API request failed. Check logs for details.";
+            }
+
+            protected void onPostExecute(String result) {
+                Toast.makeText(ItemActivity.this, "Successful run!", Toast.LENGTH_SHORT).show();
+            }
+        }.execute();
+    }
+
+    public Bitmap scaleBitmapDown(Bitmap bitmap, int maxDimension) {
+
+        int originalWidth = bitmap.getWidth();
+        int originalHeight = bitmap.getHeight();
+        int resizedWidth = maxDimension;
+        int resizedHeight = maxDimension;
+
+        if (originalHeight > originalWidth) {
+            resizedHeight = maxDimension;
+            resizedWidth = (int) (resizedHeight * (float) originalWidth / (float) originalHeight);
+        } else if (originalWidth > originalHeight) {
+            resizedWidth = maxDimension;
+            resizedHeight = (int) (resizedWidth * (float) originalHeight / (float) originalWidth);
+        } else if (originalHeight == originalWidth) {
+            resizedHeight = maxDimension;
+            resizedWidth = maxDimension;
+        }
+        return Bitmap.createScaledBitmap(bitmap, resizedWidth, resizedHeight, false);
+    }
+
+    private String convertResponseToString(BatchAnnotateImagesResponse response) {
+        String message = "I found these things:\n\n";
+
+        message += "Labels:\n";
+        List<EntityAnnotation> labels = response.getResponses().get(0).getLabelAnnotations();
+        if (labels != null) {
+            for (EntityAnnotation label : labels) {
+                message += String.format(Locale.US, "%.3f: %s", label.getScore(), label.getDescription());
+                message += "\n";
+            }
+        } else {
+            message += "Nothing\n";
+        }
+
+        message += "\nLogos:\n";
+        List<EntityAnnotation> logos = response.getResponses().get(0).getLogoAnnotations();
+        if (logos != null) {
+            for (EntityAnnotation logo : logos) {
+                message += String.format(Locale.US, "%.3f: %s", logo.getScore(), logo.getDescription());
+                message += "\n";
+            }
+        } else {
+            message += "Nothing\n";
+        }
+
+        message += "\nTexts:\n";
+        List<EntityAnnotation> texts = response.getResponses().get(0).getTextAnnotations();
+        if (texts != null) {
+            for (EntityAnnotation text : texts) {
+                message += String.format(Locale.US, "%.3f: %s", text.getScore(), text.getDescription());
+                message += "\n";
+            }
+        } else {
+            message += "Nothing";
+        }
+
+        return message;
+    }
+
     private void writeNewManualItem(Item i) {
         String key = mDatabaseRef.child("items").push().getKey();
         System.out.println(i.toAllString());
@@ -232,7 +398,7 @@ public class ItemActivity extends NavigationDrawerActivity{
     }
 
     private Boolean validityCheck() {
-        if (mName==null || mQuantity == null || mNotes == null){
+        if (mName==null || mQuantity == null || mNotes == null) {
             mNotes.setError("fill all fields");
             return false;
         }
