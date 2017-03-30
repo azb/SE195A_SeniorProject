@@ -19,6 +19,7 @@ public class IROMazon {
     public double labelScore;*/
 
     public String key;
+    public String imageURL;
 
     public IROMazon(String name, ArrayList<String> text, ArrayList<String> logo, ArrayList<String> label, Double price){
         this.name = name;

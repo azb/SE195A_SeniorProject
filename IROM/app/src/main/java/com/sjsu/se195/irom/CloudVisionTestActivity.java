@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +22,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -58,6 +61,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.StorageTask;
+import com.google.firebase.storage.UploadTask;
 import com.sjsu.se195.irom.Classes.IROMazon;
 
 public class CloudVisionTestActivity extends NavigationDrawerActivity {
@@ -73,6 +80,9 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
     //IROMazon stuff
     private FirebaseDatabase cFirebaseEntry;
     private DatabaseReference cWebEntitySearch;
+    private FirebaseStorage cStorageEntry;
+    private StorageReference cImageUpload;
+    private Bitmap imageToUpload;
     private ArrayList<IROMazon> cEntryList = new ArrayList<>();
     private boolean createNewIROMazon;
 
@@ -113,9 +123,10 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
         });
 
         //IROMazon stuff
-
         cFirebaseEntry = FirebaseDatabase.getInstance();
         cWebEntitySearch = cFirebaseEntry.getReference().child("IROMazon");
+        cStorageEntry = FirebaseStorage.getInstance();
+        cImageUpload = cStorageEntry.getReference().child("IROMazon/");
         cWebEntitySearch.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -247,6 +258,7 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
             Drawable drawable = imageView.getDrawable();
             Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
             bitmap = scaleBitmapDown(bitmap, 1200);
+            imageToUpload = bitmap;
 
             callCloudVision(bitmap);
         } catch (IOException e) {
@@ -440,9 +452,35 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
         return message;
     }
 
-    private void createIROMazonEntry(IROMazon newEntry){
-        String key = cWebEntitySearch.child("IROMazon").push().getKey();
-        cWebEntitySearch.child(key).setValue(newEntry);
+    private void createIROMazonEntry(final IROMazon newEntry){
+        System.out.println("Creating IROMazon Entry");
+        System.out.println("\n");
+        final String key = cWebEntitySearch.child("IROMazon").push().getKey();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        imageToUpload.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] data = baos.toByteArray();
+        StorageReference upload = cImageUpload.child(key);
+        UploadTask uploadTask = upload.putBytes(data);
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                //Handle unsucessful upload
+                System.out.println("Failed to upload picture");
+                System.out.println("\n");
+                cWebEntitySearch.child(key).setValue(null);//deletes data
+            }
+        });
+        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                System.out.println("Upload Successful.");
+                System.out.println("\n");
+                cWebEntitySearch.child(key).setValue(newEntry);//sets data
+            }
+        });
+        //String key = cWebEntitySearch.child("IROMazon").push().getKey();
+        //cWebEntitySearch.child(key).setValue(newEntry);
     }
 
     private String resultstoString(ArrayList<IROMazon> entityResults,ArrayList<IROMazon> textResults){
@@ -479,7 +517,7 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
             for (WebEntity entity : webDetection.getWebEntities()) {
                 if (entity.getDescription() != null && entity.getScore() >= 0.5) {
                     entityResults.add(entity.getDescription());
-                   System.out.println("Adding to entityResults");
+                    System.out.println("Adding to entityResults");
                     System.out.println(entity.getDescription());
                     System.out.println("\n");
                 }
