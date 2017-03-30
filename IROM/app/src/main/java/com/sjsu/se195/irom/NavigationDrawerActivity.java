@@ -28,6 +28,7 @@ public class NavigationDrawerActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_navigation_drawer);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -127,6 +128,9 @@ public class NavigationDrawerActivity extends AppCompatActivity
             startActivity(intent);
         } else if(id == R.id.nav_vision){
             Intent intent = new Intent(getBaseContext(), CloudVisionTestActivity.class);
+            startActivity(intent);
+        } else if(id == R.id.nav_pay){
+            Intent intent = new Intent(getBaseContext(), PaymentTestActivity.class);
             startActivity(intent);
         }
 
