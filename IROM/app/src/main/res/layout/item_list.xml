@@ -2,19 +2,27 @@
 
 <!-- Item List Page -->
 
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    tools:context=".InventoryActivity"
     android:layout_height="match_parent"
     android:layout_width="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_marginTop="?android:attr/actionBarSize"
-    tools:context=".InventoryActivity">
+    android:id="@+id/fragment_container"
+    >
 
-    <android.support.v7.widget.RecyclerView
-
-
-        android:id="@+id/item_recycler_view"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
+        <android.support.v7.widget.RecyclerView
 
-    </android.support.v7.widget.RecyclerView>
-</ScrollView>
+
+            android:id="@+id/item_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        </android.support.v7.widget.RecyclerView>
+    </ScrollView>
+
+
+</FrameLayout>
