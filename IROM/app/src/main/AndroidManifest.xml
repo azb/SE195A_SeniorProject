@@ -72,6 +72,10 @@
             android:label="Amazon"
             android:theme="@style/AppTheme.NoActionBar" />
 
+        <activity android:name=".PaymentTestActivity"
+            android:label="Payment Test"
+            android:theme="@style/AppTheme.NoActionBar" />
+
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -82,7 +86,6 @@
                 android:resource="@xml/provider_paths" />
         </provider>
 
-        <activity android:name=".PaymentTestActivity"></activity>
     </application>
 
 </manifest>
