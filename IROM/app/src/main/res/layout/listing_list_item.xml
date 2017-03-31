@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/listing_list_item_image"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="5dp"
+        app:srcCompat="@drawable/a12633702" />
+
+    <TextView
+        android:id="@+id/listing_list_item_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="13dp"
+        android:layout_toEndOf="@+id/listing_list_item_image"
+        android:text="Name" />
+
+    <TextView
+        android:id="@+id/listing_list_item_price"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/listing_list_item_description"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="5dp"
+        android:text="Price" />
+
+    <TextView
+        android:id="@+id/listing_list_item_creator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/listing_list_item_name"
+        android:layout_marginLeft="5dp"
+        android:layout_toEndOf="@+id/listing_list_item_image"
+        android:maxEms="20"
+        android:text="Creator" />
+
+    <TextView
+        android:id="@+id/listing_list_item_description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/listing_list_item_creator"
+        android:layout_marginLeft="5dp"
+        android:layout_toEndOf="@+id/listing_list_item_image"
+        android:maxLines="3"
+        android:text="Description" />
+</RelativeLayout>

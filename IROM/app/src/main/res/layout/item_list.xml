@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:layout_width="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_marginTop="?android:attr/actionBarSize"
+    android:paddingTop="?android:attr/actionBarSize"
     tools:context=".InventoryActivity">
 
     <android.support.v7.widget.RecyclerView

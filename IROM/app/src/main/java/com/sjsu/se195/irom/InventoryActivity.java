@@ -59,10 +59,13 @@ public class InventoryActivity extends NavigationDrawerActivity {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 Item item = dataSnapshot.getValue(Item.class);
-                //TODO make this not so bad. it pulls ALL data then only adds yours. this needs to be optimized!
                 if(item.getuID().equals(mUser.getUid())){
                     mItemList.add(item);
                 }
+
+                // Update the adapter
+                itemAdapter.mList = mItemList;
+                itemAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -139,7 +142,7 @@ public class InventoryActivity extends NavigationDrawerActivity {
     }
 
     private class ItemAdapter extends RecyclerView.Adapter<ItemHolder> {
-        private ArrayList<Item> mList;
+        ArrayList<Item> mList;
 
         public ItemAdapter(ArrayList<Item> list) {
             mList = list;

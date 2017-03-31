@@ -125,8 +125,11 @@ public class NavigationDrawerActivity extends AppCompatActivity
         } else if (id == R.id.nav_profile) {
             Intent intent = new Intent(getBaseContext(), ProfileActivity.class);
             startActivity(intent);
-        } else if(id == R.id.nav_vision){
+        } else if (id == R.id.nav_vision) {
             Intent intent = new Intent(getBaseContext(), CloudVisionTestActivity.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_welcome) {
+            Intent intent = new Intent(getBaseContext(), WelcomeActivity.class);
             startActivity(intent);
         }
 
