@@ -392,7 +392,7 @@ public class ItemActivity extends NavigationDrawerActivity{
 
     private void writeNewManualItem(Item i) {
         String key = mDatabaseRef.child("items").push().getKey();
-        System.out.println(i.toAllString());
+        i.setItemID(key);
         mDatabaseRef.child(key).setValue(i);
         //updateChildren(data) is for updating an item
     }

@@ -1,6 +1,7 @@
 package com.sjsu.se195.irom;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -58,6 +59,7 @@ public class InventoryActivity extends NavigationDrawerActivity {
         ref.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                
                 Item item = dataSnapshot.getValue(Item.class);
                 if(item.getuID().equals(mUser.getUid())){
                     mItemList.add(item);
@@ -92,9 +94,24 @@ public class InventoryActivity extends NavigationDrawerActivity {
             }
         });
 
-        //add your items to the view
-        itemAdapter = new ItemAdapter(mItemList);
+        //add your items to the view and set up listener for when you click on an item
+        itemAdapter = new ItemAdapter(mItemList, new OnItemClickListener() {
+            @Override
+            public void onItemClick(Item item) {
+                //you want to make a new activity
+                Intent i = new Intent(InventoryActivity.this,InventoryItemDetailActivity.class);
+                //you need to put info into that new activity, here is a bundle to store it in
+                Bundle b = new Bundle();
+                //put your custom thing in the holder
+                b.putParcelable("item",item);
+                //stuff your holder into the new intent to start an activity
+                i.putExtras(b);
+                //actually follow through with your intent. you can now fill in details about the item.
+                startActivity(i);
+            }
+        });
         itemRecyclerView.setAdapter(itemAdapter);
+
     }
 
     private class ItemHolder extends RecyclerView.ViewHolder {
@@ -118,10 +135,11 @@ public class InventoryActivity extends NavigationDrawerActivity {
             itemName = (TextView) itemView.findViewById(R.id.item_list_item_name);
             itemQuantity = (TextView) itemView.findViewById(R.id.item_list_item_quantity);
             itemForSale = (TextView) itemView.findViewById(R.id.item_list_item_forSale);
+
         }
 
         // Bind item to the holder and set name accordingly
-        public void bindItem(Item i) {
+        public void bindItem(Item i, final OnItemClickListener listener) {
             //pss the object to the main activity so the individual item can be pulled
             item = i;
             //set the info for the current item
@@ -136,16 +154,40 @@ public class InventoryActivity extends NavigationDrawerActivity {
                 itemForSale.setTextColor(Color.GREEN);
             }
 
+            //set up custom click listener
+            itemView.setOnClickListener(new View.OnClickListener(){
+
+                @Override
+                public void onClick(View view) {
+                    listener.onItemClick(item);
+                }
+            });
+
+
         }
+
+
+
 
 
     }
 
-    private class ItemAdapter extends RecyclerView.Adapter<ItemHolder> {
-        ArrayList<Item> mList;
+    public interface OnItemClickListener {
 
-        public ItemAdapter(ArrayList<Item> list) {
+        void onItemClick(Item item);
+
+    }
+
+
+    public class ItemAdapter extends RecyclerView.Adapter<ItemHolder> {
+
+
+        private ArrayList<Item> mList;
+        private final OnItemClickListener listener;
+
+        public ItemAdapter(ArrayList<Item> list, OnItemClickListener listener) {
             mList = list;
+            this.listener = listener;
         }
 
         @Override
@@ -158,10 +200,10 @@ public class InventoryActivity extends NavigationDrawerActivity {
 
         @Override
         public void onBindViewHolder(ItemHolder holder, int position) {
-            Item item = mList.get(position);
-            holder.bindItem(item);
-        }
+            final Item item = mList.get(position);
+            holder.bindItem(item, listener);
 
+        }
 
         @Override
         public int getItemCount() {
