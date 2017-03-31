@@ -86,6 +86,11 @@
                 android:resource="@xml/provider_paths" />
         </provider>
 
+        <!-- Enables the Android Pay API -->
+        <meta-data
+            android:name="com.google.android.gms.wallet.api.enabled"
+            android:value="true" />
+
     </application>
 
 </manifest>

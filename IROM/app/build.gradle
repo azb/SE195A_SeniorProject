@@ -42,7 +42,11 @@ dependencies {
     compile 'com.google.http-client:google-http-client-gson:1.22.0'
     compile 'com.android.support:support-v4:24.2.1'
     compile 'com.android.support:support-vector-drawable:24.2.1'
+
+    compile 'com.google.android.gms:play-services-wallet:9.4.0'
+
     testCompile 'junit:junit:4.12'
+
 }
 
 configurations {
