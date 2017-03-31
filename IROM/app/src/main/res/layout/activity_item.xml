@@ -5,107 +5,115 @@ TODO: Make add item from camera button work
 TODO: When user clicks "Manually Add Item" button it and the "add item from camera button" should disappear (should come back if user hits back button on their phone)
 -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingTop="?android:actionBarSize"
     tools:context=".ItemActivity"
-    android:weightSum="1"
-    android:gravity="center"
-    >
-
-    <ScrollView
-        android:id="@+id/manually_add_item_form"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="invisible"
-        android:layout_weight="0.54">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <ImageView
-                android:id="@+id/imageView2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:srcCompat="@drawable/cast_mini_controller_img_placeholder" />
-
-            <TextView
-                android:id="@+id/item_name_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Name:" />
-
-            <EditText
-                android:id="@+id/item_name_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:id="@+id/item_quantity_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Quantity:" />
-
-            <EditText
-                android:id="@+id/item_quantity_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="number" />
-
-            <TextView
-                android:id="@+id/item_note_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Notes:" />
-
-            <EditText
-                android:id="@+id/item_note_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:lines="4" />
-
-            <Button
-                android:id="@+id/submit_item_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="submit" />
-        </LinearLayout>
-    </ScrollView>
+    android:fillViewport="true" >
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_weight="0.09"
-        android:gravity="right">
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
 
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/add_item_from_gallery_button"
+        <RelativeLayout
+            android:id="@+id/addItemForm"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="0.03"
-            android:clickable="true"
-            android:layout_marginRight="10dp"
-            app:backgroundTint="@color/dollardollarbillyall"
-            app:fabSize="mini"
-            app:srcCompat="@drawable/ic_menu_gallery" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/add_item_from_camera_button"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="0.00"
-            android:clickable="true"
-            android:layout_marginRight="10dp"
-            app:backgroundTint="@color/dollardollarbillyall"
-            app:fabSize="mini"
-            app:srcCompat="@drawable/camera_add" />
+            <ImageView
+                android:id="@+id/imageHolder"
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:contentDescription="Image of item being added to inventory."
+                android:scaleType="fitCenter"
+                app:srcCompat="@android:drawable/ic_menu_camera" />
+
+            <Button
+                android:id="@+id/cameraButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Camera"
+                android:layout_below="@+id/imageHolder"
+                android:layout_alignParentEnd="true" />
+
+            <Button
+                android:id="@+id/galleryButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Gallery"
+                android:layout_below="@+id/imageHolder"
+                android:layout_toStartOf="@+id/cameraButton" />
+
+            <TextView
+                android:id="@+id/nameLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Name:"
+                android:layout_below="@+id/galleryButton"
+                android:layout_alignParentStart="true" />
+
+            <EditText
+                android:id="@+id/nameText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/nameLabel" />
+
+            <TextView
+                android:id="@+id/quantityLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/nameText"
+                android:text="Quantity:" />
+
+            <EditText
+                android:id="@+id/quantityText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/quantityLabel"
+                android:inputType="number" />
+
+            <TextView
+                android:id="@+id/notesLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/quantityText"
+                android:text="Notes:" />
+
+            <EditText
+                android:id="@+id/notesText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/notesLabel"
+                android:inputType="textMultiLine" />
+
+            <Button
+                android:id="@+id/cloudVisionButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cloud Vision"
+                android:layout_below="@+id/notesText"
+                android:layout_alignParentEnd="true" />
+
+            <Button
+                android:id="@+id/submitButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Submit"
+                android:layout_below="@+id/notesText"
+                android:layout_toStartOf="@+id/cloudVisionButton" />
+
+        </RelativeLayout>
+
     </LinearLayout>
 
-</LinearLayout>
+</ScrollView>

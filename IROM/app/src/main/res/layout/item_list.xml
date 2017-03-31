@@ -7,9 +7,8 @@
     android:layout_height="match_parent"
     android:layout_width="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_marginTop="?android:attr/actionBarSize"
-    android:id="@+id/fragment_container"
-    >
+    android:paddingTop="?android:attr/actionBarSize">
+
 
     <ScrollView
         android:layout_width="match_parent"

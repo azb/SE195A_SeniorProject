@@ -54,7 +54,8 @@
         <activity
             android:name=".ItemActivity"
             android:label="Item"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ProfileActivity"
             android:label="Profile"
