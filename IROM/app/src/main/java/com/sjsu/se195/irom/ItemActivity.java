@@ -14,6 +14,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +25,8 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.Manifest;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpTransport;
@@ -37,11 +40,20 @@ import com.google.api.services.vision.v1.model.BatchAnnotateImagesResponse;
 import com.google.api.services.vision.v1.model.EntityAnnotation;
 import com.google.api.services.vision.v1.model.Feature;
 import com.google.api.services.vision.v1.model.Image;
+import com.google.api.services.vision.v1.model.WebDetection;
+import com.google.api.services.vision.v1.model.WebEntity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+import com.sjsu.se195.irom.Classes.IROMazon;
 import com.sjsu.se195.irom.Classes.Item;
 
 import java.io.ByteArrayOutputStream;
@@ -70,8 +82,14 @@ public class ItemActivity extends NavigationDrawerActivity{
     private EditText mName;
     private EditText mQuantity;
     private EditText mNotes;
-    private DatabaseReference mDatabaseRef;
+    private DatabaseReference mItemDatabaseRef;
+    private StorageReference mStorageRef;
+    private DatabaseReference mIROMazonDatabaseRef;
     private FirebaseUser mUser;
+    private UploadTask uploadTask;
+    private ArrayList<IROMazon> IROMazonList;
+    private ArrayList<IROMazon> entityR;
+    private ArrayList<IROMazon> textR;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,10 +113,38 @@ public class ItemActivity extends NavigationDrawerActivity{
         mUser = FirebaseAuth.getInstance().getCurrentUser();
         // Get database
         final FirebaseDatabase db = FirebaseDatabase.getInstance();
+        final FirebaseStorage storage = FirebaseStorage.getInstance();
         // Get ref
-        mDatabaseRef = db.getReference("items");
-        Query myItemsQuery = mDatabaseRef.equalTo(mUser.getUid());
-        System.out.println(myItemsQuery.toString());
+        mItemDatabaseRef = db.getReference("items");
+        mStorageRef = storage.getReference("items/");
+        mIROMazonDatabaseRef = db.getReference("IROMazon");
+
+        // Get IROMazon data
+        IROMazonList = new ArrayList<>();
+        mIROMazonDatabaseRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                // Get each entry and store in the list
+                IROMazon entry = dataSnapshot.getValue(IROMazon.class);
+                IROMazonList.add(entry);
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
 
         // Button click functions
         submitItemButton.setOnClickListener(new View.OnClickListener() {
@@ -106,17 +152,17 @@ public class ItemActivity extends NavigationDrawerActivity{
             public void onClick(View view) {
                 // Check fields
                 if(validityCheck()) {
-                    // Manually create items
+                    // Create the item
                     Item newItem = new Item(
                             mUser.getUid(),
                             new Date(),
-                            mName.getText().toString(),Integer.parseInt(mQuantity.getText().toString()),
+                            mName.getText().toString(),
+                            Integer.parseInt(mQuantity.getText().toString()),
                             mNotes.getText().toString());
-                    writeNewManualItem(newItem);
-                    Toast.makeText(ItemActivity.this, "You made an item", Toast.LENGTH_SHORT).show();
+                    writeNewItemAndImage(newItem);
                 }
                 else{
-                    Toast.makeText(ItemActivity.this, "Something wasn't filled. Something broke", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ItemActivity.this, "Something wasn't filled", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -300,9 +346,18 @@ public class ItemActivity extends NavigationDrawerActivity{
                             Feature textDetection = new Feature();
                             textDetection.setType("TEXT_DETECTION");
                             textDetection.setMaxResults(10);
+                            Feature imageProperties = new Feature();
+                            imageProperties.setType("IMAGE_PROPERTIES");
+                            imageProperties.setMaxResults(10);
+                            Feature webEntities = new Feature();
+                            webEntities.setType("WEB_DETECTION");
+                            webEntities.setMaxResults(10);
                             add(labelDetection);
                             add(logoDetection);
                             add(textDetection);
+                            add(imageProperties);
+                            add(webEntities);
+
                         }});
 
                         // Add image list to request
@@ -316,17 +371,35 @@ public class ItemActivity extends NavigationDrawerActivity{
                     Log.d(TAG, "Created Cloud Vision request object, sending request");
 
                     BatchAnnotateImagesResponse response = annotateRequest.execute();
-                    return convertResponseToString(response);
+
+                    // Use response to compare with IROMazon data
+                    entityR = getIROMazon_Entity(response);
+                    textR = getIROMazon_Text(response);
                 } catch (GoogleJsonResponseException e) {
-                    Log.d(TAG, "Failed to make API request because " + e.getContent());
+                    Log.d(TAG, "Failed to make API request because: " + e.getContent());
+                    return "Failed";
                 } catch (IOException e) {
-                    Log.d(TAG, "Failed to make API request because of other exception " + e.getMessage());
+                    Log.d(TAG, "Failed to make API request because of other exception: " + e.getMessage());
+                    return "Failed";
                 }
                 return "Cloud Vision API request failed. Check logs for details.";
             }
 
             protected void onPostExecute(String result) {
-                Toast.makeText(ItemActivity.this, "Successful run!", Toast.LENGTH_SHORT).show();
+                if (result != null) {
+                    // Use result of comparison with IROMazon data to update field with suggested data
+                    if (entityR != null && entityR.size() > 0) {
+                        mName.setText(entityR.get(0).name);
+                    } else if (textR != null && textR.size() > 0) {
+                        mName.setText(textR.get(0).name);
+                    } else {
+                        Toast.makeText(ItemActivity.this, "No matches found in database", Toast.LENGTH_SHORT).show();
+                    }
+
+                    Toast.makeText(ItemActivity.this, "Cloud Vision Request complete", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(ItemActivity.this, "Cloud Vision Timeout", Toast.LENGTH_SHORT).show();
+                }
             }
         }.execute();
     }
@@ -351,57 +424,119 @@ public class ItemActivity extends NavigationDrawerActivity{
         return Bitmap.createScaledBitmap(bitmap, resizedWidth, resizedHeight, false);
     }
 
-    private String convertResponseToString(BatchAnnotateImagesResponse response) {
-        String message = "I found these things:\n\n";
+    /**
+     * Get any existing IROMazon data that matches the current Cloud Vision response web entities data
+     * @param response Cloud Vision response data
+     * @return List of matching IROMazon data
+     */
+    private ArrayList<IROMazon> getIROMazon_Entity(BatchAnnotateImagesResponse response) {
+        ArrayList<IROMazon> result = new ArrayList<>();
+        ArrayList<String> entityResults = new ArrayList<>();
+        WebDetection webDetection = response.getResponses().get(0).getWebDetection();
 
-        message += "Labels:\n";
-        List<EntityAnnotation> labels = response.getResponses().get(0).getLabelAnnotations();
-        if (labels != null) {
-            for (EntityAnnotation label : labels) {
-                message += String.format(Locale.US, "%.3f: %s", label.getScore(), label.getDescription());
-                message += "\n";
+        // Store Cloud Vision Web Entity Results into ArrayList<String>. Only return results with Score > 0.5
+        if (webDetection != null) {
+            for (WebEntity entity : webDetection.getWebEntities()) {
+                if (entity.getDescription() != null && entity.getScore() >= 0.5) {
+                    entityResults.add(entity.getDescription());
+                }
             }
-        } else {
-            message += "Nothing\n";
+
+            for (IROMazon storedData : IROMazonList) {
+                for (String newData : entityResults) {
+                    if (storedData.name.equals(newData)) {
+                        result.add(storedData);
+                    }
+                }
+            }
         }
 
-        message += "\nLogos:\n";
-        List<EntityAnnotation> logos = response.getResponses().get(0).getLogoAnnotations();
-        if (logos != null) {
-            for (EntityAnnotation logo : logos) {
-                message += String.format(Locale.US, "%.3f: %s", logo.getScore(), logo.getDescription());
-                message += "\n";
-            }
-        } else {
-            message += "Nothing\n";
-        }
-
-        message += "\nTexts:\n";
-        List<EntityAnnotation> texts = response.getResponses().get(0).getTextAnnotations();
-        if (texts != null) {
-            for (EntityAnnotation text : texts) {
-                message += String.format(Locale.US, "%.3f: %s", text.getScore(), text.getDescription());
-                message += "\n";
-            }
-        } else {
-            message += "Nothing";
-        }
-
-        return message;
+        return result;
     }
 
-    private void writeNewManualItem(Item i) {
-        String key = mDatabaseRef.child("items").push().getKey();
+    /**
+     * Get any existing IROMazon data that matches the current Cloud Vision response text data
+     * @param response Cloud Vision response data
+     * @return List of matching IROMazon objects
+     */
+    private ArrayList<IROMazon> getIROMazon_Text(BatchAnnotateImagesResponse response) {
+        ArrayList<IROMazon> result = new ArrayList<>();
+        ArrayList<String> textResults = new ArrayList<>();
+        List<EntityAnnotation> texts = response.getResponses().get(0).getTextAnnotations();
+
+        if (texts != null) {
+            for (EntityAnnotation text : texts) {
+                if (text.getDescription() != null) {
+                    textResults.add(text.getDescription());
+                }
+            }
+
+            for (IROMazon storedData : IROMazonList) {
+                if (storedData.text != null && getIROMazon_TLLScore(textResults, storedData.text) >= 0.5) {
+                    result.add(storedData);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private double getIROMazon_TLLScore(ArrayList<String> a, ArrayList<String> b) {
+        int found = 0;
+
+        for (String text : a) {
+            if (b.get(0).contains(text)) {
+                found += 1;
+            }
+        }
+
+        return ((double)found)/(((double)a.size()));
+    }
+
+    private void writeNewItemAndImage(Item i) {
+        // Upload item
+        final String key = mItemDatabaseRef.child("items").push().getKey();
         i.setItemID(key);
-        mDatabaseRef.child(key).setValue(i);
-        //updateChildren(data) is for updating an item
+        mItemDatabaseRef.child(key).setValue(i);
+
+        // Upload image
+        StorageReference imageUpload = mStorageRef.child(key);
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        Bitmap image = ((BitmapDrawable) ((ImageView) findViewById(R.id.imageHolder)).getDrawable()).getBitmap();
+        image = scaleBitmapDown(image, 1200);
+        image.compress(Bitmap.CompressFormat.JPEG, 93, byteStream);
+        byte[] data = byteStream.toByteArray();
+        uploadTask = imageUpload.putBytes(data);
+        uploadTask.addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+            }
+        });
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                // On failure, do not want to keep item since we expect image for every item
+                mItemDatabaseRef.child(key).removeValue();
+                Toast.makeText(ItemActivity.this, "Image upload failed, item removed", Toast.LENGTH_SHORT).show();
+            }
+        });
+        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                Toast.makeText(ItemActivity.this, "Success!", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private Boolean validityCheck() {
-        if (mName==null || mQuantity == null || mNotes == null) {
-            mNotes.setError("fill all fields");
+        return individualCheck(mName) && individualCheck(mQuantity) && individualCheck(mNotes);
+    }
+
+    private Boolean individualCheck(EditText e) {
+        if (TextUtils.isEmpty(e.getText().toString())) { // If field empty, return false and set error
+            e.setError("Field cannot be empty.");
             return false;
         }
-        return true;
+        return true; // Else true
     }
 }

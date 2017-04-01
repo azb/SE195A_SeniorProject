@@ -3,31 +3,48 @@
 <!--THIS IS THE SPECIFIC LAYOUT OF AN ITEM THAT WILL BE REPEATED FOR AN INVENTORY LIST-->
 <!--This layout will be used as a format per item for the adaptor-->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:layout_height="wrap_content">
+
     <ImageView
+        android:id="@+id/item_list_item_image"
         android:layout_width="100dp"
-        android:layout_height="83dp"
-        android:src="@drawable/a12633702"
-        android:id="@+id/item_list_item_picture"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="forSale"
-        android:id="@+id/item_list_item_forSale" />
+        android:layout_height="100dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="5dp"
+        app:srcCompat="@drawable/a12633702" />
 
     <TextView
+        android:id="@+id/item_list_item_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="quantity"
-        android:id="@+id/item_list_item_quantity" />
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="12dp"
+        android:layout_toEndOf="@+id/item_list_item_image"
+        android:text="item name" />
 
     <TextView
+        android:id="@+id/item_list_item_forSale"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="item name"
-        android:id="@+id/item_list_item_name" />
+        android:layout_below="@+id/item_list_item_name"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="10dp"
+        android:layout_toEndOf="@+id/item_list_item_image"
+        android:text="forSale" />
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/item_list_item_quantity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/item_list_item_forSale"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="10dp"
+        android:layout_toEndOf="@+id/item_list_item_image"
+        android:text="quantity" />
+
+</RelativeLayout>
