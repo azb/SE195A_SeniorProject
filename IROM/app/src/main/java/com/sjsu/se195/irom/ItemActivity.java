@@ -483,14 +483,18 @@ public class ItemActivity extends NavigationDrawerActivity{
 
     private double getIROMazon_TLLScore(ArrayList<String> a, ArrayList<String> b) {
         int found = 0;
-
-        for (String text : a) {
-            if (b.get(0).contains(text)) {
-                found += 1;
+        if(a.size() > 0 && b.size() > 0) {
+            for (String text : a) {
+                if (b.get(0).contains(text)) {
+                    found += 1;
+                }
             }
-        }
 
-        return ((double)found)/(((double)a.size()));
+            return ((double) found) / (((double) a.size()));
+        }
+        else{
+            return 0;
+        }
     }
 
     private void writeNewItemAndImage(Item i) {
