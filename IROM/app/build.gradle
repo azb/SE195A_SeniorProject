@@ -1,5 +1,9 @@
 apply plugin: 'com.android.application'
 
+repositories {
+    mavenCentral()
+}
+
 android {
     compileSdkVersion 24
     buildToolsVersion '25.0.0'
@@ -30,6 +34,7 @@ repositories {
 }
 
 dependencies {
+    compile project(':stripe')
     compile fileTree(dir: 'libs', include: ['*.jar'])
     // see firebase.google.com/docs/android/setup for more dependencies as needed
     compile 'com.android.support:appcompat-v7:24.2.1'
@@ -43,7 +48,8 @@ dependencies {
     compile 'com.android.support:support-v4:24.2.1'
     compile 'com.android.support:support-vector-drawable:24.2.1'
 
-    compile 'com.google.android.gms:play-services-wallet:9.4.0'
+    compile 'com.google.android.gms:play-services-wallet:9.8.0'
+    compile 'com.stripe:stripe-android:3.1.1'
 
     testCompile 'junit:junit:4.12'
 

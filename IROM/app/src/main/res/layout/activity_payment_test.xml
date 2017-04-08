@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:wallet="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
@@ -25,7 +26,18 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.00"
             android:text="Pay" />
-
+        <!--<fragment
+            android:id="@+id/wallet_fragment"
+            android:name="com.google.android.gms.wallet.fragment.SupportWalletFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            wallet:environment="test"
+            wallet:fragmentMode="buyButton" />-->
+        <com.stripe.android.view.CardInputWidget
+            android:id="@+id/card_input_widget"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
     </LinearLayout>
 
 </RelativeLayout>

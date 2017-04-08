@@ -1,15 +1,16 @@
 package com.sjsu.se195.irom;
 
 import android.content.Context;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import com.google.android.gms.wallet.WalletConstants;
+//Stripe Test secret sk_test_bCzKG3wqZt5EZqKSqPukKMak
+//Stripe Test pub pk_test_hQ4ZxpyIh78Gy0BBUC97peWs
+//Stripe live sk_live_3YQt4yZUyAvexIvH4Hk3Nhhz
+//Stripe secret pk_live_QvNPehylVRtrk2gCwDTtLW2p
 
-
-public class PaymentTestActivity extends NavigationDrawerActivity {
+public class PaymentTestActivity extends NavigationDrawerActivity{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,7 +22,7 @@ public class PaymentTestActivity extends NavigationDrawerActivity {
 
 
         // Show spinner or other UI cue to indicate progress
-        showProgressDialog();
+        /*showProgressDialog();
         Wallet.Payments.isReadyToPay(mGoogleApiClient).setResultCallback(
                 new ResultCallback&lt;BooleanResult&gt;() {
             @Override
@@ -41,7 +42,7 @@ public class PaymentTestActivity extends NavigationDrawerActivity {
                     Log.e(TAG, "isReadyToPay:" + booleanResult.getStatus());
                 }
             }
-        });
+        });*/
     }
 
 
