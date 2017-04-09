@@ -4,17 +4,16 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
-import com.sjsu.se195.irom.NavigationDrawerActivity;
-import com.sjsu.se195.irom.NoodlioPayClass;
-import com.sjsu.se195.irom.PaymentTestActivity;
+import com.sjsu.se195.irom.Classes.NoodlioPayClass;
 import com.stripe.android.Stripe;
 import com.stripe.android.TokenCallback;
 import com.stripe.android.model.Card;
 import com.stripe.android.model.Token;
 import com.stripe.android.view.CardInputWidget;
 import com.loopj.android.http.*;
+
+import org.json.JSONObject;
 
 import cz.msebera.android.httpclient.Header;
 
@@ -75,30 +74,28 @@ public class AsyncTaskTokenController {
                         NoodlioPayClass pay = new NoodlioPayClass();
                         String url = "https://noodlio-pay.p.mashape.com/charge/token";
                         RequestParams params = new RequestParams();
-                        params.add("X-Mashape-Key","7CDnDK7O6FmshdvAFz1fTE2Qg0T4p1vwAaAjsnBFO2drjrYQom");
-                        params.add("amount","1");
+                        params.add("amount","100");
                         params.add("currency","usd");
                         params.add("description","Test");
                         params.add("source",token.getId());
                         params.add("stripe_account","acct_1A6SPtKvjOLIhzMH");
                         params.add("test","true");
-                        pay.post(url, params, new AsyncHttpResponseHandler() {
+                        pay.post(url,params, new JsonHttpResponseHandler(){
                             @Override
-                            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                                System.out.println("Payment Successful?");
-                            }
-
-                            @Override
-                            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                                System.out.println("HTTP Error");
+                            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                                System.out.println("HTTP POST Call successful");
+                                System.out.println(statusCode);
+                                System.out.println(response);
                             }
                         });
+
                     }
                     public void onError(Exception error) {
                         mErrorDialogHandler.showError(error.getLocalizedMessage());
                         mProgressDialogController.finishProgress();
                     }
-                });
+                }
+        );
     }
 }
 

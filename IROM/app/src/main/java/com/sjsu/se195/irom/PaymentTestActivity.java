@@ -6,14 +6,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
-
+import android.os.StrictMode;
 import com.stripe.android.view.CardInputWidget;
 import com.sjsu.se195.irom.Classes.stripe.module.DependencyHandler;
 
 public class PaymentTestActivity extends NavigationDrawerActivity{
 
     private DependencyHandler mDependencyHandler;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

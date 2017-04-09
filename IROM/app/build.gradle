@@ -54,6 +54,7 @@ dependencies {
     compile 'com.google.android.gms:play-services-wallet:9.8.0'
     compile 'com.stripe:stripe-android:3.1.1'
     compile 'com.loopj.android:android-async-http:1.4.9'
+    compile 'org.json:json:20160212'
     testCompile 'junit:junit:4.12'
 
 }
