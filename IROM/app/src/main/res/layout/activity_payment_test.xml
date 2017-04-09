@@ -1,43 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:wallet="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingTop="?android:actionBarSize"
-    tools:context=".PaymentTestActivity">
+    android:paddingLeft="8dp"
+    android:paddingStart="8dp"
+    android:paddingRight="8dp"
+    android:paddingEnd="8dp"
+    android:paddingTop="?attr/actionBarSize"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
 
-    <LinearLayout
+    <TextView android:id="@+id/payment_form_title"
+        android:text="Pay With"
+        style="@style/Header.Light" />
+
+    <com.stripe.android.view.CardInputWidget
+        android:id="@+id/card_input_widget"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        />
 
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="match_parent"
-            android:layout_height="77dp"
-            android:text="Payment Test" />
+    <Button
+        android:id="@+id/save"
+        android:layout_height="wrap_content"
+        android:layout_width="160dp"
+        android:text="Save"
+        />
 
-        <Button
-            android:id="@+id/button2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.00"
-            android:text="Pay" />
-        <!--<fragment
-            android:id="@+id/wallet_fragment"
-            android:name="com.google.android.gms.wallet.fragment.SupportWalletFragment"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            wallet:environment="test"
-            wallet:fragmentMode="buyButton" />-->
-        <com.stripe.android.view.CardInputWidget
-            android:id="@+id/card_input_widget"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            />
-    </LinearLayout>
+    <TextView android:id="@+id/token_list_title"
+        android:text="Payment Methods"
+        android:layout_marginTop="12dp"
+        style="@style/Header.Light" />
 
-</RelativeLayout>
+    <ListView
+        android:id="@+id/listview"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+</LinearLayout>

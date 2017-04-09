@@ -1,4 +1,5 @@
 <resources>
+
     <string name="app_name">IROM</string>
     <string name="emailPrompt">Email*</string>
     <string name="enter_email_hint">enter email</string>
@@ -112,4 +113,9 @@
     <string name="no_request_sent">No request sent...</string>
     <string name="first_name">first name:</string>
 
+
+    <string name="progressMessage">Please Wait&#8230;</string>
+    <string name="verify">Verify</string>
+    <string name="endingIn">Card ending in </string>
+    <string name="validationErrors">Validation Errors</string>
 </resources>
