@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimary">#35ab4a</color>
+    <color name="colorPrimaryDark">#20672D</color>
+    <color name="colorAccent">#4a35ab</color>
     <color name="dollardollarbillyall">#85bb65</color>
     <color name="red">#FF0000</color>
+    <color name="white">#FFFFFF</color>
+
 </resources>
