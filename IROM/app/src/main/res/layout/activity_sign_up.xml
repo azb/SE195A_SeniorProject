@@ -31,7 +31,7 @@
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
         android:hint="@string/enter_email_hint"
-        android:singleLine="true" />
+        android:maxLines="1" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -51,10 +51,9 @@
         android:layout_below="@+id/password_label"
         android:layout_alignParentStart="true"
         android:paddingEnd="10dp"
-        android:password="true"
         android:paddingStart="10dp"
-        android:singleLine="true"
-        android:hint="@string/enter_password_hint" />
+        android:hint="@string/enter_password_hint"
+        android:maxLines="1" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -74,9 +73,9 @@
         android:layout_below="@+id/reenter_password_label"
         android:layout_alignParentStart="true"
         android:hint="@string/re_enter_password_hint"
-        android:singleLine="true"
         android:paddingEnd="10dp"
-        android:paddingStart="10dp" />
+        android:paddingStart="10dp"
+        android:maxLines="1" />
 
     <TextView
         android:layout_width="fill_parent"
@@ -95,8 +94,8 @@
         android:id="@+id/first_name_edit_text"
         android:layout_below="@+id/first_name_label"
         android:layout_alignParentStart="true"
-        android:singleLine="true"
-        android:hint="@string/first_name_hint" />
+        android:hint="@string/first_name_hint"
+        android:maxLines="1" />
 
     <TextView
         android:layout_width="wrap_content"

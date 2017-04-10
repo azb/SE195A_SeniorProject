@@ -73,5 +73,29 @@
         android:textColor="@color/white"
         android:background="@drawable/green_button_shape" />
 
+    <TextView
+        android:id="@+id/forgot_pw_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:paddingBottom="8dp"
+        android:paddingTop="18dp"
+        android:text="@string/forgot_password"
+        android:textAlignment="center"
+        android:textSize="18sp" />
+    <View
+        style="@style/GreenDivider"/>
+
+    <TextView
+        android:id="@+id/sign_up_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:paddingBottom="16dp"
+        android:paddingTop="8dp"
+        android:text="@string/don_t_have_an_account_sign_up"
+        android:textAlignment="center"
+        android:textSize="18sp" />
+
 
 </LinearLayout>
