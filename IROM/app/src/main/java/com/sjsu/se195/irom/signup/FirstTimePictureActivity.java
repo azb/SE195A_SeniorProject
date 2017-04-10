@@ -12,6 +12,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
+
 import java.io.File;
 import java.io.IOException;
 import com.google.firebase.auth.FirebaseAuth;
@@ -60,12 +62,12 @@ public class FirstTimePictureActivity extends AppCompatActivity {
         yesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                try {
-                    startCamera();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                Toast.makeText(FirstTimePictureActivity.this, "make it open a camera/gallery chooser", Toast.LENGTH_SHORT).show();
+//                try {
+//                    startCamera();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
 
             }
         });
