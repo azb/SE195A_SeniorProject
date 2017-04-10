@@ -5,12 +5,8 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.text.TextUtilsCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
@@ -21,10 +17,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.gms.vision.text.Text;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.sjsu.se195.irom.signup.SignUpActivity;
 
 
 public class SignInActivity extends AppCompatActivity {
@@ -43,10 +39,6 @@ public class SignInActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
-        //figure out later if we want toolbar in activity
-//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
-
         //auth client for firebase user
         mAuth = FirebaseAuth.getInstance();
         //this is redundant because of the stuff in the buttons. i think.
@@ -75,6 +67,8 @@ public class SignInActivity extends AppCompatActivity {
             public void onFocusChange(View view, boolean hasFocus) {
                 if (!hasFocus) {
                     hideKeyboard(view);
+                }else{
+                    showKeyboard(view);
                 }
             }
         });
@@ -131,6 +125,8 @@ public class SignInActivity extends AppCompatActivity {
             public void onFocusChange(View view, boolean b) {
                 if (!b) {
                     hideKeyboard(view);
+                }else{
+                    showKeyboard(view);
                 }
             }
         });
@@ -143,8 +139,10 @@ public class SignInActivity extends AppCompatActivity {
                 String em = email.getText().toString();
                 String pw = password.getText().toString();
                 if (em.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(em).matches()){
+                    email.requestFocus();
                     email.setError("a valid email is required");
                 }else if(pw.isEmpty() || pw.length()<6){
+                    password.requestFocus();
                     password.setError("passwords should be 6 or more characters");
                 }else{
                     email.setError(null);
@@ -206,6 +204,11 @@ public class SignInActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void showKeyboard(View view) {
+        InputMethodManager inputMethodManager = (InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.showSoftInput(view, 0);
     }
 
     @Override
