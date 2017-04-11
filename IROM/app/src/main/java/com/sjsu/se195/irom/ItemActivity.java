@@ -484,12 +484,19 @@ public class ItemActivity extends NavigationDrawerActivity{
     private double getIROMazon_TLLScore(ArrayList<String> a, ArrayList<String> b) {
         int found = 0;
         if(a.size() > 0 && b.size() > 0) {
-            for (String text : a) {
-                if (b.get(0).contains(text)) {
-                    found += 1;
+            for(String text_b : b) {
+                for (String text_a : a) {
+                    //System.out.println("Checking Text/Label/Logo ");
+                    //System.out.println(text_a);
+                    if (text_b.contains(text_a)) {
+                        //System.out.println("Found Text/Label/Logo ");
+                        //System.out.println(text_a);
+                        found += 1;
+                    }
                 }
             }
-
+            //System.out.println("Score: ");
+            //System.out.println(((double)found)/(((double)a.size())));
             return ((double) found) / (((double) a.size()));
         }
         else{
