@@ -1,7 +1,6 @@
 package com.sjsu.se195.irom;
 
 import android.content.Context;
-import android.icu.util.Currency;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
