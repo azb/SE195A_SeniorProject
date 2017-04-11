@@ -115,4 +115,9 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
+    <!--Stripe Stuff-->
+    <string name="progressMessage">Please Wait&#8230;</string>
+    <string name="verify">Verify</string>
+    <string name="endingIn">Card ending in </string>
+    <string name="validationErrors">Validation Errors</string>
 </resources>

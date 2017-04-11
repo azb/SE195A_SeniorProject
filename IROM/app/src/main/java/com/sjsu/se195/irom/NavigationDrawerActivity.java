@@ -134,6 +134,10 @@ public class NavigationDrawerActivity extends AppCompatActivity
             Intent intent = new Intent(getBaseContext(), WelcomeActivity.class);
             startActivity(intent);
         }
+        else if(id == R.id.nav_pay){
+        Intent intent = new Intent(getBaseContext(), PaymentTestActivity.class);
+        startActivity(intent);
+        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
