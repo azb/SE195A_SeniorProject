@@ -158,18 +158,22 @@ public class WelcomeActivity extends NavigationDrawerActivity {
             public void onSuccess(byte[] bytes) {
                 Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                 listingProfile.image = Bitmap.createScaledBitmap(bmp, (bmp.getWidth() / 4), (bmp.getHeight() / 4), true);
+                mListingList.add(listingProfile);
+                listingAdapter.mList = mListingList;
+                listingAdapter.notifyDataSetChanged();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Log.d(TAG, "Something went wrong downloading the image!");
+                // Still want to put the listing up since quite a few still do not have images currently
+                mListingList.add(listingProfile);
+                listingAdapter.mList = mListingList;
+                listingAdapter.notifyDataSetChanged();
             }
         });
 
         // If no image, continue anyway for handling the items we have that don't currently have images
-        mListingList.add(listingProfile);
-        listingAdapter.mList = mListingList;
-        listingAdapter.notifyDataSetChanged();
     }
 
     private class ListingHolder extends RecyclerView.ViewHolder {

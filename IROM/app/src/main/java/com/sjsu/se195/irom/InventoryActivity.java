@@ -156,18 +156,20 @@ public class InventoryActivity extends NavigationDrawerActivity {
             public void onSuccess(byte[] bytes) {
                 Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                 itemimage.image = Bitmap.createScaledBitmap(bmp, (bmp.getWidth() / 4), (bmp.getHeight() / 4), true);
+                mItemList.add(itemimage);
+                itemAdapter.mList = mItemList;
+                itemAdapter.notifyDataSetChanged();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Log.d(TAG, "Something went wrong downloading the image!");
+                // Still want to put the item up since quite a few still do not have images currently
+                mItemList.add(itemimage);
+                itemAdapter.mList = mItemList;
+                itemAdapter.notifyDataSetChanged();
             }
         });
-
-        // If no image, continue anyway for handling the items we have that don't currently have images
-        mItemList.add(itemimage);
-        itemAdapter.mList = mItemList;
-        itemAdapter.notifyDataSetChanged();
     }
 
     private class ItemHolder extends RecyclerView.ViewHolder {
