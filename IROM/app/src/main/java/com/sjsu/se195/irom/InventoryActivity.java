@@ -82,7 +82,7 @@ public class InventoryActivity extends NavigationDrawerActivity {
                         item.itemID = dataSnapshot.getKey();
                     }
                     // Post to get the accompanying image
-                    bus.post(item);
+                    bus.post(new ItemImage(item));
                 }
             }
 
@@ -135,6 +135,10 @@ public class InventoryActivity extends NavigationDrawerActivity {
         Item item;
         Bitmap image;
 
+        ItemImage(Item item) {
+            this.item = item;
+        }
+
         ItemImage(Item item, Bitmap image) {
             this.item = item;
             this.image = image;
@@ -182,7 +186,7 @@ public class InventoryActivity extends NavigationDrawerActivity {
 
             // Initialize name/q/forsale status/item image
 
-            itemImage = (ImageView) itemView.findViewById(R.id.item_list_item_picture);
+            itemImage = (ImageView) itemView.findViewById(R.id.item_list_item_image);
             itemName = (TextView) itemView.findViewById(R.id.item_list_item_name);
             itemQuantity = (TextView) itemView.findViewById(R.id.item_list_item_quantity);
             itemForSale = (TextView) itemView.findViewById(R.id.item_list_item_forSale);
