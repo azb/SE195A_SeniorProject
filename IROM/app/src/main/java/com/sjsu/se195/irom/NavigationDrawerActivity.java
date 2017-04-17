@@ -133,6 +133,9 @@ public class NavigationDrawerActivity extends AppCompatActivity
         } else if (id == R.id.nav_welcome) {
             Intent intent = new Intent(getBaseContext(), WelcomeActivity.class);
             startActivity(intent);
+        } else if (id == R.id.nav_cloud_vision) {
+            Intent intent = new Intent(getBaseContext(), IROMazonSearchActivity.class);
+            startActivity(intent);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

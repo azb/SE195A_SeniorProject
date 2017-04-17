@@ -456,6 +456,7 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
         System.out.println("Creating IROMazon Entry");
         System.out.println("\n");
         final String key = cWebEntitySearch.child("IROMazon").push().getKey();
+        newEntry.key = key;
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         imageToUpload.compress(Bitmap.CompressFormat.JPEG, 100, baos);

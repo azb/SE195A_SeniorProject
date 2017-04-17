@@ -1,7 +1,10 @@
 package com.sjsu.se195.irom;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -12,6 +15,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -20,6 +25,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.sjsu.se195.irom.Classes.Listing;
 import com.sjsu.se195.irom.Classes.Profile;
 import com.squareup.otto.Bus;
@@ -32,6 +39,7 @@ import java.util.Locale;
 public class WelcomeActivity extends NavigationDrawerActivity {
     private static final String TAG = WelcomeActivity.class.getSimpleName();
     private static final FirebaseDatabase database = FirebaseDatabase.getInstance();
+    private final long ONE_MEGABYTE = 1024 * 1024; // Max image download size to avoid issues
     public static Bus bus;
     private FirebaseUser mUser;
     private ListingAdapter listingAdapter;
@@ -98,6 +106,7 @@ public class WelcomeActivity extends NavigationDrawerActivity {
     private class ListingProfile {
         Listing listing;
         Profile profile;
+        Bitmap image;
 
         ListingProfile(Listing listing, Profile profile) {
             this.listing = listing;
@@ -116,13 +125,18 @@ public class WelcomeActivity extends NavigationDrawerActivity {
                 Log.d(TAG, "onDataChange:" + dataSnapshot.getKey());
 
                 Profile profile = dataSnapshot.getValue(Profile.class);
+                ListingProfile listingProfile = new ListingProfile(listing, profile);
 
-                // Use the container class to store both the listing and the profile in the list
-                mListingList.add(new ListingProfile(listing, profile));
+                if (listing.item.itemID == null) { // Temporary measure while there's items without itemID
+                    // Use the container class to store both the listing and the profile in the list
+                    mListingList.add(listingProfile);
 
-                // Update adapter
-                listingAdapter.mList = mListingList;
-                listingAdapter.notifyDataSetChanged();
+                    // Update adapter
+                    listingAdapter.mList = mListingList;
+                    listingAdapter.notifyDataSetChanged();
+                } else { // There is an itemID, can try to get image
+                    bus.post(listingProfile);
+                }
             }
 
             @Override
@@ -133,9 +147,35 @@ public class WelcomeActivity extends NavigationDrawerActivity {
         });
     }
 
+    @Subscribe
+    public void getImage(final ListingProfile listingProfile) {
+        // Set up the storage ref
+        StorageReference imageRef = FirebaseStorage.getInstance().getReference("items/" + listingProfile.listing.item.itemID);
+
+        // Get the image
+        imageRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+                Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                listingProfile.image = Bitmap.createScaledBitmap(bmp, (bmp.getWidth() / 4), (bmp.getHeight() / 4), true);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d(TAG, "Something went wrong downloading the image!");
+            }
+        });
+
+        // If no image, continue anyway for handling the items we have that don't currently have images
+        mListingList.add(listingProfile);
+        listingAdapter.mList = mListingList;
+        listingAdapter.notifyDataSetChanged();
+    }
+
     private class ListingHolder extends RecyclerView.ViewHolder {
         Listing listing;
         Profile profile;
+        Bitmap image;
         Bundle bundle = new Bundle();
 
         // Set up layout of each part of the listing
@@ -162,12 +202,16 @@ public class WelcomeActivity extends NavigationDrawerActivity {
             // Pass the object to the main activity so the individual listing can be pulled
             listing = l.listing;
             profile = l.profile;
+            image = l.image;
 
             // Set listing details
             listingName.setText(listing.item.getName());
             listingPrice.setText(String.format(Locale.US, "$%.2f", listing.price));
             listingCreator.setText(profile.firstName + " " + profile.lastName);
             listingDescription.setText(listing.description);
+            if (image != null) {
+                listingImage.setImageBitmap(image);
+            }
         }
     }
 

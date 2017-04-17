@@ -157,11 +157,11 @@ public class Item implements Parcelable{
         parcel.writeInt(this.quantity);
     }
 
-    public static final Parcelable.Creator CREATOR = new Parcelable.Creator(){
-        public Item createFromParcel(Parcel in){
+    public static final Parcelable.Creator<Item> CREATOR = new Parcelable.Creator<Item>() {
+        public Item createFromParcel(Parcel in) {
             return new Item(in);
         }
-        public Item[] newArray(int size){
+        public Item[] newArray(int size) {
             return new Item[size];
         }
     };

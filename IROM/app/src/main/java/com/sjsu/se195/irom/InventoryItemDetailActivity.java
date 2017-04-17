@@ -2,6 +2,7 @@ package com.sjsu.se195.irom;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,15 +14,10 @@ import android.widget.Toast;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.sjsu.se195.irom.Classes.Item;
-import com.sjsu.se195.irom.Classes.Listing;
-
-import java.util.HashMap;
-import java.util.Map;
-
 
 public class InventoryItemDetailActivity extends NavigationDrawerActivity {
-
     private Item item;
+    private Bitmap image;
     private ImageView itemImage;
     private TextView itemName;
     private TextView itemDesc;
@@ -34,21 +30,21 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         item = getIntent().getParcelableExtra("item");
+        image = getIntent().getParcelableExtra("image");
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View contentView = inflater.inflate(R.layout.activity_inventory_item_detail, null, false);
         this.drawer.addView(contentView, 0);
+
         //make the textviews and stuff and fill in its info from the passed in item
         initializeAndFillInInfo(item);
-
-
-
     }
 
     private void initializeAndFillInInfo(final Item item) {
         mDatabaseRef = FirebaseDatabase.getInstance().getReference();
 
         itemImage = (ImageView) findViewById(R.id.item_detail_picture);
-        //TODO make image work
+        itemImage.setImageBitmap(image);
+
         itemName = (TextView) findViewById(R.id.item_detail_name);
         itemName.setText(item.getName());
 
@@ -62,11 +58,11 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
         itemQuantity.setText(String.valueOf(item.getQuantity()));
 
         itemListingButton = (Button) findViewById(R.id.item_detail_button);
-        if(item.getForSale()){
+        if(item.getForSale()) {
             //do the things if it is already for sale
             itemListingButton.setText("View Listing");
 
-        }else{
+        } else{
             //do the things if not for sale
             itemListingButton.setText("Create Listing");
         }
@@ -84,11 +80,7 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
                 //stuff your holder into the new intent to start an activity
                 i.putExtras(b);
                 startActivity(i);
-
             }
         });
-
     }
-
-
 }

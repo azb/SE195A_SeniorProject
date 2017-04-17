@@ -2,7 +2,11 @@ package com.sjsu.se195.irom;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.graphics.Color;
@@ -13,6 +17,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -20,7 +26,12 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.sjsu.se195.irom.Classes.Item;
+import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
+import com.squareup.otto.ThreadEnforcer;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -32,11 +43,14 @@ import java.util.Objects;
  */
 
 public class InventoryActivity extends NavigationDrawerActivity {
-
     private FirebaseUser mUser;
     private RecyclerView itemRecyclerView;
     private ItemAdapter itemAdapter;
-    private ArrayList<Item> mItemList = new ArrayList<>();
+    private ArrayList<ItemImage> mItemList = new ArrayList<>();
+    private final FirebaseStorage storage = FirebaseStorage.getInstance();
+    private final long ONE_MEGABYTE = 1024 * 1024; // Max image download size to avoid issues
+    private static final String TAG = InventoryActivity.class.getSimpleName();
+    public static Bus bus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,13 +60,15 @@ public class InventoryActivity extends NavigationDrawerActivity {
         View contentView = inflater.inflate(R.layout.item_list, null, false);
         this.drawer.addView(contentView, 0);
 
+        // Variables
         mUser = FirebaseAuth.getInstance().getCurrentUser();
         itemRecyclerView = (RecyclerView) findViewById(R.id.item_recycler_view);
-        //this might be base parent?
         itemRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        //get reference of items from database
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        // everything under items is in ref
+        bus = new Bus(ThreadEnforcer.ANY);
+        bus.register(this);
+
+        // Set up the database ref
         DatabaseReference ref = database.getReference("items");
 
         //pull any changes as they are made, whether a new item is added, changed, or removed.
@@ -62,12 +78,12 @@ public class InventoryActivity extends NavigationDrawerActivity {
                 
                 Item item = dataSnapshot.getValue(Item.class);
                 if(item.getuID().equals(mUser.getUid())){
-                    mItemList.add(item);
+                    if (item.itemID == null) {
+                        item.itemID = dataSnapshot.getKey();
+                    }
+                    // Post to get the accompanying image
+                    bus.post(item);
                 }
-
-                // Update the adapter
-                itemAdapter.mList = mItemList;
-                itemAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -97,13 +113,15 @@ public class InventoryActivity extends NavigationDrawerActivity {
         //add your items to the view and set up listener for when you click on an item
         itemAdapter = new ItemAdapter(mItemList, new OnItemClickListener() {
             @Override
-            public void onItemClick(Item item) {
+            public void onItemClick(ItemImage itemimage) {
                 //you want to make a new activity
-                Intent i = new Intent(InventoryActivity.this,InventoryItemDetailActivity.class);
+                Intent i = new Intent(InventoryActivity.this, InventoryItemDetailActivity.class);
                 //you need to put info into that new activity, here is a bundle to store it in
                 Bundle b = new Bundle();
                 //put your custom thing in the holder
-                b.putParcelable("item",item);
+                b.putParcelable("item", itemimage.item);
+                // Add image as well
+                b.putParcelable("image", itemimage.image);
                 //stuff your holder into the new intent to start an activity
                 i.putExtras(b);
                 //actually follow through with your intent. you can now fill in details about the item.
@@ -111,13 +129,46 @@ public class InventoryActivity extends NavigationDrawerActivity {
             }
         });
         itemRecyclerView.setAdapter(itemAdapter);
+    }
 
+    private class ItemImage {
+        Item item;
+        Bitmap image;
+
+        ItemImage(Item item, Bitmap image) {
+            this.item = item;
+            this.image = image;
+        }
+    }
+
+    @Subscribe
+    public void getImage(final ItemImage itemimage) {
+        // Set up the storage ref
+        StorageReference imageRef = storage.getReference("items/" + itemimage.item.itemID);
+
+        // Get the image
+        imageRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+                Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                itemimage.image = Bitmap.createScaledBitmap(bmp, (bmp.getWidth() / 4), (bmp.getHeight() / 4), true);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d(TAG, "Something went wrong downloading the image!");
+            }
+        });
+
+        // If no image, continue anyway for handling the items we have that don't currently have images
+        mItemList.add(itemimage);
+        itemAdapter.mList = mItemList;
+        itemAdapter.notifyDataSetChanged();
     }
 
     private class ItemHolder extends RecyclerView.ViewHolder {
-
         Item item;
-        Bundle bundle = new Bundle();
+        Bitmap image;
 
         //set up layout of each thing on a row for an item
         ImageView itemImage;
@@ -139,13 +190,19 @@ public class InventoryActivity extends NavigationDrawerActivity {
         }
 
         // Bind item to the holder and set name accordingly
-        public void bindItem(Item i, final OnItemClickListener listener) {
-            //pss the object to the main activity so the individual item can be pulled
-            item = i;
-            //set the info for the current item
+        public void bindItem(ItemImage i, final OnItemClickListener listener) {
+            // Pass the object to the main activity so the individual item can be pulled
+            item = i.item;
+            image = i.image;
+
+            // Set the info for the current item
             itemName.setText(item.getName());
             itemQuantity.setText(item.getQuantity().toString());
             itemForSale.setText("for sale: " + item.getForSale().toString());
+            if (image != null) {
+                itemImage.setImageBitmap(image);
+            }
+
             if (Objects.equals(itemForSale.getText().toString(), "true")) {
                 //is for sale, cannot be used
                 itemForSale.setTextColor(Color.RED);
@@ -159,34 +216,23 @@ public class InventoryActivity extends NavigationDrawerActivity {
 
                 @Override
                 public void onClick(View view) {
-                    listener.onItemClick(item);
+                    listener.onItemClick(new ItemImage(item, image));
                 }
             });
-
-
         }
-
-
-
-
-
     }
 
     public interface OnItemClickListener {
-
-        void onItemClick(Item item);
-
+        void onItemClick(ItemImage itemimage);
     }
 
 
     public class ItemAdapter extends RecyclerView.Adapter<ItemHolder> {
-
-
-        private ArrayList<Item> mList;
+        private ArrayList<ItemImage> mList;
         private final OnItemClickListener listener;
 
-        public ItemAdapter(ArrayList<Item> list, OnItemClickListener listener) {
-            mList = list;
+        public ItemAdapter(ArrayList<ItemImage> list, OnItemClickListener listener) {
+            this.mList = list;
             this.listener = listener;
         }
 
@@ -200,14 +246,14 @@ public class InventoryActivity extends NavigationDrawerActivity {
 
         @Override
         public void onBindViewHolder(ItemHolder holder, int position) {
-            final Item item = mList.get(position);
-            holder.bindItem(item, listener);
+            final ItemImage itemImage = mList.get(position);
+            holder.bindItem(itemImage, listener);
 
         }
 
         @Override
         public int getItemCount() {
-            return mItemList.size();
+            return mList.size();
         }
     }
 }

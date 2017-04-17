@@ -14,14 +14,15 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
-import android.text.TextUtils;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.Manifest;
 
@@ -42,19 +43,14 @@ import com.google.api.services.vision.v1.model.Feature;
 import com.google.api.services.vision.v1.model.Image;
 import com.google.api.services.vision.v1.model.WebDetection;
 import com.google.api.services.vision.v1.model.WebEntity;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.sjsu.se195.irom.Classes.IROMazon;
-import com.sjsu.se195.irom.Classes.Item;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -66,66 +62,80 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * This is to test adding an item to the database.
- * Created by Arthur on 11/9/2016.
+ * Created by Ricky on 4/3/2017.
  */
 
-public class ItemActivity extends NavigationDrawerActivity{
+public class IROMazonSearchActivity extends NavigationDrawerActivity {
     private static final int GALLERY_IMAGE_REQUEST = 1;
     private static final int GALLERY_PERMISSIONS_REQUEST = 2;
     private static final int CAMERA_IMAGE_REQUEST = 3;
     private static final int CAMERA_PERMISSIONS_REQUEST = 4;
-    private static final String TAG = ItemActivity.class.getSimpleName();
+    private static final String TAG = IROMazonSearchActivity.class.getSimpleName();
     private static final String CLOUD_VISION_API_KEY = "AIzaSyAHnhDlz-V1OTUivtflxsQwFShuAzeh-6w";
+    private final long ONE_MEGABYTE = 1024 * 1024; // Max image download size to avoid issues
     private Uri currentPhotoURI;
-    private RelativeLayout manAddItemForm;
-    private EditText mName;
-    private EditText mQuantity;
-    private EditText mNotes;
-    private DatabaseReference mItemDatabaseRef;
-    private StorageReference mStorageRef;
-    private DatabaseReference mIROMazonDatabaseRef;
-    private FirebaseUser mUser;
+    private DatabaseReference IROMazonDatabaseRef;
+    private StorageReference storageRef;
     private ArrayList<IROMazon> IROMazonList;
     private ArrayList<IROMazon> entityR;
     private ArrayList<IROMazon> textR;
+    private ArrayList<IROMazonImage> IROMazonImageList = new ArrayList<>();
+    private IROMazonAdapter iromazonAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // INSTEAD OF setContentView(R.layout.activity_welcome); USE NEXT 3 LINES IF YOU WANT TH NAV BAR TO WORK
         LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View contentView = inflater.inflate(R.layout.activity_item, null, false);
+        View contentView = inflater.inflate(R.layout.activity_iromazonsearch, null, false);
         drawer.addView(contentView, 0);
 
-        // Initialize add item buttons and input fields
-        manAddItemForm = (RelativeLayout) findViewById(R.id.addItemForm);
-        Button submitItemButton = (Button) findViewById(R.id.submitButton);
-        mName = (EditText) findViewById(R.id.nameText);
-        mQuantity = (EditText) findViewById(R.id.quantityText);
-        mNotes = (EditText) findViewById(R.id.notesText);
+        // Layout items
         Button cameraButton = (Button) findViewById(R.id.cameraButton);
         Button galleryButton = (Button) findViewById(R.id.galleryButton);
-        Button cloudVisionButton = (Button) findViewById(R.id.cloudVisionButton);
+        Button searchButton = (Button) findViewById(R.id.searchItem);
+        RecyclerView IROMazonRecyclerView = (RecyclerView) findViewById(R.id.IROMazon_recycler_view);
 
-        // Get current user
-        mUser = FirebaseAuth.getInstance().getCurrentUser();
-        // Get database
-        final FirebaseDatabase db = FirebaseDatabase.getInstance();
-        final FirebaseStorage storage = FirebaseStorage.getInstance();
-        // Get ref
-        mItemDatabaseRef = db.getReference("items");
-        mStorageRef = storage.getReference("items/");
-        mIROMazonDatabaseRef = db.getReference("IROMazon");
+        // Firebase references
+        IROMazonDatabaseRef = FirebaseDatabase.getInstance().getReference("IROMazon");
+        storageRef = FirebaseStorage.getInstance().getReference("IROMazon/");
+
+        // Button listeners
+        cameraButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    startCamera();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        galleryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startGalleryChooser();
+            }
+        });
+
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                uploadImage();
+            }
+        });
 
         // Get IROMazon data
         IROMazonList = new ArrayList<>();
-        mIROMazonDatabaseRef.addChildEventListener(new ChildEventListener() {
+        IROMazonDatabaseRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                // Get each entry and store in the list
-                IROMazon entry = dataSnapshot.getValue(IROMazon.class);
-                IROMazonList.add(entry);
+                // Just want to get all current items and any new ones
+                IROMazon temp = dataSnapshot.getValue(IROMazon.class);
+                if (temp.key == null) {
+                    temp.key = dataSnapshot.getKey();
+                }
+                IROMazonList.add(temp);
             }
 
             @Override
@@ -145,51 +155,18 @@ public class ItemActivity extends NavigationDrawerActivity{
             }
         });
 
-        // Button click functions
-        submitItemButton.setOnClickListener(new View.OnClickListener() {
+        // Recycler view setup
+        IROMazonRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        iromazonAdapter = new IROMazonAdapter(IROMazonImageList, new OnItemClickListener() {
             @Override
-            public void onClick(View view) {
-                // Check fields
-                if(validityCheck()) {
-                    // Create the item
-                    Item newItem = new Item(
-                            mUser.getUid(),
-                            new Date(),
-                            mName.getText().toString(),
-                            Integer.parseInt(mQuantity.getText().toString()),
-                            mNotes.getText().toString());
-                    writeNewItemAndImage(newItem);
-                }
-                else{
-                    Toast.makeText(ItemActivity.this, "Something wasn't filled", Toast.LENGTH_SHORT).show();
-                }
+            public void onItemClick(IROMazonImage itemimage) {
+                // Move to add item activity
+                Intent i = new Intent(IROMazonSearchActivity.this, ItemActivity.class);
+                // TODO: Add transfer of data to item activity
+                startActivity(i);
             }
         });
-
-        cameraButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    startCamera();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        galleryButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startGalleryChooser();
-            }
-        });
-
-        cloudVisionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                uploadImage();
-            }
-        });
+        IROMazonRecyclerView.setAdapter(iromazonAdapter);
     }
 
     private File createImageFile() throws IOException {
@@ -254,7 +231,6 @@ public class ItemActivity extends NavigationDrawerActivity{
 
                         ImageView imageHolder = (ImageView) findViewById(R.id.imageHolder);
                         imageHolder.setImageBitmap(BitmapFactory.decodeFile(picturePath));
-                        manAddItemForm.setVisibility(View.VISIBLE);
                     }
                 } catch (java.lang.NullPointerException e) {
                     Log.d(TAG, "Null pointer exception with local image: " + e.getMessage());
@@ -265,7 +241,6 @@ public class ItemActivity extends NavigationDrawerActivity{
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), currentPhotoURI);
                     ImageView imageHolder = (ImageView) findViewById(R.id.imageHolder);
                     imageHolder.setImageBitmap(bitmap);
-                    manAddItemForm.setVisibility(View.VISIBLE);
                 } catch (java.io.IOException e) {
                     Log.d(TAG, "Image selection failed: " + e.getMessage());
                 }
@@ -306,7 +281,7 @@ public class ItemActivity extends NavigationDrawerActivity{
 
     private void callCloudVision(final Bitmap bitmap) throws IOException {
         // Show loading
-        Toast.makeText(ItemActivity.this, R.string.loading_text, Toast.LENGTH_SHORT).show();
+        Toast.makeText(IROMazonSearchActivity.this, R.string.loading_text, Toast.LENGTH_SHORT).show();
 
         new AsyncTask<Object, Void, String>() {
             @Override
@@ -388,23 +363,22 @@ public class ItemActivity extends NavigationDrawerActivity{
                 if (result != null) {
                     // Use result of comparison with IROMazon data to update field with suggested data
                     if (entityR != null && entityR.size() > 0) {
-                        mName.setText(entityR.get(0).name);
+                        getImages(entityR);
                     } else if (textR != null && textR.size() > 0) {
-                        mName.setText(textR.get(0).name);
+                        getImages(textR);
                     } else {
-                        Toast.makeText(ItemActivity.this, "No matches found in database", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(IROMazonSearchActivity.this, "No matches found in database", Toast.LENGTH_SHORT).show();
                     }
 
-                    Toast.makeText(ItemActivity.this, "Cloud Vision Request complete", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(IROMazonSearchActivity.this, "Cloud Vision Request complete", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(ItemActivity.this, "Cloud Vision Timeout", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(IROMazonSearchActivity.this, "Cloud Vision Timeout", Toast.LENGTH_SHORT).show();
                 }
             }
         }.execute();
     }
 
     public Bitmap scaleBitmapDown(Bitmap bitmap, int maxDimension) {
-
         int originalWidth = bitmap.getWidth();
         int originalHeight = bitmap.getHeight();
         int resizedWidth = maxDimension;
@@ -503,50 +477,120 @@ public class ItemActivity extends NavigationDrawerActivity{
         }
     }
 
-    private void writeNewItemAndImage(Item i) {
-        // Upload item
-        final String key = mItemDatabaseRef.child("items").push().getKey();
-        i.setItemID(key);
-        mItemDatabaseRef.child(key).setValue(i);
+    private void getImages(ArrayList<IROMazon> IROMazonList) {
+        // Get image for each IROMazon match, add to the RecyclerView
+        for (final IROMazon match : IROMazonList) {
+            // Set up the storage ref
+            StorageReference imageRef = storageRef.child(match.key);
+            Log.d(TAG, "ImageRef: " + imageRef.toString());
 
-        // Upload image
-        StorageReference imageUpload = mStorageRef.child(key);
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        Bitmap image = ((BitmapDrawable) ((ImageView) findViewById(R.id.imageHolder)).getDrawable()).getBitmap();
-        image = scaleBitmapDown(image, 1200);
-        image.compress(Bitmap.CompressFormat.JPEG, 93, byteStream);
-        byte[] data = byteStream.toByteArray();
-        UploadTask uploadTask = imageUpload.putBytes(data);
-        uploadTask.addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-            }
-        });
-        uploadTask.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                // On failure, do not want to keep item since we expect image for every item
-                mItemDatabaseRef.child(key).removeValue();
-                Toast.makeText(ItemActivity.this, "Image upload failed, item removed", Toast.LENGTH_SHORT).show();
-            }
-        });
-        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                Toast.makeText(ItemActivity.this, "Success!", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
+            // Get the image
+            imageRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                @Override
+                public void onSuccess(byte[] bytes) {
+                    Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    bmp = Bitmap.createScaledBitmap(bmp, (bmp.getWidth() / 4), (bmp.getHeight() / 4), true);
 
-    private Boolean validityCheck() {
-        return individualCheck(mName) && individualCheck(mQuantity) && individualCheck(mNotes);
-    }
-
-    private Boolean individualCheck(EditText e) {
-        if (TextUtils.isEmpty(e.getText().toString())) { // If field empty, return false and set error
-            e.setError("Field cannot be empty.");
-            return false;
+                    // Update RecyclerView
+                    IROMazonImageList.add(new IROMazonImage(match, bmp));
+                    iromazonAdapter.mList = IROMazonImageList;
+                    iromazonAdapter.notifyDataSetChanged();
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.d(TAG, "Something went wrong downloading the image!");
+                }
+            });
         }
-        return true; // Else true
+    }
+
+    private class IROMazonImage {
+        IROMazon iromazon;
+        Bitmap image;
+
+        IROMazonImage(IROMazon iromazon) {
+            this.iromazon = iromazon;
+        }
+
+        IROMazonImage(IROMazon iromazon, Bitmap image) {
+            this.iromazon = iromazon;
+            this.image = image;
+        }
+    }
+
+    private class IROMazonHolder extends RecyclerView.ViewHolder {
+        IROMazon iromazon;
+        Bitmap image;
+
+        //set up layout of each thing on a row for an item
+        ImageView IROMazonImage;
+        TextView IROMazonName;
+
+
+        public IROMazonHolder(View IROMazonView) {
+            super(IROMazonView);
+
+            // Initialize name/q/forsale status/item image
+            IROMazonImage = (ImageView) IROMazonView.findViewById(R.id.IROMazon_list_item_image);
+            IROMazonName = (TextView) IROMazonView.findViewById(R.id.IROMazon_list_item_name);
+
+        }
+
+        // Bind item to the holder and set name accordingly
+        public void bindItem(IROMazonImage i, final OnItemClickListener listener) {
+            // Pass the object to the main activity so the individual item can be pulled
+            iromazon = i.iromazon;
+            image = i.image;
+
+            // Set the info for the current item
+            IROMazonName.setText(iromazon.name);
+            if (image != null) {
+                IROMazonImage.setImageBitmap(image);
+            }
+
+            // Set up custom click listener
+            itemView.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View view) {
+                    listener.onItemClick(new IROMazonImage(iromazon, image));
+                }
+            });
+        }
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(IROMazonImage itemimage);
+    }
+
+
+    public class IROMazonAdapter extends RecyclerView.Adapter<IROMazonHolder> {
+        private ArrayList<IROMazonImage> mList;
+        private final OnItemClickListener listener;
+
+        public IROMazonAdapter(ArrayList<IROMazonImage> list, OnItemClickListener listener) {
+            this.mList = list;
+            this.listener = listener;
+        }
+
+        @Override
+        public IROMazonHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
+
+            View view = layoutInflater.inflate(R.layout.iromazon_list_item, parent, false);
+            return new IROMazonHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(IROMazonHolder holder, int position) {
+            final IROMazonImage IROMazonImage = mList.get(position);
+            holder.bindItem(IROMazonImage, listener);
+
+        }
+
+        @Override
+        public int getItemCount() {
+            return mList.size();
+        }
     }
 }

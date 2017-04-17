@@ -65,6 +65,10 @@
             android:label="Inventory"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
+            android:name=".IROMazonSearchActivity"
+            android:label="IROMazonSearch"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
             android:name=".InventoryItemDetailActivity"
             android:label="Details"
             android:theme="@style/AppTheme.NoActionBar" />
