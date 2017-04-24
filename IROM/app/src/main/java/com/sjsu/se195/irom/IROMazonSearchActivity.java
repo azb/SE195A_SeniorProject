@@ -16,11 +16,13 @@ import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,6 +52,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.sjsu.se195.irom.Classes.IROMazon;
 
 import java.io.ByteArrayOutputStream;
@@ -81,6 +84,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
     private ArrayList<IROMazon> textR;
     private ArrayList<IROMazonImage> IROMazonImageList = new ArrayList<>();
     private IROMazonAdapter iromazonAdapter;
+    private ArrayList<ArrayList<String>> IROMazonStringLists;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +97,8 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
         Button cameraButton = (Button) findViewById(R.id.cameraButton);
         Button galleryButton = (Button) findViewById(R.id.galleryButton);
         Button searchButton = (Button) findViewById(R.id.searchItem);
+        final Button submitIROMazonButton = (Button) findViewById(R.id.submitIROMazon);
+        final EditText submitIROMazonText = (EditText) findViewById(R.id.nameText);
         RecyclerView IROMazonRecyclerView = (RecyclerView) findViewById(R.id.IROMazon_recycler_view);
 
         // Firebase references
@@ -105,6 +111,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             public void onClick(View view) {
                 try {
                     startCamera();
+                    submitIROMazonButton.setEnabled(false);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -115,13 +122,31 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             @Override
             public void onClick(View view) {
                 startGalleryChooser();
+                submitIROMazonButton.setEnabled(false);
             }
         });
 
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Reset recycler view
+                IROMazonImageList = new ArrayList<>();
+                iromazonAdapter.mList = IROMazonImageList;
+                iromazonAdapter.notifyDataSetChanged();
+
                 uploadImage();
+            }
+        });
+
+        submitIROMazonButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Check to see if a name first
+                if (TextUtils.isEmpty(submitIROMazonText.getText())) {
+                    createIROMazonEntry();
+                } else {
+                    Toast.makeText(IROMazonSearchActivity.this, "No name provided", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -162,11 +187,56 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             public void onItemClick(IROMazonImage itemimage) {
                 // Move to add item activity
                 Intent i = new Intent(IROMazonSearchActivity.this, ItemActivity.class);
-                // TODO: Add transfer of data to item activity
+                // Create bundle to hold everything
+                Bundle b = new Bundle();
+                b.putParcelable("IROMazon", itemimage.iromazon);
+                // Get image and scale for Parcel
+                Bitmap image = ((BitmapDrawable) ((ImageView) findViewById(R.id.imageHolder)).getDrawable()).getBitmap();
+                image = scaleBitmapDown(image, 1200);
+                image = Bitmap.createScaledBitmap(image, (image.getWidth() / 4), (image.getHeight() / 4), true);
+                b.putParcelable("image", image);
+                // Add into intent
+                i.putExtras(b);
                 startActivity(i);
             }
         });
         IROMazonRecyclerView.setAdapter(iromazonAdapter);
+    }
+
+    private void createIROMazonEntry() {
+        // Create IROMazon object
+        EditText submitIROMazonText = (EditText) findViewById(R.id.nameText);
+        // TODO: Include entity data in IROMazon objects
+        final IROMazon newEntry = new IROMazon(submitIROMazonText.getText().toString(), IROMazonStringLists.get(1),
+                                               IROMazonStringLists.get(2), IROMazonStringLists.get(3), 19.95);
+
+        // Get key for entry
+        final String key = IROMazonDatabaseRef.child("IROMazon").push().getKey();
+        newEntry.key = key;
+
+        // Handle image upload first
+        StorageReference imageUpload = storageRef.child(key);
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        Bitmap image = ((BitmapDrawable) ((ImageView) findViewById(R.id.imageHolder)).getDrawable()).getBitmap();
+        image = scaleBitmapDown(image, 1200);
+        image.compress(Bitmap.CompressFormat.JPEG, 93, byteStream);
+        byte[] data = byteStream.toByteArray();
+        UploadTask uploadTask = imageUpload.putBytes(data);
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                // Upload failed
+                Toast.makeText(IROMazonSearchActivity.this, "Image upload failed", Toast.LENGTH_SHORT).show();
+            }
+        });
+        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                // Upload successful, can add to database as well
+                IROMazonDatabaseRef.child(key).setValue(newEntry);
+                Toast.makeText(IROMazonSearchActivity.this, "Successfully uploaded to database!", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private File createImageFile() throws IOException {
@@ -349,6 +419,9 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
                     // Use response to compare with IROMazon data
                     entityR = getIROMazon_Entity(response);
                     textR = getIROMazon_Text(response);
+
+                    // Get data in case creating new IROMazon entry
+                    convertResponseToString(response);
                 } catch (GoogleJsonResponseException e) {
                     Log.d(TAG, "Failed to make API request because: " + e.getContent());
                     return "Failed";
@@ -363,7 +436,18 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
                 if (result != null) {
                     // Use result of comparison with IROMazon data to update field with suggested data
                     if (entityR != null && entityR.size() > 0) {
-                        getImages(entityR);
+                        if (textR != null && textR.size() > 0) {
+                            // Both have items in them, display both results without duplicates
+                            for (IROMazon current : textR) {
+                                if (!entityR.contains(current)) {
+                                    entityR.add(current);
+                                }
+                            }
+                            getImages(entityR);
+                        } else {
+                            // No text matches, just use entities
+                            getImages(entityR);
+                        }
                     } else if (textR != null && textR.size() > 0) {
                         getImages(textR);
                     } else {
@@ -371,11 +455,62 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
                     }
 
                     Toast.makeText(IROMazonSearchActivity.this, "Cloud Vision Request complete", Toast.LENGTH_SHORT).show();
+                    findViewById(R.id.submitIROMazon).setEnabled(true);
                 } else {
                     Toast.makeText(IROMazonSearchActivity.this, "Cloud Vision Timeout", Toast.LENGTH_SHORT).show();
                 }
             }
         }.execute();
+    }
+
+    private void convertResponseToString(BatchAnnotateImagesResponse response) {
+        ArrayList<String> labelResults = new ArrayList<>();
+        ArrayList<String> logoResults = new ArrayList<>();
+        ArrayList<String> textResults = new ArrayList<>();
+        ArrayList<String> entityResults = new ArrayList<>();
+
+        List<EntityAnnotation> labels = response.getResponses().get(0).getLabelAnnotations();
+        if (labels != null) {
+            for (EntityAnnotation label : labels) {
+                if(label.getDescription() != null){
+                    labelResults.add(label.getDescription());
+                }
+            }
+        }
+
+        List<EntityAnnotation> logos = response.getResponses().get(0).getLogoAnnotations();
+        if (logos != null) {
+            for (EntityAnnotation logo : logos) {
+                if(logo.getDescription() != null){
+                    logoResults.add(logo.getDescription());
+                }
+            }
+        }
+
+        List<EntityAnnotation> texts = response.getResponses().get(0).getTextAnnotations();
+        if (texts != null) {
+            for (EntityAnnotation text : texts) {
+                if(text.getDescription() != null){
+                    textResults.add(text.getDescription());
+                }
+            }
+        }
+
+        WebDetection webDetection = response.getResponses().get(0).getWebDetection();
+        if(webDetection != null){
+            for(WebEntity entity : webDetection.getWebEntities()){
+                if(entity.getDescription() != null){
+                    entityResults.add(entity.getDescription());
+                }
+            }
+        }
+
+        // Store for if used to create a new IROMazon entry
+        IROMazonStringLists = new ArrayList<>();
+        IROMazonStringLists.add(entityResults);
+        IROMazonStringLists.add(textResults);
+        IROMazonStringLists.add(logoResults);
+        IROMazonStringLists.add(labelResults);
     }
 
     public Bitmap scaleBitmapDown(Bitmap bitmap, int maxDimension) {
@@ -415,6 +550,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
                 }
             }
 
+            // TODO: Change to compare against entity list instead of just name
             for (IROMazon storedData : IROMazonList) {
                 for (String newData : entityResults) {
                     if (storedData.name.equals(newData)) {
@@ -459,17 +595,11 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
         if(a.size() > 0 && b.size() > 0) {
             for(String text_b : b) {
                 for (String text_a : a) {
-                    //System.out.println("Checking Text/Label/Logo ");
-                    //System.out.println(text_a);
                     if (text_b.contains(text_a)) {
-                        //System.out.println("Found Text/Label/Logo ");
-                        //System.out.println(text_a);
                         found += 1;
                     }
                 }
             }
-            //System.out.println("Score: ");
-            //System.out.println(((double)found)/(((double)a.size())));
             return ((double) found) / (((double) a.size()));
         }
         else{
@@ -509,10 +639,6 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
         IROMazon iromazon;
         Bitmap image;
 
-        IROMazonImage(IROMazon iromazon) {
-            this.iromazon = iromazon;
-        }
-
         IROMazonImage(IROMazon iromazon, Bitmap image) {
             this.iromazon = iromazon;
             this.image = image;
@@ -528,7 +654,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
         TextView IROMazonName;
 
 
-        public IROMazonHolder(View IROMazonView) {
+        IROMazonHolder(View IROMazonView) {
             super(IROMazonView);
 
             // Initialize name/q/forsale status/item image
@@ -538,7 +664,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
         }
 
         // Bind item to the holder and set name accordingly
-        public void bindItem(IROMazonImage i, final OnItemClickListener listener) {
+        void bindItem(IROMazonImage i, final OnItemClickListener listener) {
             // Pass the object to the main activity so the individual item can be pulled
             iromazon = i.iromazon;
             image = i.image;
@@ -559,16 +685,16 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
         }
     }
 
-    public interface OnItemClickListener {
+    interface OnItemClickListener {
         void onItemClick(IROMazonImage itemimage);
     }
 
 
-    public class IROMazonAdapter extends RecyclerView.Adapter<IROMazonHolder> {
+    private class IROMazonAdapter extends RecyclerView.Adapter<IROMazonHolder> {
         private ArrayList<IROMazonImage> mList;
         private final OnItemClickListener listener;
 
-        public IROMazonAdapter(ArrayList<IROMazonImage> list, OnItemClickListener listener) {
+        IROMazonAdapter(ArrayList<IROMazonImage> list, OnItemClickListener listener) {
             this.mList = list;
             this.listener = listener;
         }

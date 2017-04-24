@@ -54,20 +54,11 @@
         </ScrollView>
 
         <Button
-            android:id="@+id/addItem"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_below="@+id/scrollView2"
-            android:text="Sell/Add Item" />
-
-        <Button
             android:id="@+id/searchItem"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/scrollView2"
-            android:layout_marginEnd="11dp"
-            android:layout_toStartOf="@+id/addItem"
+            android:layout_alignParentEnd="true"
             android:text="Search IROM" />
     </RelativeLayout>
         <EditText
@@ -75,13 +66,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Don't See Your Item? Enter Its Name Here."
-            android:layout_alignParentStart="true"></EditText>
+            android:layout_alignParentStart="true" />
 
         <Button
             android:id="@+id/submitIROMazon"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Submit Photo to Product Database" />
+            android:text="Submit Photo to Product Database"
+            android:enabled="false" />
 
     </LinearLayout>
 </ScrollView>

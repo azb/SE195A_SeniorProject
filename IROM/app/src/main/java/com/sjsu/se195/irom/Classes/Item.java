@@ -16,7 +16,6 @@ public class Item implements Parcelable{
     public String uID;
     public Date dateAdded;
     public String name;
-    //TODO add picture
     public Integer quantity;
     public String note;
     //maybe have tag as an arraylist of strings?
@@ -44,7 +43,7 @@ public class Item implements Parcelable{
     }
 
     //for parcelable
-    public Item(Parcel in){
+    public Item(Parcel in) {
         this.itemID = in.readString();
         this.uID = in.readString();
         this.name = in.readString();
@@ -52,9 +51,6 @@ public class Item implements Parcelable{
         this.forSale = (boolean) in.readValue(boolean.class.getClassLoader());
         this.note = in.readString();
         this.quantity = in.readInt();
-
-
-
     }
 
     public String getItemID(){

@@ -13,7 +13,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -36,21 +35,14 @@ import com.google.api.services.vision.v1.model.BatchAnnotateImagesRequest;
 import com.google.api.services.vision.v1.model.BatchAnnotateImagesResponse;
 import com.google.api.services.vision.v1.model.Feature;
 import com.google.api.services.vision.v1.model.EntityAnnotation;
-import com.google.api.services.vision.v1.model.ColorInfo;
-import com.google.api.services.vision.v1.model.DominantColorsAnnotation;
 import com.google.api.services.vision.v1.model.Image;
-import com.google.api.services.vision.v1.model.ImageProperties;
-
-
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Vector;
 
 import com.google.api.services.vision.v1.model.WebDetection;
 import com.google.api.services.vision.v1.model.WebEntity;
@@ -59,11 +51,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
 import com.sjsu.se195.irom.Classes.IROMazon;
 

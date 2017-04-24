@@ -1,8 +1,10 @@
 package com.sjsu.se195.irom;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
@@ -29,9 +31,6 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.sjsu.se195.irom.Classes.Listing;
 import com.sjsu.se195.irom.Classes.Profile;
-import com.squareup.otto.Bus;
-import com.squareup.otto.Subscribe;
-import com.squareup.otto.ThreadEnforcer;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -40,7 +39,6 @@ public class WelcomeActivity extends NavigationDrawerActivity {
     private static final String TAG = WelcomeActivity.class.getSimpleName();
     private static final FirebaseDatabase database = FirebaseDatabase.getInstance();
     private final long ONE_MEGABYTE = 1024 * 1024; // Max image download size to avoid issues
-    public static Bus bus;
     private FirebaseUser mUser;
     private ListingAdapter listingAdapter;
     private ArrayList<ListingProfile> mListingList = new ArrayList<>();
@@ -57,8 +55,6 @@ public class WelcomeActivity extends NavigationDrawerActivity {
         mUser = FirebaseAuth.getInstance().getCurrentUser();
         RecyclerView listingRecyclerView = (RecyclerView) findViewById(R.id.listing_recycler_view);
         listingRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        bus = new Bus(ThreadEnforcer.ANY);
-        bus.register(this);
 
         // Get reference of listings from database
         DatabaseReference ref = database.getReference("listings");
@@ -72,7 +68,7 @@ public class WelcomeActivity extends NavigationDrawerActivity {
                 Listing listing = dataSnapshot.getValue(Listing.class);
                 if (!listing.creator.equals(mUser.getUid())) {
                     // Post to get profile
-                    bus.post(listing);
+                    getProfile(listing);
                 }
             }
 
@@ -96,7 +92,26 @@ public class WelcomeActivity extends NavigationDrawerActivity {
         });
 
         // Add listings to the view
-        listingAdapter = new ListingAdapter(mListingList);
+        listingAdapter = new ListingAdapter(mListingList, new OnItemClickListener() {
+            @Override
+            public void onItemClick(ListingProfile listingProfile) {
+                // Move to listing detail page
+                Intent i = new Intent(WelcomeActivity.this, ListingDetailActivity.class);
+                // Create bundle to hold everything
+                Bundle b = new Bundle();
+                b.putParcelable("listing", listingProfile.listing);
+                b.putParcelable("profile", listingProfile.profile);
+                // Get image and scale for Parcel
+                if (listingProfile.image != null) {
+                    Bitmap image = listingProfile.image;
+                    image = Bitmap.createScaledBitmap(image, (image.getWidth() / 4), (image.getHeight() / 4), true);
+                    b.putParcelable("image", image);
+                }
+                // Add into intent
+                i.putExtras(b);
+                startActivity(i);
+            }
+        });
         listingRecyclerView.setAdapter(listingAdapter);
     }
 
@@ -112,9 +127,14 @@ public class WelcomeActivity extends NavigationDrawerActivity {
             this.listing = listing;
             this.profile = profile;
         }
+
+        ListingProfile(Listing listing, Profile profile, Bitmap image) {
+            this.listing = listing;
+            this.profile = profile;
+            this.image = image;
+        }
     }
 
-    @Subscribe
     public void getProfile(final Listing listing) {
         DatabaseReference profileRef = database.getReference("profile/" + listing.creator);
 
@@ -135,7 +155,7 @@ public class WelcomeActivity extends NavigationDrawerActivity {
                     listingAdapter.mList = mListingList;
                     listingAdapter.notifyDataSetChanged();
                 } else { // There is an itemID, can try to get image
-                    bus.post(listingProfile);
+                    getImage(listingProfile);
                 }
             }
 
@@ -147,7 +167,6 @@ public class WelcomeActivity extends NavigationDrawerActivity {
         });
     }
 
-    @Subscribe
     public void getImage(final ListingProfile listingProfile) {
         // Set up the storage ref
         StorageReference imageRef = FirebaseStorage.getInstance().getReference("items/" + listingProfile.listing.item.itemID);
@@ -181,6 +200,7 @@ public class WelcomeActivity extends NavigationDrawerActivity {
         Profile profile;
         Bitmap image;
         Bundle bundle = new Bundle();
+        View listingView;
 
         // Set up layout of each part of the listing
         ImageView listingImage;
@@ -192,6 +212,7 @@ public class WelcomeActivity extends NavigationDrawerActivity {
 
         ListingHolder(View listingView) {
             super(listingView);
+            this.listingView = listingView;
 
             // Initialize layout elements
             listingImage = (ImageView) listingView.findViewById(R.id.listing_list_item_image);
@@ -202,7 +223,7 @@ public class WelcomeActivity extends NavigationDrawerActivity {
         }
 
         // Bind listing to the holder and set details accordingly
-        void bindListing(ListingProfile l) {
+        void bindListing(ListingProfile l, final OnItemClickListener listener) {
             // Pass the object to the main activity so the individual listing can be pulled
             listing = l.listing;
             profile = l.profile;
@@ -216,14 +237,28 @@ public class WelcomeActivity extends NavigationDrawerActivity {
             if (image != null) {
                 listingImage.setImageBitmap(image);
             }
+
+            // Set up listener
+            listingView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    listener.onItemClick(new ListingProfile(listing, profile, image));
+                }
+            });
         }
+    }
+
+    interface OnItemClickListener {
+        void onItemClick(ListingProfile listingProfile);
     }
 
     private class ListingAdapter extends RecyclerView.Adapter<ListingHolder> {
         ArrayList<ListingProfile> mList;
+        private final OnItemClickListener listener;
 
-        ListingAdapter(ArrayList<ListingProfile> list) {
-            mList = list;
+        ListingAdapter(ArrayList<ListingProfile> list, OnItemClickListener listener) {
+            this.mList = list;
+            this.listener = listener;
         }
 
         @Override
@@ -237,7 +272,7 @@ public class WelcomeActivity extends NavigationDrawerActivity {
         @Override
         public void onBindViewHolder(ListingHolder holder, int position) {
             ListingProfile listingProfile = mList.get(position);
-            holder.bindListing(listingProfile);
+            holder.bindListing(listingProfile, listener);
         }
 
 

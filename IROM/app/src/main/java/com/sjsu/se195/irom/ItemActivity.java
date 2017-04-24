@@ -107,6 +107,7 @@ public class ItemActivity extends NavigationDrawerActivity{
         Button cameraButton = (Button) findViewById(R.id.cameraButton);
         Button galleryButton = (Button) findViewById(R.id.galleryButton);
         Button cloudVisionButton = (Button) findViewById(R.id.cloudVisionButton);
+        ImageView imageHolder = (ImageView) findViewById(R.id.imageHolder);
 
         // Get current user
         mUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -117,6 +118,15 @@ public class ItemActivity extends NavigationDrawerActivity{
         mItemDatabaseRef = db.getReference("items");
         mStorageRef = storage.getReference("items/");
         mIROMazonDatabaseRef = db.getReference("IROMazon");
+
+        // Fill out fields if coming from IROMazon search activity
+        Intent i = getIntent();
+        if (i.hasExtra("IROMazon")) {
+            Bitmap image = i.getParcelableExtra("image");
+            IROMazon iromazon = i.getParcelableExtra("IROMazon");
+            imageHolder.setImageBitmap(image);
+            mName.setText(iromazon.name);
+        }
 
         // Get IROMazon data
         IROMazonList = new ArrayList<>();

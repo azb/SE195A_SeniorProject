@@ -29,9 +29,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.sjsu.se195.irom.Classes.Item;
-import com.squareup.otto.Bus;
-import com.squareup.otto.Subscribe;
-import com.squareup.otto.ThreadEnforcer;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -50,7 +47,6 @@ public class InventoryActivity extends NavigationDrawerActivity {
     private final FirebaseStorage storage = FirebaseStorage.getInstance();
     private final long ONE_MEGABYTE = 1024 * 1024; // Max image download size to avoid issues
     private static final String TAG = InventoryActivity.class.getSimpleName();
-    public static Bus bus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,8 +61,6 @@ public class InventoryActivity extends NavigationDrawerActivity {
         itemRecyclerView = (RecyclerView) findViewById(R.id.item_recycler_view);
         itemRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        bus = new Bus(ThreadEnforcer.ANY);
-        bus.register(this);
 
         // Set up the database ref
         DatabaseReference ref = database.getReference("items");
@@ -82,7 +76,7 @@ public class InventoryActivity extends NavigationDrawerActivity {
                         item.itemID = dataSnapshot.getKey();
                     }
                     // Post to get the accompanying image
-                    bus.post(new ItemImage(item));
+                    getImage(new ItemImage(item));
                 }
             }
 
@@ -145,7 +139,6 @@ public class InventoryActivity extends NavigationDrawerActivity {
         }
     }
 
-    @Subscribe
     public void getImage(final ItemImage itemimage) {
         // Set up the storage ref
         StorageReference imageRef = storage.getReference("items/" + itemimage.item.itemID);
@@ -209,7 +202,7 @@ public class InventoryActivity extends NavigationDrawerActivity {
                 itemImage.setImageBitmap(image);
             }
 
-            if (Objects.equals(itemForSale.getText().toString(), "true")) {
+            if (itemForSale.getText().toString().contains("true")) {
                 //is for sale, cannot be used
                 itemForSale.setTextColor(Color.RED);
             } else {
@@ -219,7 +212,6 @@ public class InventoryActivity extends NavigationDrawerActivity {
 
             //set up custom click listener
             itemView.setOnClickListener(new View.OnClickListener(){
-
                 @Override
                 public void onClick(View view) {
                     listener.onItemClick(new ItemImage(item, image));
