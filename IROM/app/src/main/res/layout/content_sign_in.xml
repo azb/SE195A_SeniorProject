@@ -4,7 +4,6 @@
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -27,13 +26,14 @@
         android:paddingTop="@dimen/activity_vertical_margin"
         tools:context="com.sjsu.se195.irom.SignInActivity">
 
-        <ImageView
-            android:id="@+id/irom_logo_text"
+         <ImageView
+            android:id="@+id/imageView3"
             android:layout_width="match_parent"
-            android:layout_height="165dp"
-            android:layout_gravity="center_vertical"
-            app:srcCompat="@drawable/irom_text"
-            android:contentDescription="logo" />
+            android:layout_height="match_parent"
+            android:layout_marginBottom="18dp"
+            app:srcCompat="@drawable/irom_logo_placeholder_360x180"
+            android:layout_above="@+id/signin_button"
+            android:layout_alignParentStart="true" />
 
         <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"

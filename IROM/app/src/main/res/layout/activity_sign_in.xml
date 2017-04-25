@@ -11,5 +11,4 @@
     <include layout="@layout/content_sign_in" />
 
 
-
 </android.support.design.widget.CoordinatorLayout>
