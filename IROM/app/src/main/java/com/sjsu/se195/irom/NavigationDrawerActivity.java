@@ -93,7 +93,7 @@ public class NavigationDrawerActivity extends AppCompatActivity
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if(user==null){
             //correctly logged out
-            Intent intent = new Intent( getBaseContext(), SignUpActivity.class);
+            Intent intent = new Intent( getBaseContext(), SignInActivity.class);
             startActivity(intent);
         }else{
             //there was a problem

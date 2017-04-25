@@ -1,13 +1,16 @@
-package com.sjsu.se195.irom;
+package com.sjsu.se195.irom.signup;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -18,6 +21,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.sjsu.se195.irom.Classes.Profile;
+import com.sjsu.se195.irom.R;
+import com.sjsu.se195.irom.SignInActivity;
+import com.sjsu.se195.irom.WelcomeActivity;
 
 public class SignUpActivity extends AppCompatActivity {
     private EditText email;
@@ -26,12 +32,12 @@ public class SignUpActivity extends AppCompatActivity {
     private EditText firstName;
     private EditText lastName;
     private Button signUpButton;
-    private Button signInButton;
+    private TextView signInText;
     private DatabaseReference mDatabase;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
 
-    private static final String TAG = "emailpassword";
+    private static final String TAG = "signup";
 
 
     @Override
@@ -51,8 +57,6 @@ public class SignUpActivity extends AppCompatActivity {
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
                     //logged in already, MOVE ALONG!
-                    //TODO make this work!
-                    //I think auth is supposed to be for 24 hrs, so I am not sure why this isnt working on launch for my phone.
                     Intent intent = new Intent( getBaseContext(), WelcomeActivity.class);
                     startActivity(intent);
                 } else {
@@ -68,18 +72,71 @@ public class SignUpActivity extends AppCompatActivity {
     private void setUpFieldsAndButtons() {
         email = (EditText) findViewById(R.id.email_edit_text);
         password1 = (EditText) findViewById(R.id.password_edit_text);
-        password2 = (EditText) findViewById(R.id.password_2_edit_text);
+      //  password2 = (EditText) findViewById(R.id.password_2_edit_text);
         firstName = (EditText) findViewById(R.id.first_name_edit_text);
         lastName = (EditText) findViewById(R.id.last_name_edit_text);
         signUpButton = (Button) findViewById(R.id.sign_up_button);
-        signInButton = (Button) findViewById(R.id.sign_in_button);
+        signInText = (TextView) findViewById(R.id.sign_in_text);
 
+        //if not clicked on these things get rid of the keyboard!
+        email.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean hasFocus) {
+                if(!hasFocus){
+                    hideKeyboard(view);
+                }
+            }
+        });
+        password1.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean hasFocus) {
+                if(!hasFocus){
+                    hideKeyboard(view);
+                }
+            }
+        });
+        firstName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean hasFocus) {
+                if(!hasFocus){
+                    hideKeyboard(view);
+                }
+            }
+        });
+        lastName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean hasFocus) {
+                if(!hasFocus){
+                    hideKeyboard(view);
+                }
+            }
+        });
         signUpButton.setOnClickListener(new View.OnClickListener(){
 
             public void onClick(View v){
                 //check validity of input
-                if(isInputValid()){
+                if(email.getText().toString().isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email.getText().toString()).matches()){
+                    //all fields listed as if null are required fields
+                    email.requestFocus();
+                    email.setError("a valid email is required");
+                }
+                else if(password1.getText().toString().isEmpty()){
+                    //if the two password fields don't match do the exclamation mark error
+                    password1.requestFocus();
+                    password1.setError("passwords should be 6 or more characters");
+                }else if(firstName.getText().toString().isEmpty()){
+                    firstName.requestFocus();
+                    firstName.setError("please enter a first name");
+                }else if(lastName.getText().toString().isEmpty()){
+                    lastName.requestFocus();
+                    lastName.setError("please enter a last name");
+                }
+                else{
                     //then sign up your heart away
+                    email.setError(null);
+                    password1.setError(null);
+                    firstName.setError(null);
+                    lastName.setError(null);
                     mAuth.createUserWithEmailAndPassword(email.getText().toString(), password1.getText().toString())
                             .addOnCompleteListener(SignUpActivity.this, new OnCompleteListener<AuthResult>() {
                                 @Override
@@ -92,19 +149,20 @@ public class SignUpActivity extends AppCompatActivity {
                                     if (!task.isSuccessful()) {
                                         Toast.makeText(SignUpActivity.this, R.string.auth_failed,
                                                 Toast.LENGTH_SHORT).show();
+                                    }else{
+                                        Profile p = new Profile(mAuth.getCurrentUser().getUid(),firstName.getText().toString(),lastName.getText().toString());
+                                        mDatabase.child("profile").child(mAuth.getCurrentUser().getUid()).setValue(p);
+                                        Intent intent = new Intent( getBaseContext(), FirstTimePictureActivity.class);
+                                        startActivity(intent);
                                     }
-
-                                    Profile p = new Profile(mAuth.getCurrentUser().getUid(),firstName.getText().toString(),lastName.getText().toString());
-                                    mDatabase.child("profile").child(mAuth.getCurrentUser().getUid()).setValue(p);
-
                                 }
                             });
-
                 }
-
             }
         });
-        signInButton.setOnClickListener(new View.OnClickListener(){
+
+        //go to sign in page
+        signInText.setOnClickListener(new View.OnClickListener(){
 
             public void onClick(View v){
                 Intent intent = new Intent( getBaseContext(), SignInActivity.class);
@@ -113,21 +171,6 @@ public class SignUpActivity extends AppCompatActivity {
         });
     }
 
-    private boolean isInputValid() {
-        //do wanted validity checks here
-
-        if(email.getText().toString().isEmpty() || password1.getText().toString().isEmpty()|| password2.getText().toString().isEmpty()){
-            //all fields listed as if null are required fields
-            email.setError("please input all * fields");
-            return false;
-        }
-        if(!password1.getText().toString().matches(password2.getText().toString())){
-            //if the two password fields don't match do the exclamation mark error
-            password1.setError("must match passwords");
-            return false;
-        }
-        return true;
-    }
 
     @Override
     public void onStart() {
@@ -143,5 +186,9 @@ public class SignUpActivity extends AppCompatActivity {
         }
     }
 
-
+    //this is used for hiding the keyboard
+    public void hideKeyboard(View view) {
+        InputMethodManager inputMethodManager =(InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
 }
