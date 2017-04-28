@@ -1,19 +1,11 @@
 <resources>
     <string name="app_name">IROM</string>
-    <string name="emailPrompt">Email*</string>
-    <string name="enter_email_hint">enter email</string>
-    <string name="password_label">Password*</string>
     <string name="enter_password_hint">enter password</string>
-    <string name="re_enter_password_label">Re-enter Password*</string>
     <string name="re_enter_password_hint">re-enter password</string>
-    <string name="first_name_label">First Name: </string>
-    <string name="first_name_hint">enter first name</string>
-    <string name="last_name_label">Last Name: </string>
-    <string name="enter_last_name_hint">enter last name</string>
+    <string name="first_name_hint">First Name</string>
+    <string name="last_name_hint">Last Name</string>
     <string name="sign_up_button">Sign Up</string>
     <string name="have_an_account_sign_in_button">Have an account? Sign in!</string>
-    <string name="title_activity_sign_in">SignInActivity</string>
-    <string name="title_activity_sign_up">SignUpActivity</string>
     <string name="auth_failed">Authentication failed</string>
     <string name="title_activity_cloud_vision_test">CloudVisionTestActivity</string>
     <string name="picture_of_dog_looking_at_camera">picture of dog looking at camera</string>
@@ -112,7 +104,10 @@
     <string name="no_request_sent">No request sent...</string>
     <string name="first_name">first name:</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="sign_in">Sign In</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="don_t_have_an_account_sign_up">Don\'t have an account? Sign up!</string>
+    <string name="forgot_password">Forgot password?</string>
 
 </resources>

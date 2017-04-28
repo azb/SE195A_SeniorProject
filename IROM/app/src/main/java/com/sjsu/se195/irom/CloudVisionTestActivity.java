@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,7 +41,9 @@ import com.google.api.services.vision.v1.model.Image;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -63,8 +66,8 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
     private static final int GALLERY_PERMISSIONS_REQUEST = 2;
     private static final int CAMERA_IMAGE_REQUEST = 3;
     private static final int CAMERA_PERMISSIONS_REQUEST = 4;
-    public static final String FILE_NAME = "temp.jpg";
     private TextView resultField;
+    private Uri currentPhotoURI;
 
     //IROMazon stuff
     private FirebaseDatabase cFirebaseEntry;
@@ -83,13 +86,13 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
         View contentView = inflater.inflate(R.layout.activity_cloud_vision_test, null, false);
         drawer.addView(contentView, 0);
 
-        // set up buttons
+        // Set up buttons
         Button requestButton = (Button) findViewById(R.id.send_request_button);
         Button loadImageButton = (Button) findViewById(R.id.load_image_button);
         Button openCameraButton = (Button) findViewById(R.id.open_camera_button);
         resultField = (TextView) findViewById(R.id.resultsReplace);
 
-        // set up listeners.
+        // Set up listeners.
         requestButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -107,7 +110,11 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
         openCameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startCamera();
+                try {
+                    startCamera();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -122,7 +129,7 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
                 IROMazon entry = new IROMazon(); //dataSnapshot.getValue();
                 entry.name = (String) dataSnapshot.child("name").getValue();
                 entry.price = (Double) dataSnapshot.child("price").getValue();
-                entry.key = (String) dataSnapshot.getKey().toString();
+                entry.key = dataSnapshot.getKey();
                 for (DataSnapshot textSnapshot : dataSnapshot.child("text").getChildren()) {
                     entry.text.add(textSnapshot.getValue().toString());
                 }
@@ -176,33 +183,61 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
     }
 
     public void startGalleryChooser() {
-        if (PermissionUtils.requestPermission(this, CAMERA_PERMISSIONS_REQUEST, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+        if (PermissionUtils.requestPermission(this, GALLERY_PERMISSIONS_REQUEST, Manifest.permission.READ_EXTERNAL_STORAGE)) {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             startActivityForResult(intent, GALLERY_IMAGE_REQUEST);
         }
     }
 
-    public void startCamera() {
-        if (PermissionUtils.requestPermission(this, CAMERA_PERMISSIONS_REQUEST, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA)) {
+    public void startCamera() throws IOException {
+        if (PermissionUtils.requestPermission(this, CAMERA_PERMISSIONS_REQUEST, Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.CAMERA)) {
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(getCameraFile()));
-            startActivityForResult(intent, CAMERA_IMAGE_REQUEST);
+            // Make sure camera activity available
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                // Create the file
+                File photoFile = null;
+                try {
+                    photoFile = createImageFile();
+                } catch (IOException e) {
+                    // Error in file creation
+                    e.printStackTrace();
+                }
+
+                // If file created
+                if (photoFile != null) {
+                    Uri photoURI = FileProvider.getUriForFile(this, "com.sjsu.se195.irom.fileprovider", photoFile);
+                    currentPhotoURI = photoURI;
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                    startActivityForResult(intent, CAMERA_IMAGE_REQUEST);
+                } else {
+                    Log.d(TAG, "File not created.");
+                }
+            } else {
+                Log.d(TAG, "Not resolving camera activity.");
+            }
+        } else {
+            Log.d(TAG, "Permissions incorrect.");
         }
     }
 
-    public File getCameraFile() {
-        File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-        return new File(dir, FILE_NAME);
+    public File createImageFile() throws IOException {
+        // Create a name first
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        String imageFileName = "JPEG_" + timestamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+
+        return File.createTempFile(imageFileName, ".jpg", storageDir);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+        //super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK) {
             if (requestCode == GALLERY_IMAGE_REQUEST && data != null) {
                 Uri selectedImage = data.getData();
-                String[] filePathColumn = { MediaStore.Images.Media.DATA };
+                String[] filePathColumn = {MediaStore.Images.Media.DATA};
                 try (Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null)) {
                     if (cursor != null) {
                         cursor.moveToFirst();
@@ -217,27 +252,32 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
                 }
             }
             if (requestCode == CAMERA_IMAGE_REQUEST) {
-                Uri selectedImage = Uri.fromFile(getCameraFile());
                 try {
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), currentPhotoURI);
                     ImageView imageView = (ImageView) findViewById(R.id.imageView);
                     imageView.setImageBitmap(bitmap);
                 } catch (java.io.IOException e) {
                     Log.d(TAG, "Image selection failed: " + e.getMessage());
                 }
             }
+        } else {
+            Log.d(TAG, "Result is not ok for some reason.");
         }
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (PermissionUtils.permissionGranted(requestCode, GALLERY_PERMISSIONS_REQUEST, grantResults)) {
             startGalleryChooser();
         }
         if (PermissionUtils.permissionGranted(requestCode, CAMERA_PERMISSIONS_REQUEST, grantResults)) {
-            startCamera();
+            try {
+                startCamera();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -322,16 +362,9 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
 
                     BatchAnnotateImagesResponse response = annotateRequest.execute();
 
-                    ArrayList<IROMazon> entityR = new ArrayList<IROMazon>();
-                    ArrayList<IROMazon> textR = new ArrayList<IROMazon>();
-                    entityR = getIROMazon_Entity(response);
-                    textR = getIROMazon_Text(response);
-                    if(entityR.size() == 0 && textR.size() == 0){
-                        createNewIROMazon = true;
-                    }
-                    else{
-                        createNewIROMazon = false;
-                    }
+                    ArrayList<IROMazon> entityR = getIROMazon_Entity(response);
+                    ArrayList<IROMazon> textR = getIROMazon_Text(response);
+                    createNewIROMazon = entityR.size() == 0 && textR.size() == 0;
                     //return convertResponseToString(response);
                     String result = resultstoString(entityR,textR);
                     result += "\n";
@@ -339,9 +372,9 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
                     return result;
 
                 } catch (GoogleJsonResponseException e) {
-                    Log.d(TAG, "Failed to make API request because " + e.getContent());
+                    Log.d(TAG, "Failed to make API request because: " + e.getContent());
                 } catch (IOException e) {
-                    Log.d(TAG, "Failed to make API request because of other exception " + e.getMessage());
+                    Log.d(TAG, "Failed to make API request because of other exception: " + e.getMessage());
                 }
                 return "Cloud Vision API request failed. Check logs for details.";
             }
@@ -498,8 +531,8 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
     }
 
     private ArrayList<IROMazon> getIROMazon_Entity(BatchAnnotateImagesResponse response){
-        ArrayList<IROMazon> result = new ArrayList<IROMazon>();
-        ArrayList<String> entityResults = new ArrayList<String>();
+        ArrayList<IROMazon> result = new ArrayList<>();
+        ArrayList<String> entityResults = new ArrayList<>();
         WebDetection webDetection = response.getResponses().get(0).getWebDetection();
 
         //Store Cloud Vision Web Entity Results into ArrayList<String>. Only return results with Score > 0.5
@@ -529,8 +562,8 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
     }
 
     private ArrayList<IROMazon> getIROMazon_Text(BatchAnnotateImagesResponse response){
-        ArrayList<IROMazon> result = new ArrayList<IROMazon>();
-        ArrayList<String> textResults = new ArrayList<String>();
+        ArrayList<IROMazon> result = new ArrayList<>();
+        ArrayList<String> textResults = new ArrayList<>();
         List<EntityAnnotation> texts = response.getResponses().get(0).getTextAnnotations();
         if (texts != null) {
             for (EntityAnnotation text : texts) {
