@@ -135,6 +135,11 @@ public class InventoryActivity extends NavigationDrawerActivity {
                         totalToLoadCount--;
                     }
                 }
+
+                // Handle case where no listings to be shown
+                if (totalToLoadCount == 0) {
+                    swipeLayout.setRefreshing(false);
+                }
             }
 
             @Override

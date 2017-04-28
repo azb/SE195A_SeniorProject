@@ -91,7 +91,6 @@ public class WelcomeActivity extends NavigationDrawerActivity {
                 // Get image and scale for Parcel
                 if (listingProfile.image != null) {
                     Bitmap image = listingProfile.image;
-                    image = Bitmap.createScaledBitmap(image, (image.getWidth() / 4), (image.getHeight() / 4), true);
                     b.putParcelable("image", image);
                 }
                 // Add into intent
@@ -126,6 +125,11 @@ public class WelcomeActivity extends NavigationDrawerActivity {
                         // Not a listing we're getting
                         totalToLoadCount--;
                     }
+                }
+
+                // Handle case where no listings to be shown
+                if (totalToLoadCount == 0) {
+                    swipeLayout.setRefreshing(false);
                 }
             }
 

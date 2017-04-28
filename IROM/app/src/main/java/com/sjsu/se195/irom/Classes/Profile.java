@@ -27,7 +27,6 @@ public class Profile implements Parcelable {
         uID = uid;
         firstName = first;
         lastName = last;
-        currency = curr;
     }
     public Profile(String uid, String first, String last){
         uID = uid;
@@ -40,7 +39,6 @@ public class Profile implements Parcelable {
         this.uID = in.readString();
         this.firstName = in.readString();
         this.lastName = in.readString();
-        this.currency = in.readString();
     }
 
     @Override
@@ -53,7 +51,6 @@ public class Profile implements Parcelable {
         parcel.writeString(this.uID);
         parcel.writeString(this.firstName);
         parcel.writeString(this.lastName);
-        parcel.writeString(this.currency);
     }
 
     public static final Parcelable.Creator<Profile> CREATOR = new Parcelable.Creator<Profile>() {
@@ -94,7 +91,6 @@ public class Profile implements Parcelable {
         result.put("uID", uID);
         result.put("first name", firstName);
         result.put("last name",lastName);
-        result.put("currency",currency);
 
         return result;
     }
