@@ -1,10 +1,16 @@
 package com.sjsu.se195.irom;
 
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,19 +18,19 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.sjsu.se195.irom.Classes.Listing;
 import com.sjsu.se195.irom.Classes.Profile;
-import com.squareup.otto.Bus;
-import com.squareup.otto.Subscribe;
-import com.squareup.otto.ThreadEnforcer;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -32,10 +38,13 @@ import java.util.Locale;
 public class WelcomeActivity extends NavigationDrawerActivity {
     private static final String TAG = WelcomeActivity.class.getSimpleName();
     private static final FirebaseDatabase database = FirebaseDatabase.getInstance();
-    public static Bus bus;
+    private final long ONE_MEGABYTE = 1024 * 1024; // Max image download size to avoid issues
     private FirebaseUser mUser;
     private ListingAdapter listingAdapter;
     private ArrayList<ListingProfile> mListingList = new ArrayList<>();
+    private int currentLoadedCount;
+    private int totalToLoadCount;
+    private SwipeRefreshLayout swipeLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,47 +58,99 @@ public class WelcomeActivity extends NavigationDrawerActivity {
         mUser = FirebaseAuth.getInstance().getCurrentUser();
         RecyclerView listingRecyclerView = (RecyclerView) findViewById(R.id.listing_recycler_view);
         listingRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        bus = new Bus(ThreadEnforcer.ANY);
-        bus.register(this);
 
         // Get reference of listings from database
-        DatabaseReference ref = database.getReference("listings");
+        final DatabaseReference ref = database.getReference("listings/");
 
-        // Pull any changes as they are made, whether a new listing is added, changed, or removed.
-        ref.addChildEventListener(new ChildEventListener() {
+        // Set up refresh listener
+        swipeLayout = ((SwipeRefreshLayout) findViewById(R.id.listing_swipe_layout));
+        swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                Log.d(TAG, "onChildAdded:" + dataSnapshot.getKey());
+            public void onRefresh() {
+                refreshItems(ref);
+            }
+        });
+        // Set refresh spinner to be below action bar
+        int actionBarHeight = 0;
+        TypedValue tv = new TypedValue();
+        if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
+            actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
+        }
+        swipeLayout.setProgressViewOffset(false, 0, actionBarHeight);
 
-                Listing listing = dataSnapshot.getValue(Listing.class);
-                if (!listing.creator.equals(mUser.getUid())) {
-                    // Post to get profile
-                    bus.post(listing);
+        // Set up adapter
+        listingAdapter = new ListingAdapter(mListingList, new OnItemClickListener() {
+            @Override
+            public void onItemClick(ListingProfile listingProfile) {
+                // Move to listing detail page
+                Intent i = new Intent(WelcomeActivity.this, ListingDetailActivity.class);
+                // Create bundle to hold everything
+                Bundle b = new Bundle();
+                b.putParcelable("listing", listingProfile.listing);
+                b.putParcelable("profile", listingProfile.profile);
+                // Get image and scale for Parcel
+                if (listingProfile.image != null) {
+                    Bitmap image = listingProfile.image;
+                    b.putParcelable("image", image);
+                }
+                // Add into intent
+                i.putExtras(b);
+                startActivity(i);
+            }
+        });
+        listingRecyclerView.setAdapter(listingAdapter);
+
+        // Initial load of listings
+        refreshItems(ref);
+    }
+
+    private void refreshItems(DatabaseReference ref) {
+        // Initial setup
+        mListingList = new ArrayList<>();
+        currentLoadedCount = 0;
+        // Set refreshing
+        swipeLayout.setRefreshing(true);
+
+        // Using Value Listeners for a list stores all results in the single DataSnapshot
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                totalToLoadCount = (int) dataSnapshot.getChildrenCount();
+                for (DataSnapshot listingSnapshot : dataSnapshot.getChildren()) {
+                    Listing listing = listingSnapshot.getValue(Listing.class);
+                    if (!listing.creator.equals(mUser.getUid())) {
+                        // Next get profile
+                        getProfile(listing);
+                    } else {
+                        // Not a listing we're getting
+                        totalToLoadCount--;
+                    }
+                }
+
+                // Handle case where no listings to be shown
+                if (totalToLoadCount == 0) {
+                    swipeLayout.setRefreshing(false);
                 }
             }
 
             @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-            }
-
-            @Override
             public void onCancelled(DatabaseError databaseError) {
-                // Get listing failed, log a message
-                Toast.makeText(WelcomeActivity.this, "Cancelled. Refresh", Toast.LENGTH_SHORT).show();
+                // Get listings failed, log a message
+                Toast.makeText(WelcomeActivity.this, "Download failed", Toast.LENGTH_SHORT).show();
+                // Stop refresh
+                swipeLayout.setRefreshing(false);
             }
         });
+    }
 
-        // Add listings to the view
-        listingAdapter = new ListingAdapter(mListingList);
-        listingRecyclerView.setAdapter(listingAdapter);
+    private void onLoadComplete() {
+        if (currentLoadedCount == totalToLoadCount) {
+            // Update adapter
+            listingAdapter.mList = mListingList;
+            listingAdapter.notifyDataSetChanged();
+            // Stop refresh
+            swipeLayout.setRefreshing(false);
+        }
     }
 
     /**
@@ -98,31 +159,40 @@ public class WelcomeActivity extends NavigationDrawerActivity {
     private class ListingProfile {
         Listing listing;
         Profile profile;
+        Bitmap image;
 
         ListingProfile(Listing listing, Profile profile) {
             this.listing = listing;
             this.profile = profile;
         }
+
+        ListingProfile(Listing listing, Profile profile, Bitmap image) {
+            this.listing = listing;
+            this.profile = profile;
+            this.image = image;
+        }
     }
 
-    @Subscribe
-    public void getProfile(final Listing listing) {
+    private void getProfile(final Listing listing) {
         DatabaseReference profileRef = database.getReference("profile/" + listing.creator);
 
         // Probably really inefficient to redo this every time but not sure how else to do it
         profileRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d(TAG, "onDataChange:" + dataSnapshot.getKey());
+                Log.d(TAG, "onDataChange: " + dataSnapshot.getKey());
 
                 Profile profile = dataSnapshot.getValue(Profile.class);
+                ListingProfile listingProfile = new ListingProfile(listing, profile);
 
-                // Use the container class to store both the listing and the profile in the list
-                mListingList.add(new ListingProfile(listing, profile));
-
-                // Update adapter
-                listingAdapter.mList = mListingList;
-                listingAdapter.notifyDataSetChanged();
+                if (listing.item.itemID == null) { // Temporary measure while there's items without itemID
+                    // Use the container class to store both the listing and the profile in the list
+                    mListingList.add(listingProfile);
+                    currentLoadedCount++;
+                    onLoadComplete();
+                } else { // There is an itemID, can try to get image
+                    getImage(listingProfile);
+                }
             }
 
             @Override
@@ -133,10 +203,40 @@ public class WelcomeActivity extends NavigationDrawerActivity {
         });
     }
 
+    private void getImage(final ListingProfile listingProfile) {
+        // Set up the storage ref
+        StorageReference imageRef = FirebaseStorage.getInstance().getReference("items/" + listingProfile.listing.item.itemID);
+        Log.d(TAG, "Trying to get image for: " + listingProfile.listing.item.itemID);
+
+        // Get the image
+        imageRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+                Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                listingProfile.image = Bitmap.createScaledBitmap(bmp, (bmp.getWidth() / 4), (bmp.getHeight() / 4), true);
+                mListingList.add(listingProfile);
+                currentLoadedCount++;
+                onLoadComplete();
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d(TAG, "Something went wrong downloading the image!");
+                // Still want to put the listing up since quite a few still do not have images currently
+                mListingList.add(listingProfile);
+                currentLoadedCount++;
+                onLoadComplete();
+            }
+        });
+
+        // If no image, continue anyway for handling the items we have that don't currently have images
+    }
+
     private class ListingHolder extends RecyclerView.ViewHolder {
         Listing listing;
         Profile profile;
-        Bundle bundle = new Bundle();
+        Bitmap image;
+        View listingView;
 
         // Set up layout of each part of the listing
         ImageView listingImage;
@@ -148,6 +248,7 @@ public class WelcomeActivity extends NavigationDrawerActivity {
 
         ListingHolder(View listingView) {
             super(listingView);
+            this.listingView = listingView;
 
             // Initialize layout elements
             listingImage = (ImageView) listingView.findViewById(R.id.listing_list_item_image);
@@ -158,24 +259,42 @@ public class WelcomeActivity extends NavigationDrawerActivity {
         }
 
         // Bind listing to the holder and set details accordingly
-        void bindListing(ListingProfile l) {
+        void bindListing(ListingProfile l, final OnItemClickListener listener) {
             // Pass the object to the main activity so the individual listing can be pulled
             listing = l.listing;
             profile = l.profile;
+            image = l.image;
 
             // Set listing details
             listingName.setText(listing.item.getName());
             listingPrice.setText(String.format(Locale.US, "$%.2f", listing.price));
             listingCreator.setText(profile.firstName + " " + profile.lastName);
             listingDescription.setText(listing.description);
+            if (image != null) {
+                listingImage.setImageBitmap(image);
+            }
+
+            // Set up listener
+            listingView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    listener.onItemClick(new ListingProfile(listing, profile, image));
+                }
+            });
         }
+    }
+
+    interface OnItemClickListener {
+        void onItemClick(ListingProfile listingProfile);
     }
 
     private class ListingAdapter extends RecyclerView.Adapter<ListingHolder> {
         ArrayList<ListingProfile> mList;
+        private final OnItemClickListener listener;
 
-        ListingAdapter(ArrayList<ListingProfile> list) {
-            mList = list;
+        ListingAdapter(ArrayList<ListingProfile> list, OnItemClickListener listener) {
+            this.mList = list;
+            this.listener = listener;
         }
 
         @Override
@@ -189,7 +308,7 @@ public class WelcomeActivity extends NavigationDrawerActivity {
         @Override
         public void onBindViewHolder(ListingHolder holder, int position) {
             ListingProfile listingProfile = mList.get(position);
-            holder.bindListing(listingProfile);
+            holder.bindListing(listingProfile, listener);
         }
 
 

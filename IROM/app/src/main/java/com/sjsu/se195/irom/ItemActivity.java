@@ -5,10 +5,10 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -16,37 +16,21 @@ import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.Manifest;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.googleapis.json.GoogleJsonResponseException;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.gson.GsonFactory;
-import com.google.api.services.vision.v1.Vision;
-import com.google.api.services.vision.v1.VisionRequestInitializer;
-import com.google.api.services.vision.v1.model.AnnotateImageRequest;
-import com.google.api.services.vision.v1.model.BatchAnnotateImagesRequest;
-import com.google.api.services.vision.v1.model.BatchAnnotateImagesResponse;
-import com.google.api.services.vision.v1.model.EntityAnnotation;
-import com.google.api.services.vision.v1.model.Feature;
-import com.google.api.services.vision.v1.model.Image;
-import com.google.api.services.vision.v1.model.WebDetection;
-import com.google.api.services.vision.v1.model.WebEntity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -55,14 +39,13 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.sjsu.se195.irom.Classes.IROMazon;
 import com.sjsu.se195.irom.Classes.Item;
+import com.sjsu.se195.irom.Classes.Listing;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -76,7 +59,6 @@ public class ItemActivity extends NavigationDrawerActivity{
     private static final int CAMERA_IMAGE_REQUEST = 3;
     private static final int CAMERA_PERMISSIONS_REQUEST = 4;
     private static final String TAG = ItemActivity.class.getSimpleName();
-    private static final String CLOUD_VISION_API_KEY = "AIzaSyAHnhDlz-V1OTUivtflxsQwFShuAzeh-6w";
     private Uri currentPhotoURI;
     private RelativeLayout manAddItemForm;
     private EditText mName;
@@ -84,12 +66,9 @@ public class ItemActivity extends NavigationDrawerActivity{
     private EditText mNotes;
     private DatabaseReference mItemDatabaseRef;
     private StorageReference mStorageRef;
-    private DatabaseReference mIROMazonDatabaseRef;
+    private DatabaseReference mListingDatabaseRef;
     private FirebaseUser mUser;
-    private UploadTask uploadTask;
-    private ArrayList<IROMazon> IROMazonList;
-    private ArrayList<IROMazon> entityR;
-    private ArrayList<IROMazon> textR;
+    private IROMazon passedIROMazon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,7 +86,8 @@ public class ItemActivity extends NavigationDrawerActivity{
         mNotes = (EditText) findViewById(R.id.notesText);
         Button cameraButton = (Button) findViewById(R.id.cameraButton);
         Button galleryButton = (Button) findViewById(R.id.galleryButton);
-        Button cloudVisionButton = (Button) findViewById(R.id.cloudVisionButton);
+        Button createListingButton = (Button) findViewById(R.id.createListingButton);
+        ImageView imageHolder = (ImageView) findViewById(R.id.imageHolder);
 
         // Get current user
         mUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -117,34 +97,17 @@ public class ItemActivity extends NavigationDrawerActivity{
         // Get ref
         mItemDatabaseRef = db.getReference("items");
         mStorageRef = storage.getReference("items/");
-        mIROMazonDatabaseRef = db.getReference("IROMazon");
+        mListingDatabaseRef = db.getReference("listings/");
 
-        // Get IROMazon data
-        IROMazonList = new ArrayList<>();
-        mIROMazonDatabaseRef.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                // Get each entry and store in the list
-                IROMazon entry = dataSnapshot.getValue(IROMazon.class);
-                IROMazonList.add(entry);
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
-        });
+        // Fill out fields if coming from IROMazon search activity
+        Intent i = getIntent();
+        if (i.hasExtra("IROMazon")) {
+            Bitmap image = i.getParcelableExtra("image");
+            IROMazon iromazon = i.getParcelableExtra("IROMazon");
+            imageHolder.setImageBitmap(image);
+            mName.setText(iromazon.name);
+            passedIROMazon = iromazon;
+        }
 
         // Button click functions
         submitItemButton.setOnClickListener(new View.OnClickListener() {
@@ -160,8 +123,59 @@ public class ItemActivity extends NavigationDrawerActivity{
                             Integer.parseInt(mQuantity.getText().toString()),
                             mNotes.getText().toString());
                     writeNewItemAndImage(newItem);
+                } else {
+                    Toast.makeText(ItemActivity.this, "Something wasn't filled", Toast.LENGTH_SHORT).show();
                 }
-                else{
+            }
+        });
+
+        createListingButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Check fields
+                if (validityCheck()) {
+                    final Item newItem = new Item(
+                            mUser.getUid(),
+                            new Date(),
+                            mName.getText().toString(),
+                            Integer.parseInt(mQuantity.getText().toString()),
+                            mNotes.getText().toString());
+
+                    // Get extra listing input
+                    LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    View layout = inflater.inflate(R.layout.create_listing_popup, null);
+
+                    // Create popup
+                    PopupWindow listingPopup = new PopupWindow();
+                    listingPopup.setContentView(layout);
+                    listingPopup.setWidth(RelativeLayout.LayoutParams.WRAP_CONTENT);
+                    listingPopup.setHeight(RelativeLayout.LayoutParams.WRAP_CONTENT);
+                    listingPopup.setFocusable(true);
+                    listingPopup.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
+
+                    // Display in center
+                    listingPopup.showAtLocation(layout, Gravity.CENTER, 0, 0);
+
+                    // Set listener
+                    Button submit = (Button) layout.findViewById(R.id.submit_button);
+                    final EditText descriptionField = (EditText) layout.findViewById(R.id.description);
+                    final EditText priceField = (EditText) layout.findViewById(R.id.price);
+                    submit.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if (!(TextUtils.isEmpty(descriptionField.getText()) && TextUtils.isEmpty(priceField.getText()))) {
+                                writeNewItemImageAndListing(newItem, descriptionField.getText().toString(), Double.parseDouble(priceField.getText().toString()));
+                            } else {
+                                Toast.makeText(ItemActivity.this, "Fill in the fields!", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+
+                    // Set IROMazon data if present
+                    if (passedIROMazon != null) {
+                        priceField.setText(String.format(Locale.US, Double.toString(passedIROMazon.price)));
+                    }
+                } else {
                     Toast.makeText(ItemActivity.this, "Something wasn't filled", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -182,13 +196,6 @@ public class ItemActivity extends NavigationDrawerActivity{
             @Override
             public void onClick(View view) {
                 startGalleryChooser();
-            }
-        });
-
-        cloudVisionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                uploadImage();
             }
         });
     }
@@ -292,118 +299,6 @@ public class ItemActivity extends NavigationDrawerActivity{
         }
     }
 
-    public void uploadImage() {
-        try {
-            ImageView imageView = (ImageView) findViewById(R.id.imageHolder);
-            Drawable drawable = imageView.getDrawable();
-            Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
-            bitmap = scaleBitmapDown(bitmap, 1200);
-
-            callCloudVision(bitmap);
-        } catch (IOException e) {
-            Log.d(TAG, "Image picking failed because " + e.getMessage());
-        }
-    }
-
-    private void callCloudVision(final Bitmap bitmap) throws IOException {
-        // Show loading
-        Toast.makeText(ItemActivity.this, R.string.loading_text, Toast.LENGTH_SHORT).show();
-
-        new AsyncTask<Object, Void, String>() {
-            @Override
-            protected String doInBackground(Object... params) {
-                try {
-                    HttpTransport httpTransport = AndroidHttp.newCompatibleTransport();
-                    JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
-
-                    Vision.Builder builder = new Vision.Builder(httpTransport, jsonFactory, null);
-                    builder.setVisionRequestInitializer(new VisionRequestInitializer(CLOUD_VISION_API_KEY));
-                    Vision vision = builder.build();
-
-                    BatchAnnotateImagesRequest batchAnnotateImagesRequest = new BatchAnnotateImagesRequest();
-                    batchAnnotateImagesRequest.setRequests(new ArrayList<AnnotateImageRequest>() {{
-                        AnnotateImageRequest annotateImageRequest = new AnnotateImageRequest();
-
-                        // Add image
-                        Image base64EncodedImage = new Image();
-                        // Convert to JPEG
-                        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, byteArrayOutputStream);
-                        byte[] imageBytes = byteArrayOutputStream.toByteArray();
-
-                        // Encode JPEG
-                        base64EncodedImage.encodeContent(imageBytes);
-                        annotateImageRequest.setImage(base64EncodedImage);
-
-                        // Add features we want from Cloud Vision Request
-                        annotateImageRequest.setFeatures(new ArrayList<Feature>() {{
-                            Feature labelDetection = new Feature();
-                            labelDetection.setType("LABEL_DETECTION");
-                            labelDetection.setMaxResults(10);
-                            Feature logoDetection = new Feature();
-                            logoDetection.setType("LOGO_DETECTION");
-                            logoDetection.setMaxResults(10);
-                            Feature textDetection = new Feature();
-                            textDetection.setType("TEXT_DETECTION");
-                            textDetection.setMaxResults(10);
-                            Feature imageProperties = new Feature();
-                            imageProperties.setType("IMAGE_PROPERTIES");
-                            imageProperties.setMaxResults(10);
-                            Feature webEntities = new Feature();
-                            webEntities.setType("WEB_DETECTION");
-                            webEntities.setMaxResults(10);
-                            add(labelDetection);
-                            add(logoDetection);
-                            add(textDetection);
-                            add(imageProperties);
-                            add(webEntities);
-
-                        }});
-
-                        // Add image list to request
-                        add(annotateImageRequest);
-                    }});
-
-                    Vision.Images.Annotate annotateRequest = vision.images().annotate(batchAnnotateImagesRequest);
-
-                    // Protect against Vision API GZip bug
-                    annotateRequest.setDisableGZipContent(true);
-                    Log.d(TAG, "Created Cloud Vision request object, sending request");
-
-                    BatchAnnotateImagesResponse response = annotateRequest.execute();
-
-                    // Use response to compare with IROMazon data
-                    entityR = getIROMazon_Entity(response);
-                    textR = getIROMazon_Text(response);
-                } catch (GoogleJsonResponseException e) {
-                    Log.d(TAG, "Failed to make API request because: " + e.getContent());
-                    return "Failed";
-                } catch (IOException e) {
-                    Log.d(TAG, "Failed to make API request because of other exception: " + e.getMessage());
-                    return "Failed";
-                }
-                return "Cloud Vision API request failed. Check logs for details.";
-            }
-
-            protected void onPostExecute(String result) {
-                if (result != null) {
-                    // Use result of comparison with IROMazon data to update field with suggested data
-                    if (entityR != null && entityR.size() > 0) {
-                        mName.setText(entityR.get(0).name);
-                    } else if (textR != null && textR.size() > 0) {
-                        mName.setText(textR.get(0).name);
-                    } else {
-                        Toast.makeText(ItemActivity.this, "No matches found in database", Toast.LENGTH_SHORT).show();
-                    }
-
-                    Toast.makeText(ItemActivity.this, "Cloud Vision Request complete", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(ItemActivity.this, "Cloud Vision Timeout", Toast.LENGTH_SHORT).show();
-                }
-            }
-        }.execute();
-    }
-
     public Bitmap scaleBitmapDown(Bitmap bitmap, int maxDimension) {
 
         int originalWidth = bitmap.getWidth();
@@ -424,84 +319,11 @@ public class ItemActivity extends NavigationDrawerActivity{
         return Bitmap.createScaledBitmap(bitmap, resizedWidth, resizedHeight, false);
     }
 
-    /**
-     * Get any existing IROMazon data that matches the current Cloud Vision response web entities data
-     * @param response Cloud Vision response data
-     * @return List of matching IROMazon data
-     */
-    private ArrayList<IROMazon> getIROMazon_Entity(BatchAnnotateImagesResponse response) {
-        ArrayList<IROMazon> result = new ArrayList<>();
-        ArrayList<String> entityResults = new ArrayList<>();
-        WebDetection webDetection = response.getResponses().get(0).getWebDetection();
-
-        // Store Cloud Vision Web Entity Results into ArrayList<String>. Only return results with Score > 0.5
-        if (webDetection != null) {
-            for (WebEntity entity : webDetection.getWebEntities()) {
-                if (entity.getDescription() != null && entity.getScore() >= 0.5) {
-                    entityResults.add(entity.getDescription());
-                }
-            }
-
-            for (IROMazon storedData : IROMazonList) {
-                for (String newData : entityResults) {
-                    if (storedData.name.equals(newData)) {
-                        result.add(storedData);
-                    }
-                }
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Get any existing IROMazon data that matches the current Cloud Vision response text data
-     * @param response Cloud Vision response data
-     * @return List of matching IROMazon objects
-     */
-    private ArrayList<IROMazon> getIROMazon_Text(BatchAnnotateImagesResponse response) {
-        ArrayList<IROMazon> result = new ArrayList<>();
-        ArrayList<String> textResults = new ArrayList<>();
-        List<EntityAnnotation> texts = response.getResponses().get(0).getTextAnnotations();
-
-        if (texts != null) {
-            for (EntityAnnotation text : texts) {
-                if (text.getDescription() != null) {
-                    textResults.add(text.getDescription());
-                }
-            }
-
-            for (IROMazon storedData : IROMazonList) {
-                if (storedData.text != null && getIROMazon_TLLScore(textResults, storedData.text) >= 0.5) {
-                    result.add(storedData);
-                }
-            }
-        }
-
-        return result;
-    }
-
-    private double getIROMazon_TLLScore(ArrayList<String> a, ArrayList<String> b) {
-        int found = 0;
-        if(a.size() > 0 && b.size() > 0) {
-            for (String text : a) {
-                if (b.get(0).contains(text)) {
-                    found += 1;
-                }
-            }
-
-            return ((double) found) / (((double) a.size()));
-        }
-        else{
-            return 0;
-        }
-    }
-
-    private void writeNewItemAndImage(Item i) {
+    private void writeNewItemAndImage(final Item item) {
         // Upload item
         final String key = mItemDatabaseRef.child("items").push().getKey();
-        i.setItemID(key);
-        mItemDatabaseRef.child(key).setValue(i);
+        item.setItemID(key);
+        mItemDatabaseRef.child(key).setValue(item);
 
         // Upload image
         StorageReference imageUpload = mStorageRef.child(key);
@@ -510,7 +332,7 @@ public class ItemActivity extends NavigationDrawerActivity{
         image = scaleBitmapDown(image, 1200);
         image.compress(Bitmap.CompressFormat.JPEG, 93, byteStream);
         byte[] data = byteStream.toByteArray();
-        uploadTask = imageUpload.putBytes(data);
+        UploadTask uploadTask = imageUpload.putBytes(data);
         uploadTask.addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
@@ -524,10 +346,71 @@ public class ItemActivity extends NavigationDrawerActivity{
                 Toast.makeText(ItemActivity.this, "Image upload failed, item removed", Toast.LENGTH_SHORT).show();
             }
         });
+        final Bitmap finalImage = image;
         uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 Toast.makeText(ItemActivity.this, "Success!", Toast.LENGTH_SHORT).show();
+                // Transition to Item detail page
+                Intent i = new Intent(ItemActivity.this, InventoryItemDetailActivity.class);
+                Bundle b = new Bundle();
+                b.putParcelable("item", item);
+                Bitmap image = Bitmap.createScaledBitmap(finalImage, (finalImage.getWidth() / 4), (finalImage.getHeight() / 4), true);
+                b.putParcelable("image", image);
+                i.putExtras(b);
+                startActivity(i);
+            }
+        });
+    }
+
+    private void writeNewItemImageAndListing(Item item, String description, double price) {
+        // Update and upload item
+        final String itemKey = mItemDatabaseRef.push().getKey();
+        item.itemID = itemKey;
+        final String listingKey = mListingDatabaseRef.push().getKey();
+        item.listingID = listingKey;
+        item.forSale = true;
+        mItemDatabaseRef.child(itemKey).setValue(item);
+
+        // Create and upload listing
+        final Listing listing = new Listing(item.uID, item, description, price);
+        mListingDatabaseRef.child(listingKey).setValue(listing);
+
+        // Now upload image
+        StorageReference imageUpload = mStorageRef.child(itemKey);
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        Bitmap image = ((BitmapDrawable) ((ImageView) findViewById(R.id.imageHolder)).getDrawable()).getBitmap();
+        image = scaleBitmapDown(image, 1200);
+        image.compress(Bitmap.CompressFormat.JPEG, 93, byteStream);
+        byte[] data = byteStream.toByteArray();
+        UploadTask uploadTask = imageUpload.putBytes(data);
+        uploadTask.addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+            }
+        });
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                // On failure, do not want to keep item since we expect image for every item
+                mItemDatabaseRef.child(itemKey).removeValue();
+                mListingDatabaseRef.child(listingKey).removeValue();
+                Toast.makeText(ItemActivity.this, "Image upload failed, item removed", Toast.LENGTH_SHORT).show();
+            }
+        });
+        final Bitmap finalImage = image;
+        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                Toast.makeText(ItemActivity.this, "Success!", Toast.LENGTH_SHORT).show();
+                // Transition to Listing detail page
+                Intent i = new Intent(ItemActivity.this, ListingDetailActivity.class);
+                Bundle b = new Bundle();
+                b.putParcelable("listing", listing);
+                Bitmap image = Bitmap.createScaledBitmap(finalImage, (finalImage.getWidth() / 4), (finalImage.getHeight() / 4), true);
+                b.putParcelable("image", image);
+                i.putExtras(b);
+                startActivity(i);
             }
         });
     }

@@ -97,18 +97,19 @@ TODO: When user clicks "Manually Add Item" button it and the "add item from came
 
             <Button
                 android:id="@+id/submitButton"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/notesText"
                 android:text="Submit"
-                android:layout_alignParentStart="true" />
+                android:layout_below="@+id/notesText"
+                android:layout_alignParentEnd="true" />
 
             <Button
-                android:id="@+id/cloudVisionButton"
-                android:layout_width="match_parent"
+                android:id="@+id/createListingButton"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/submitButton"
-                android:text="Cloud Vision" />
+                android:layout_below="@+id/notesText"
+                android:layout_toStartOf="@+id/submitButton"
+                android:text="Listing" />
 
         </RelativeLayout>
 
