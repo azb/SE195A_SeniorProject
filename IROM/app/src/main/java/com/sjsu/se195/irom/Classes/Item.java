@@ -12,7 +12,7 @@ import java.util.Map;
  */
 
 public class Item implements Parcelable{
-    public String itemID;
+    public String itemID; // Set at Item creation
     public String uID;
     public Date dateAdded;
     public String name;
@@ -21,7 +21,7 @@ public class Item implements Parcelable{
     //maybe have tag as an arraylist of strings?
     //public String tag;
     public boolean forSale;
-    private static final int ITEM_ATTRIBUTE_SIZE = 6;
+    public String listingID; // Default null, set if listing created
 
     public String getuID() {
         return uID;
@@ -51,6 +51,7 @@ public class Item implements Parcelable{
         this.forSale = (boolean) in.readValue(boolean.class.getClassLoader());
         this.note = in.readString();
         this.quantity = in.readInt();
+        this.listingID = in.readString();
     }
 
     public String getItemID(){
@@ -151,6 +152,7 @@ public class Item implements Parcelable{
         parcel.writeValue(this.forSale);
         parcel.writeString(this.note);
         parcel.writeInt(this.quantity);
+        parcel.writeString(this.listingID);
     }
 
     public static final Parcelable.Creator<Item> CREATOR = new Parcelable.Creator<Item>() {

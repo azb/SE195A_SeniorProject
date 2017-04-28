@@ -50,6 +50,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -142,7 +143,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             @Override
             public void onClick(View view) {
                 // Check to see if a name first
-                if (TextUtils.isEmpty(submitIROMazonText.getText())) {
+                if (!(TextUtils.isEmpty(submitIROMazonText.getText()))) {
                     createIROMazonEntry();
                 } else {
                     Toast.makeText(IROMazonSearchActivity.this, "No name provided", Toast.LENGTH_SHORT).show();
@@ -150,37 +151,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             }
         });
 
-        // Get IROMazon data
-        IROMazonList = new ArrayList<>();
-        IROMazonDatabaseRef.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                // Just want to get all current items and any new ones
-                IROMazon temp = dataSnapshot.getValue(IROMazon.class);
-                if (temp.key == null) {
-                    temp.key = dataSnapshot.getKey();
-                }
-                IROMazonList.add(temp);
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
-        });
-
-        // Recycler view setup
+        // Set up adapter for RecyclerView
         IROMazonRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         iromazonAdapter = new IROMazonAdapter(IROMazonImageList, new OnItemClickListener() {
             @Override
@@ -201,13 +172,34 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             }
         });
         IROMazonRecyclerView.setAdapter(iromazonAdapter);
+
+        // Get IROMazon data
+        IROMazonList = new ArrayList<>();
+        IROMazonDatabaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot IROMazonSnapshot : dataSnapshot.getChildren()) {
+                    IROMazon temp = IROMazonSnapshot.getValue(IROMazon.class);
+                    if (temp.key == null) { // Fill out key for entries created without it
+                        temp.key = IROMazonSnapshot.getKey();
+                    }
+                    IROMazonList.add(temp);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Get entries failed, log a message
+                Toast.makeText(IROMazonSearchActivity.this, "Download failed", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void createIROMazonEntry() {
         // Create IROMazon object
         EditText submitIROMazonText = (EditText) findViewById(R.id.nameText);
         // TODO: Include entity data in IROMazon objects
-        final IROMazon newEntry = new IROMazon(submitIROMazonText.getText().toString(), IROMazonStringLists.get(1),
+        final IROMazon newEntry = new IROMazon(submitIROMazonText.getText().toString(), IROMazonStringLists.get(0), IROMazonStringLists.get(1),
                                                IROMazonStringLists.get(2), IROMazonStringLists.get(3), 19.95);
 
         // Get key for entry
@@ -550,11 +542,16 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
                 }
             }
 
-            // TODO: Change to compare against entity list instead of just name
             for (IROMazon storedData : IROMazonList) {
-                for (String newData : entityResults) {
-                    if (storedData.name.equals(newData)) {
+                if (storedData.entity.size() != 0) { // Handle the previous IROMazon entries that don't have this
+                    if (getIROMazon_TLLScore(entityResults, storedData.entity) >= 0.5) {
                         result.add(storedData);
+                    }
+                } else { // Here use old method of just comparing with IROMazon entry name
+                    for (String newData : entityResults) {
+                        if (storedData.name.equals(newData)) {
+                            result.add(storedData);
+                        }
                     }
                 }
             }

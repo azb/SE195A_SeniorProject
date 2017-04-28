@@ -6,7 +6,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.graphics.Color;
@@ -21,17 +23,16 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.sjsu.se195.irom.Classes.Item;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 /**
  * Created by Arthur on 11/9/2016.
@@ -47,6 +48,9 @@ public class InventoryActivity extends NavigationDrawerActivity {
     private final FirebaseStorage storage = FirebaseStorage.getInstance();
     private final long ONE_MEGABYTE = 1024 * 1024; // Max image download size to avoid issues
     private static final String TAG = InventoryActivity.class.getSimpleName();
+    private int currentLoadedCount;
+    private int totalToLoadCount;
+    private SwipeRefreshLayout swipeLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,53 +62,30 @@ public class InventoryActivity extends NavigationDrawerActivity {
 
         // Variables
         mUser = FirebaseAuth.getInstance().getCurrentUser();
-        itemRecyclerView = (RecyclerView) findViewById(R.id.item_recycler_view);
+        itemRecyclerView = (RecyclerView) findViewById(R.id.inventory_recycler_view);
         itemRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
 
         // Set up the database ref
-        DatabaseReference ref = database.getReference("items");
+        final DatabaseReference ref = database.getReference("items");
 
-        //pull any changes as they are made, whether a new item is added, changed, or removed.
-        ref.addChildEventListener(new ChildEventListener() {
+        // Set up refresh listener
+        swipeLayout = ((SwipeRefreshLayout) findViewById(R.id.inventory_swipe_layout));
+        swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                
-                Item item = dataSnapshot.getValue(Item.class);
-                if(item.getuID().equals(mUser.getUid())){
-                    if (item.itemID == null) {
-                        item.itemID = dataSnapshot.getKey();
-                    }
-                    // Post to get the accompanying image
-                    getImage(new ItemImage(item));
-                }
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-                //item to be removed
-                Item item = dataSnapshot.getValue(Item.class);
-                //iterate through the list, remove the one that is the same as item
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                //get item failed, log a message
-                Toast.makeText(InventoryActivity.this, "Cancelled. Refresh", Toast.LENGTH_SHORT).show();
+            public void onRefresh() {
+                refreshItems(ref);
             }
         });
+        // Set refresh spinner to be below action bar
+        int actionBarHeight = 0;
+        TypedValue tv = new TypedValue();
+        if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
+            actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
+        }
+        swipeLayout.setProgressViewOffset(false, 0, actionBarHeight);
 
-        //add your items to the view and set up listener for when you click on an item
+        // Set up adapter
         itemAdapter = new ItemAdapter(mItemList, new OnItemClickListener() {
             @Override
             public void onItemClick(ItemImage itemimage) {
@@ -123,6 +104,57 @@ public class InventoryActivity extends NavigationDrawerActivity {
             }
         });
         itemRecyclerView.setAdapter(itemAdapter);
+
+        // Initial load
+        refreshItems(ref);
+    }
+
+    private void refreshItems(DatabaseReference ref) {
+        // Initial setup
+        mItemList = new ArrayList<>();
+        currentLoadedCount = 0;
+        // Set refreshing
+        swipeLayout.setRefreshing(true);
+
+        // Using Value Listeners for a list stores all results in the single DataSnapshot
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                totalToLoadCount = (int) dataSnapshot.getChildrenCount();
+                for (DataSnapshot itemSnapshot : dataSnapshot.getChildren()) {
+                    Item item = itemSnapshot.getValue(Item.class);
+                    if (item.uID.equals(mUser.getUid())) {
+                        if (item.itemID == null) { // Update itemID for items that don't have it yet
+                            item.itemID = itemSnapshot.getKey();
+                        }
+
+                        // Get image now too
+                        getImage(new ItemImage(item));
+                    } else {
+                        // Not an item we're getting
+                        totalToLoadCount--;
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Get items failed, log a message
+                Toast.makeText(InventoryActivity.this, "Download failed", Toast.LENGTH_SHORT).show();
+                // Stop refresh
+                swipeLayout.setRefreshing(false);
+            }
+        });
+    }
+
+    private void onLoadComplete() {
+        if (currentLoadedCount == totalToLoadCount) {
+            // Update adapter
+            itemAdapter.mList = mItemList;
+            itemAdapter.notifyDataSetChanged();
+            // Stop refresh
+            swipeLayout.setRefreshing(false);
+        }
     }
 
     private class ItemImage {
@@ -150,8 +182,8 @@ public class InventoryActivity extends NavigationDrawerActivity {
                 Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                 itemimage.image = Bitmap.createScaledBitmap(bmp, (bmp.getWidth() / 4), (bmp.getHeight() / 4), true);
                 mItemList.add(itemimage);
-                itemAdapter.mList = mItemList;
-                itemAdapter.notifyDataSetChanged();
+                currentLoadedCount++;
+                onLoadComplete();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -159,8 +191,8 @@ public class InventoryActivity extends NavigationDrawerActivity {
                 Log.d(TAG, "Something went wrong downloading the image!");
                 // Still want to put the item up since quite a few still do not have images currently
                 mItemList.add(itemimage);
-                itemAdapter.mList = mItemList;
-                itemAdapter.notifyDataSetChanged();
+                currentLoadedCount++;
+                onLoadComplete();
             }
         });
     }

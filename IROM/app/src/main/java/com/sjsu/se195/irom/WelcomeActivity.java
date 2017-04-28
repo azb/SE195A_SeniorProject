@@ -4,12 +4,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +22,6 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -42,6 +42,9 @@ public class WelcomeActivity extends NavigationDrawerActivity {
     private FirebaseUser mUser;
     private ListingAdapter listingAdapter;
     private ArrayList<ListingProfile> mListingList = new ArrayList<>();
+    private int currentLoadedCount;
+    private int totalToLoadCount;
+    private SwipeRefreshLayout swipeLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,41 +60,25 @@ public class WelcomeActivity extends NavigationDrawerActivity {
         listingRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         // Get reference of listings from database
-        DatabaseReference ref = database.getReference("listings");
+        final DatabaseReference ref = database.getReference("listings/");
 
-        // Pull any changes as they are made, whether a new listing is added, changed, or removed.
-        ref.addChildEventListener(new ChildEventListener() {
+        // Set up refresh listener
+        swipeLayout = ((SwipeRefreshLayout) findViewById(R.id.listing_swipe_layout));
+        swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                Log.d(TAG, "onChildAdded:" + dataSnapshot.getKey());
-
-                Listing listing = dataSnapshot.getValue(Listing.class);
-                if (!listing.creator.equals(mUser.getUid())) {
-                    // Post to get profile
-                    getProfile(listing);
-                }
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                // Get listing failed, log a message
-                Toast.makeText(WelcomeActivity.this, "Cancelled. Refresh", Toast.LENGTH_SHORT).show();
+            public void onRefresh() {
+                refreshItems(ref);
             }
         });
+        // Set refresh spinner to be below action bar
+        int actionBarHeight = 0;
+        TypedValue tv = new TypedValue();
+        if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
+            actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
+        }
+        swipeLayout.setProgressViewOffset(false, 0, actionBarHeight);
 
-        // Add listings to the view
+        // Set up adapter
         listingAdapter = new ListingAdapter(mListingList, new OnItemClickListener() {
             @Override
             public void onItemClick(ListingProfile listingProfile) {
@@ -113,6 +100,53 @@ public class WelcomeActivity extends NavigationDrawerActivity {
             }
         });
         listingRecyclerView.setAdapter(listingAdapter);
+
+        // Initial load of listings
+        refreshItems(ref);
+    }
+
+    private void refreshItems(DatabaseReference ref) {
+        // Initial setup
+        mListingList = new ArrayList<>();
+        currentLoadedCount = 0;
+        // Set refreshing
+        swipeLayout.setRefreshing(true);
+
+        // Using Value Listeners for a list stores all results in the single DataSnapshot
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                totalToLoadCount = (int) dataSnapshot.getChildrenCount();
+                for (DataSnapshot listingSnapshot : dataSnapshot.getChildren()) {
+                    Listing listing = listingSnapshot.getValue(Listing.class);
+                    if (!listing.creator.equals(mUser.getUid())) {
+                        // Next get profile
+                        getProfile(listing);
+                    } else {
+                        // Not a listing we're getting
+                        totalToLoadCount--;
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Get listings failed, log a message
+                Toast.makeText(WelcomeActivity.this, "Download failed", Toast.LENGTH_SHORT).show();
+                // Stop refresh
+                swipeLayout.setRefreshing(false);
+            }
+        });
+    }
+
+    private void onLoadComplete() {
+        if (currentLoadedCount == totalToLoadCount) {
+            // Update adapter
+            listingAdapter.mList = mListingList;
+            listingAdapter.notifyDataSetChanged();
+            // Stop refresh
+            swipeLayout.setRefreshing(false);
+        }
     }
 
     /**
@@ -135,14 +169,14 @@ public class WelcomeActivity extends NavigationDrawerActivity {
         }
     }
 
-    public void getProfile(final Listing listing) {
+    private void getProfile(final Listing listing) {
         DatabaseReference profileRef = database.getReference("profile/" + listing.creator);
 
         // Probably really inefficient to redo this every time but not sure how else to do it
         profileRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d(TAG, "onDataChange:" + dataSnapshot.getKey());
+                Log.d(TAG, "onDataChange: " + dataSnapshot.getKey());
 
                 Profile profile = dataSnapshot.getValue(Profile.class);
                 ListingProfile listingProfile = new ListingProfile(listing, profile);
@@ -150,10 +184,8 @@ public class WelcomeActivity extends NavigationDrawerActivity {
                 if (listing.item.itemID == null) { // Temporary measure while there's items without itemID
                     // Use the container class to store both the listing and the profile in the list
                     mListingList.add(listingProfile);
-
-                    // Update adapter
-                    listingAdapter.mList = mListingList;
-                    listingAdapter.notifyDataSetChanged();
+                    currentLoadedCount++;
+                    onLoadComplete();
                 } else { // There is an itemID, can try to get image
                     getImage(listingProfile);
                 }
@@ -167,9 +199,10 @@ public class WelcomeActivity extends NavigationDrawerActivity {
         });
     }
 
-    public void getImage(final ListingProfile listingProfile) {
+    private void getImage(final ListingProfile listingProfile) {
         // Set up the storage ref
         StorageReference imageRef = FirebaseStorage.getInstance().getReference("items/" + listingProfile.listing.item.itemID);
+        Log.d(TAG, "Trying to get image for: " + listingProfile.listing.item.itemID);
 
         // Get the image
         imageRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
@@ -178,8 +211,8 @@ public class WelcomeActivity extends NavigationDrawerActivity {
                 Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                 listingProfile.image = Bitmap.createScaledBitmap(bmp, (bmp.getWidth() / 4), (bmp.getHeight() / 4), true);
                 mListingList.add(listingProfile);
-                listingAdapter.mList = mListingList;
-                listingAdapter.notifyDataSetChanged();
+                currentLoadedCount++;
+                onLoadComplete();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -187,8 +220,8 @@ public class WelcomeActivity extends NavigationDrawerActivity {
                 Log.d(TAG, "Something went wrong downloading the image!");
                 // Still want to put the listing up since quite a few still do not have images currently
                 mListingList.add(listingProfile);
-                listingAdapter.mList = mListingList;
-                listingAdapter.notifyDataSetChanged();
+                currentLoadedCount++;
+                onLoadComplete();
             }
         });
 
@@ -199,7 +232,6 @@ public class WelcomeActivity extends NavigationDrawerActivity {
         Listing listing;
         Profile profile;
         Bitmap image;
-        Bundle bundle = new Bundle();
         View listingView;
 
         // Set up layout of each part of the listing

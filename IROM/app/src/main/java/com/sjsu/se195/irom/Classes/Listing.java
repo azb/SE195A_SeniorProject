@@ -10,7 +10,7 @@ import java.util.Date;
  */
 
 public class Listing implements Parcelable{
-    public String listID;
+    public String listID; // Set at Listing creation
     public Date dateCreated;
     public String creator;
     public Item item;
