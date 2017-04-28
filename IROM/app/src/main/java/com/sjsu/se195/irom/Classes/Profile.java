@@ -16,7 +16,7 @@ public class Profile implements Parcelable {
     public String uID;
     public String firstName;
     public String lastName;
-    public String currency;
+    //public String currency;
 
     // TODO: add timezone, location
 
@@ -68,26 +68,25 @@ public class Profile implements Parcelable {
     public String getFirstName() {
         return firstName;
     }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
-
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
 
-    public void setCurrency(String currency) {
-        this.currency = currency;
+    public String getLastName() {
+        return lastName;
     }
-
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
+
+    /*
+    public String getCurrency() {
+        return currency;
+    }
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+    */
 
     @Exclude
     public Map<String,Object> toMap(){
