@@ -3,50 +3,55 @@
 <!--THIS IS THE SPECIFIC LAYOUT OF AN ITEM THAT WILL BE REPEATED FOR AN INVENTORY LIST-->
 <!--This layout will be used as a format per item for the adaptor-->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="5dp"
-    android:layout_marginBottom="5dp">
+    android:layout_margin="5dp">
 
-    <ImageView
-        android:id="@+id/item_list_item_image"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="5dp"
-        app:srcCompat="@drawable/a12633702" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/item_list_item_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="5dp"
-        android:layout_marginTop="12dp"
-        android:layout_toEndOf="@+id/item_list_item_image"
-        android:text="item name" />
+        <ImageView
+            android:id="@+id/item_list_item_image"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_margin="5dp"
+            app:srcCompat="@drawable/a12633702" />
 
-    <TextView
-        android:id="@+id/item_list_item_forSale"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/item_list_item_name"
-        android:layout_marginLeft="5dp"
-        android:layout_marginTop="10dp"
-        android:layout_toEndOf="@+id/item_list_item_image"
-        android:text="forSale" />
+        <TextView
+            android:id="@+id/item_list_item_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="12dp"
+            android:layout_toEndOf="@+id/item_list_item_image"
+            android:text="item name" />
 
-    <TextView
-        android:id="@+id/item_list_item_quantity"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/item_list_item_forSale"
-        android:layout_marginLeft="5dp"
-        android:layout_marginTop="10dp"
-        android:layout_toEndOf="@+id/item_list_item_image"
-        android:text="quantity" />
+        <TextView
+            android:id="@+id/item_list_item_forSale"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/item_list_item_name"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="10dp"
+            android:layout_toEndOf="@+id/item_list_item_image"
+            android:text="forSale" />
 
-</RelativeLayout>
+        <TextView
+            android:id="@+id/item_list_item_quantity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/item_list_item_forSale"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="10dp"
+            android:layout_toEndOf="@+id/item_list_item_image"
+            android:text="quantity" />
+
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>

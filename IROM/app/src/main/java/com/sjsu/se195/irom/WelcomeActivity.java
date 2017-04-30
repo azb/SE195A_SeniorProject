@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.SearchView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -33,6 +34,9 @@ import com.sjsu.se195.irom.Classes.Listing;
 import com.sjsu.se195.irom.Classes.Profile;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Locale;
 
 public class WelcomeActivity extends NavigationDrawerActivity {
@@ -45,6 +49,7 @@ public class WelcomeActivity extends NavigationDrawerActivity {
     private int currentLoadedCount;
     private int totalToLoadCount;
     private SwipeRefreshLayout swipeLayout;
+    private String queryText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +82,32 @@ public class WelcomeActivity extends NavigationDrawerActivity {
             actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
         }
         swipeLayout.setProgressViewOffset(false, 0, actionBarHeight);
+
+        // Set up SearchView
+        SearchView searchView = (SearchView) findViewById(R.id.listing_search_view);
+        searchView.setSubmitButtonEnabled(true);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                queryText = query;
+                refreshItems(ref);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                ArrayList<ListingProfile> quickResults = new ArrayList<>();
+                newText = newText.toLowerCase();
+                for (ListingProfile current : mListingList) {
+                    if (current.listing.item.name.toLowerCase().contains(newText) || current.listing.description.toLowerCase().contains(newText)) {
+                        quickResults.add(current);
+                    }
+                }
+                listingAdapter.mList = quickResults;
+                listingAdapter.notifyDataSetChanged();
+                return true;
+            }
+        });
 
         // Set up adapter
         listingAdapter = new ListingAdapter(mListingList, new OnItemClickListener() {
@@ -118,7 +149,7 @@ public class WelcomeActivity extends NavigationDrawerActivity {
                 totalToLoadCount = (int) dataSnapshot.getChildrenCount();
                 for (DataSnapshot listingSnapshot : dataSnapshot.getChildren()) {
                     Listing listing = listingSnapshot.getValue(Listing.class);
-                    if (!listing.creator.equals(mUser.getUid())) {
+                    if (!listing.creator.equals(mUser.getUid()) && listing.isLive) {
                         // Next get profile
                         getProfile(listing);
                     } else {
@@ -146,6 +177,23 @@ public class WelcomeActivity extends NavigationDrawerActivity {
     private void onLoadComplete() {
         if (currentLoadedCount == totalToLoadCount) {
             // Update adapter
+            Collections.sort(mListingList, new Comparator<ListingProfile>() {
+                @Override
+                public int compare(ListingProfile o1, ListingProfile o2) {
+                    return o1.listing.price.compareTo(o2.listing.price);
+                }
+            });
+            if (queryText != null) {
+                Log.d(TAG, queryText);
+                queryText = queryText.toLowerCase();
+                for (Iterator<ListingProfile> iterator = mListingList.iterator(); iterator.hasNext();) {
+                    ListingProfile current = iterator.next();
+                    if (!current.listing.item.name.toLowerCase().contains(queryText) && !current.listing.description.toLowerCase().contains(queryText)) {
+                        iterator.remove();
+                    }
+                }
+                queryText = null;
+            }
             listingAdapter.mList = mListingList;
             listingAdapter.notifyDataSetChanged();
             // Stop refresh
@@ -307,8 +355,10 @@ public class WelcomeActivity extends NavigationDrawerActivity {
 
         @Override
         public void onBindViewHolder(ListingHolder holder, int position) {
-            ListingProfile listingProfile = mList.get(position);
-            holder.bindListing(listingProfile, listener);
+            if (position < mList.size()) {
+                ListingProfile listingProfile = mList.get(position);
+                holder.bindListing(listingProfile, listener);
+            }
         }
 
 
