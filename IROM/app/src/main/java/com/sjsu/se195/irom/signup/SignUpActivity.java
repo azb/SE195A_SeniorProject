@@ -163,7 +163,7 @@ public class SignUpActivity extends AppCompatActivity {
                                     }else{
                                         Profile p = new Profile(mAuth.getCurrentUser().getUid(),firstName.getText().toString(),lastName.getText().toString());
                                         mDatabase.child("profile").child(mAuth.getCurrentUser().getUid()).setValue(p);
-                                        Intent intent = new Intent( getBaseContext(), FirstTimePictureActivity.class);
+                                        Intent intent = new Intent( getBaseContext(), WelcomeActivity.class);
                                         startActivity(intent);
                                     }
                                 }

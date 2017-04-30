@@ -244,7 +244,7 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
                         int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
                         String picturePath = cursor.getString(columnIndex);
 
-                        ImageView imageView = (ImageView) findViewById(R.id.imageView);
+                        ImageView imageView = (ImageView) findViewById(R.id.nav_bar_logo);
                         imageView.setImageBitmap(BitmapFactory.decodeFile(picturePath));
                     }
                 } catch (java.lang.NullPointerException e) {
@@ -254,7 +254,7 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
             if (requestCode == CAMERA_IMAGE_REQUEST) {
                 try {
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), currentPhotoURI);
-                    ImageView imageView = (ImageView) findViewById(R.id.imageView);
+                    ImageView imageView = (ImageView) findViewById(R.id.nav_bar_logo);
                     imageView.setImageBitmap(bitmap);
                 } catch (java.io.IOException e) {
                     Log.d(TAG, "Image selection failed: " + e.getMessage());
@@ -283,7 +283,7 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
 
     public void uploadImage() {
         try {
-            ImageView imageView = (ImageView) findViewById(R.id.imageView);
+            ImageView imageView = (ImageView) findViewById(R.id.nav_bar_logo);
             Drawable drawable = imageView.getDrawable();
             Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
             bitmap = scaleBitmapDown(bitmap, 1200);
