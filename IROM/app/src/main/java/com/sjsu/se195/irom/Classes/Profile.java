@@ -62,29 +62,6 @@ public class Profile implements Parcelable {
         }
     };
 
-    public String getFirstName() {
-        return firstName;
-    }
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    /*
-    public String getCurrency() {
-        return currency;
-    }
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-    */
-
     @Exclude
     public Map<String,Object> toMap(){
         HashMap<String, Object> result = new HashMap<>();
@@ -93,5 +70,30 @@ public class Profile implements Parcelable {
         result.put("last name",lastName);
 
         return result;
+    }
+
+    // Getters/Setters
+    public String getuID() {
+        return uID;
+    }
+
+    public void setuID(String uID) {
+        this.uID = uID;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 }

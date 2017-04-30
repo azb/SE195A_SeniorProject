@@ -80,4 +80,61 @@ public class Listing implements Parcelable{
             return new Listing[size];
         }
     };
+
+    // Getters/Setters
+    public String getListID() {
+        return listID;
+    }
+
+    public Date getDateCreated() {
+        return dateCreated;
+    }
+
+    public String getCreator() {
+        return creator;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public Boolean getLive() {
+        return isLive;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setListID(String listID) {
+        this.listID = listID;
+    }
+
+    public void setDateCreated(Date dateCreated) {
+        this.dateCreated = dateCreated;
+    }
+
+    public void setCreator(String creator) {
+        this.creator = creator;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setLive(Boolean live) {
+        isLive = live;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
 }

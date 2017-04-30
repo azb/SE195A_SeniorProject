@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.graphics.Color;
 import android.widget.ImageView;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -33,6 +34,9 @@ import com.google.firebase.storage.StorageReference;
 import com.sjsu.se195.irom.Classes.Item;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 
 /**
  * Created by Arthur on 11/9/2016.
@@ -51,13 +55,14 @@ public class InventoryActivity extends NavigationDrawerActivity {
     private int currentLoadedCount;
     private int totalToLoadCount;
     private SwipeRefreshLayout swipeLayout;
+    private String queryText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //INSTEAD OF setContentView(R.layout.activity_welcome); USE NEXT 3 LINES IF YOU WANT TH NAV BAR TO WORK
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View contentView = inflater.inflate(R.layout.item_list, null, false);
+        View contentView = inflater.inflate(R.layout.activity_inventory, null, false);
         this.drawer.addView(contentView, 0);
 
         // Variables
@@ -84,6 +89,32 @@ public class InventoryActivity extends NavigationDrawerActivity {
             actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
         }
         swipeLayout.setProgressViewOffset(false, 0, actionBarHeight);
+
+        // Set up SearchView
+        SearchView searchView = (SearchView) findViewById(R.id.inventory_search_view);
+        searchView.setSubmitButtonEnabled(true);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                queryText = query;
+                refreshItems(ref);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                ArrayList<ItemImage> quickResults = new ArrayList<>();
+                newText = newText.toLowerCase();
+                for (ItemImage current : mItemList) {
+                    if (current.item.name.toLowerCase().contains(newText) || current.item.note.toLowerCase().contains(newText)) {
+                        quickResults.add(current);
+                    }
+                }
+                itemAdapter.mList = quickResults;
+                itemAdapter.notifyDataSetChanged();
+                return true;
+            }
+        });
 
         // Set up adapter
         itemAdapter = new ItemAdapter(mItemList, new OnItemClickListener() {
@@ -155,6 +186,23 @@ public class InventoryActivity extends NavigationDrawerActivity {
     private void onLoadComplete() {
         if (currentLoadedCount == totalToLoadCount) {
             // Update adapter
+            Collections.sort(mItemList, new Comparator<ItemImage>() {
+                @Override
+                public int compare(ItemImage o1, ItemImage o2) {
+                   return o1.item.name.compareTo(o2.item.name);
+                }
+            });
+            if (queryText != null) {
+                Log.d(TAG, queryText);
+                queryText = queryText.toLowerCase();
+                for (Iterator<ItemImage> iterator = mItemList.iterator(); iterator.hasNext();) {
+                    ItemImage current = iterator.next();
+                    if (!current.item.name.toLowerCase().contains(queryText) && !current.item.note.toLowerCase().contains(queryText)) {
+                        iterator.remove();
+                    }
+                }
+                queryText = null;
+            }
             itemAdapter.mList = mItemList;
             itemAdapter.notifyDataSetChanged();
             // Stop refresh
@@ -281,9 +329,10 @@ public class InventoryActivity extends NavigationDrawerActivity {
 
         @Override
         public void onBindViewHolder(ItemHolder holder, int position) {
-            final ItemImage itemImage = mList.get(position);
-            holder.bindItem(itemImage, listener);
-
+            if (position < mList.size()) {
+                final ItemImage itemImage = mList.get(position);
+                holder.bindItem(itemImage, listener);
+            }
         }
 
         @Override
