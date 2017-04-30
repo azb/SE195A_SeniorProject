@@ -1,4 +1,4 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root_layout"
     android:layout_width="match_parent"
@@ -7,9 +7,11 @@
     tools:context="com.sjsu.se195.irom.InventoryItemDetailActivity">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_width="344dp"
+        android:layout_height="495dp"
+        android:orientation="vertical"
+        tools:layout_editor_absoluteY="8dp"
+        tools:layout_editor_absoluteX="8dp">
 
         <ImageView
             android:id="@+id/item_detail_picture"
@@ -30,10 +32,21 @@
             android:layout_height="wrap_content"
             android:text="desc" />
 
-        <TextView
-            android:id="@+id/item_detail_date"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+       <LinearLayout
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content">
+           <TextView
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:id="@+id/item_detail_date_label"
+               android:labelFor="@+id/item_detail_date"
+               android:text="Created: "
+               />
+           <TextView
+               android:id="@+id/item_detail_date"
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content" />
+       </LinearLayout>
 
         <TextView
             android:id="@+id/item_detail_quantity"
@@ -48,4 +61,4 @@
 
 
     </LinearLayout>
-</FrameLayout>
+</android.support.constraint.ConstraintLayout>
