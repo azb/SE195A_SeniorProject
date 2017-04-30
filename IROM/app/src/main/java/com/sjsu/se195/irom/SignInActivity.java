@@ -228,11 +228,6 @@ public class SignInActivity extends AppCompatActivity {
         }
     }
 
-    private void showKeyboard(View view) {
-        InputMethodManager inputMethodManager = (InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
-        inputMethodManager.showSoftInput(view, 0);
-    }
-
     @Override
     public void onStart() {
         super.onStart();
@@ -270,9 +265,14 @@ public class SignInActivity extends AppCompatActivity {
         });
     }
 
-//this is used for hiding the keyboard
+//these are used for hiding and showing the keyboard
     public void hideKeyboard(View view) {
         InputMethodManager inputMethodManager =(InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
+    private void showKeyboard(View view) {
+        InputMethodManager inputMethodManager = (InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.showSoftInput(view, 0);
     }
 }

@@ -84,6 +84,8 @@ public class SignUpActivity extends AppCompatActivity {
             public void onFocusChange(View view, boolean hasFocus) {
                 if(!hasFocus){
                     hideKeyboard(view);
+                }else{
+                    showKeyboard(view);
                 }
             }
         });
@@ -92,6 +94,8 @@ public class SignUpActivity extends AppCompatActivity {
             public void onFocusChange(View view, boolean hasFocus) {
                 if(!hasFocus){
                     hideKeyboard(view);
+                }else{
+                    showKeyboard(view);
                 }
             }
         });
@@ -100,6 +104,8 @@ public class SignUpActivity extends AppCompatActivity {
             public void onFocusChange(View view, boolean hasFocus) {
                 if(!hasFocus){
                     hideKeyboard(view);
+                }else{
+                    showKeyboard(view);
                 }
             }
         });
@@ -108,6 +114,8 @@ public class SignUpActivity extends AppCompatActivity {
             public void onFocusChange(View view, boolean hasFocus) {
                 if(!hasFocus){
                     hideKeyboard(view);
+                }else{
+                    showKeyboard(view);
                 }
             }
         });
@@ -186,9 +194,13 @@ public class SignUpActivity extends AppCompatActivity {
         }
     }
 
-    //this is used for hiding the keyboard
+    //these are used for hiding and showing the keyboard
     public void hideKeyboard(View view) {
         InputMethodManager inputMethodManager =(InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+    private void showKeyboard(View view) {
+        InputMethodManager inputMethodManager = (InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.showSoftInput(view, 0);
     }
 }
