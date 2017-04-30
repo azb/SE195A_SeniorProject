@@ -122,13 +122,16 @@ public class SignUpActivity extends AppCompatActivity {
         signUpButton.setOnClickListener(new View.OnClickListener(){
 
             public void onClick(View v){
+                //hide the keyboard
+                hideKeyboard(v);
+
                 //check validity of input
                 if(email.getText().toString().isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email.getText().toString()).matches()){
                     //all fields listed as if null are required fields
                     email.requestFocus();
                     email.setError("a valid email is required");
                 }
-                else if(password1.getText().toString().isEmpty()){
+                else if(password1.getText().toString().isEmpty() || password1.length()<6){
                     //if the two password fields don't match do the exclamation mark error
                     password1.requestFocus();
                     password1.setError("passwords should be 6 or more characters");
@@ -155,12 +158,12 @@ public class SignUpActivity extends AppCompatActivity {
                                     // the auth state listener will be notified and logic to handle the
                                     // signed in user can be handled in the listener.
                                     if (!task.isSuccessful()) {
-                                        Toast.makeText(SignUpActivity.this, R.string.auth_failed,
+                                        Toast.makeText(SignUpActivity.this, "There was an error making an account.",
                                                 Toast.LENGTH_SHORT).show();
                                     }else{
                                         Profile p = new Profile(mAuth.getCurrentUser().getUid(),firstName.getText().toString(),lastName.getText().toString());
                                         mDatabase.child("profile").child(mAuth.getCurrentUser().getUid()).setValue(p);
-                                        Intent intent = new Intent( getBaseContext(), FirstTimePictureActivity.class);
+                                        Intent intent = new Intent( getBaseContext(), WelcomeActivity.class);
                                         startActivity(intent);
                                     }
                                 }
