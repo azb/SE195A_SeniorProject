@@ -62,6 +62,11 @@ public class SignInActivity extends AppCompatActivity {
         };
 
         //set up edit texts (email and password fields)
+        setUpFields();
+
+    }
+
+    private void setUpFields() {
         email = (EditText) findViewById(R.id.signin_email);
         //if focus isnt on email, close kb
         email.setOnFocusChangeListener(new View.OnFocusChangeListener(){
@@ -97,7 +102,7 @@ public class SignInActivity extends AppCompatActivity {
 
             }
 
-            });
+        });
         password = (EditText) findViewById(R.id.signin_password_text);
         //when you change stuff, remove that error
         password.addTextChangedListener(new TextWatcher() {
@@ -111,7 +116,7 @@ public class SignInActivity extends AppCompatActivity {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count,
                                           int after) {
-                // TODO Auto-generated method stub
+
 
             }
 
@@ -152,7 +157,7 @@ public class SignInActivity extends AppCompatActivity {
         signInButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
-               //sign in attempt
+                //sign in attempt
                 signInAttempt();
             }
         });
@@ -206,7 +211,6 @@ public class SignInActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
     }
 
     private void signInAttempt() {
