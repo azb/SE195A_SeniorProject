@@ -9,7 +9,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -41,8 +43,7 @@ public class SignInActivity extends AppCompatActivity {
         setContentView(R.layout.activity_sign_in);
         //auth client for firebase user
         mAuth = FirebaseAuth.getInstance();
-        //this is redundant because of the stuff in the buttons. i think.
-        // TODO fix the redundancies in the sign in button and the auth user here
+
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -50,6 +51,8 @@ public class SignInActivity extends AppCompatActivity {
                 if (user != null) {
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+                    Intent intent = new Intent( getBaseContext(), WelcomeActivity.class);
+                    startActivity(intent);
                 } else {
                     // User is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");
@@ -130,27 +133,27 @@ public class SignInActivity extends AppCompatActivity {
                 }
             }
         });
+        password.setOnEditorActionListener(new TextView.OnEditorActionListener(){
+
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                boolean handled = false;
+                if (i == EditorInfo.IME_ACTION_DONE) {
+                  /* Write your logic here that will be executed when user taps next button */
+                    signInAttempt();
+
+                    handled = true;
+                }
+                return handled;
+            }
+        });
         //set up button and button click function
         signInButton = (Button) findViewById(R.id.signin_button);
         signInButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
-                //check email for being empty or not a valid email
-                String em = email.getText().toString();
-                String pw = password.getText().toString();
-                if (em.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(em).matches()){
-                    email.requestFocus();
-                    email.setError("a valid email is required");
-                }else if(pw.isEmpty() || pw.length()<6){
-                    password.requestFocus();
-                    password.setError("passwords should be 6 or more characters");
-                }else{
-                    email.setError(null);
-                    password.setError(null);
-                    signIn(email.getText().toString(), password.getText().toString());
-
-
-                }
+               //sign in attempt
+                signInAttempt();
             }
         });
         //set up forgot password stuff
@@ -204,6 +207,25 @@ public class SignInActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void signInAttempt() {
+        //check email for being empty or not a valid email
+        String em = email.getText().toString();
+        String pw = password.getText().toString();
+        if (em.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(em).matches()){
+            email.requestFocus();
+            email.setError("a valid email is required");
+        }else if(pw.isEmpty() || pw.length()<6){
+            password.requestFocus();
+            password.setError("passwords should be 6 or more characters");
+        }else{
+            email.setError(null);
+            password.setError(null);
+            signIn(email.getText().toString(), password.getText().toString());
+
+
+        }
     }
 
     private void showKeyboard(View view) {

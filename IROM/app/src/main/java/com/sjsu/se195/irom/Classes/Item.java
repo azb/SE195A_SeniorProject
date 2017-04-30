@@ -47,8 +47,8 @@ public class Item implements Parcelable{
         this.itemID = in.readString();
         this.uID = in.readString();
         this.name = in.readString();
-       // this.dateAdded = (Date) in.readValue(getClass().getClassLoader());
-        this.forSale = (boolean) in.readValue(boolean.class.getClassLoader());
+        this.dateAdded = new Date(in.readLong());
+        this.forSale = (boolean) in.readValue(getClass().getClassLoader());
         this.note = in.readString();
         this.quantity = in.readInt();
         this.listingID = in.readString();
@@ -147,8 +147,7 @@ public class Item implements Parcelable{
         parcel.writeString(this.itemID);
         parcel.writeString(this.uID);
         parcel.writeString(this.name);
-       // TODO FIX DATE
-       // parcel.writeValue(this.dateAdded);
+        parcel.writeLong(this.dateAdded.getTime());
         parcel.writeValue(this.forSale);
         parcel.writeString(this.note);
         parcel.writeInt(this.quantity);

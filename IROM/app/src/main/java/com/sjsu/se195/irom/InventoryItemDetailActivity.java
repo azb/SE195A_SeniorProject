@@ -35,6 +35,7 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
     private ImageView itemImage;
     private TextView itemName;
     private TextView itemDesc;
+    private TextView itemCreatedDateLabel;
     private TextView itemCreatedDate;
     private Button itemListingButton;
     private TextView itemQuantity;
@@ -63,9 +64,11 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
 
         itemDesc = (TextView) findViewById(R.id.item_detail_desc);
         itemDesc.setText(item.getNote());
-//
-//        itemCreatedDate = (TextView) findViewById(R.id.item_detail_date);
-//        itemCreatedDate.setText(item.getDateAdded().toString());
+
+        itemCreatedDateLabel = (TextView) findViewById(R.id.item_detail_date_label);
+
+        itemCreatedDate = (TextView) findViewById(R.id.item_detail_date);
+        itemCreatedDate.setText(item.getDateAdded().toString());
 
         itemQuantity = (TextView) findViewById(R.id.item_detail_quantity);
         itemQuantity.setText(String.valueOf(item.getQuantity()));
