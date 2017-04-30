@@ -261,7 +261,7 @@ public class InventoryActivity extends NavigationDrawerActivity {
         TextView itemForSale;
 
 
-        public ItemHolder(View itemView) {
+        ItemHolder(View itemView) {
             super(itemView);
 
             // Initialize name/q/forsale status/item image
@@ -270,11 +270,10 @@ public class InventoryActivity extends NavigationDrawerActivity {
             itemName = (TextView) itemView.findViewById(R.id.item_list_item_name);
             itemQuantity = (TextView) itemView.findViewById(R.id.item_list_item_quantity);
             itemForSale = (TextView) itemView.findViewById(R.id.item_list_item_forSale);
-
         }
 
         // Bind item to the holder and set name accordingly
-        public void bindItem(ItemImage i, final OnItemClickListener listener) {
+        void bindItem(ItemImage i, final OnItemClickListener listener) {
             // Pass the object to the main activity so the individual item can be pulled
             item = i.item;
             image = i.image;
@@ -305,16 +304,16 @@ public class InventoryActivity extends NavigationDrawerActivity {
         }
     }
 
-    public interface OnItemClickListener {
+    interface OnItemClickListener {
         void onItemClick(ItemImage itemimage);
     }
 
 
-    public class ItemAdapter extends RecyclerView.Adapter<ItemHolder> {
+    private class ItemAdapter extends RecyclerView.Adapter<ItemHolder> {
         private ArrayList<ItemImage> mList;
         private final OnItemClickListener listener;
 
-        public ItemAdapter(ArrayList<ItemImage> list, OnItemClickListener listener) {
+        ItemAdapter(ArrayList<ItemImage> list, OnItemClickListener listener) {
             this.mList = list;
             this.listener = listener;
         }
@@ -330,7 +329,7 @@ public class InventoryActivity extends NavigationDrawerActivity {
         @Override
         public void onBindViewHolder(ItemHolder holder, int position) {
             if (position < mList.size()) {
-                final ItemImage itemImage = mList.get(position);
+                ItemImage itemImage = mList.get(position);
                 holder.bindItem(itemImage, listener);
             }
         }

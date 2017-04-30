@@ -276,15 +276,12 @@ public class WelcomeActivity extends NavigationDrawerActivity {
                 onLoadComplete();
             }
         });
-
-        // If no image, continue anyway for handling the items we have that don't currently have images
     }
 
     private class ListingHolder extends RecyclerView.ViewHolder {
         Listing listing;
         Profile profile;
         Bitmap image;
-        View listingView;
 
         // Set up layout of each part of the listing
         ImageView listingImage;
@@ -296,7 +293,6 @@ public class WelcomeActivity extends NavigationDrawerActivity {
 
         ListingHolder(View listingView) {
             super(listingView);
-            this.listingView = listingView;
 
             // Initialize layout elements
             listingImage = (ImageView) listingView.findViewById(R.id.listing_list_item_image);
@@ -323,7 +319,7 @@ public class WelcomeActivity extends NavigationDrawerActivity {
             }
 
             // Set up listener
-            listingView.setOnClickListener(new View.OnClickListener() {
+            itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     listener.onItemClick(new ListingProfile(listing, profile, image));
@@ -337,7 +333,7 @@ public class WelcomeActivity extends NavigationDrawerActivity {
     }
 
     private class ListingAdapter extends RecyclerView.Adapter<ListingHolder> {
-        ArrayList<ListingProfile> mList;
+        private ArrayList<ListingProfile> mList;
         private final OnItemClickListener listener;
 
         ListingAdapter(ArrayList<ListingProfile> list, OnItemClickListener listener) {
@@ -364,7 +360,7 @@ public class WelcomeActivity extends NavigationDrawerActivity {
 
         @Override
         public int getItemCount() {
-            return mListingList.size();
+            return mList.size();
         }
     }
 }
