@@ -5,6 +5,11 @@ import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.Button;
 
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.sjsu.se195.irom.Classes.NoodlioPayClass;
 import com.stripe.android.Stripe;
 import com.stripe.android.TokenCallback;
@@ -21,6 +26,7 @@ import cz.msebera.android.httpclient.Header;
  * Logic needed to create tokens using the {@link android.os.AsyncTask} methods included in the
  * sdk: {@link Stripe#createToken(Card, String, TokenCallback)}.
  */
+
 public class AsyncTaskTokenController {
 
     private CardInputWidget mCardInputWidget;
@@ -30,8 +36,13 @@ public class AsyncTaskTokenController {
     private ProgressDialogController mProgressDialogController;
     private String mPublishableKey;
 
+    private FirebaseDatabase firebaseEntry;
+    private DatabaseReference firebaseReference;
+
     public AsyncTaskTokenController(
             @NonNull Button button,
+            @NonNull final String listing_id,
+            @NonNull final Double price,
             @NonNull CardInputWidget cardInputWidget,
             @NonNull Context context,
             @NonNull ErrorDialogHandler errorDialogHandler,
@@ -48,7 +59,7 @@ public class AsyncTaskTokenController {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                saveCard();
+                payButton(listing_id,price*100);
             }
         });
     }
@@ -57,12 +68,16 @@ public class AsyncTaskTokenController {
         mCardInputWidget = null;
     }
 
-    private void saveCard() {
+    private void payButton(String listing_id, final Double price) {
         Card cardToSave = mCardInputWidget.getCard();
         if (cardToSave == null) {
             mErrorDialogHandler.showError("Invalid Card Data");
             return;
         }
+        firebaseEntry = FirebaseDatabase.getInstance();
+        firebaseReference = firebaseEntry.getReference().child("listings").child(listing_id);
+        System.out.println(price);
+        final int fprice = price.intValue();
         mProgressDialogController.startProgress();
         new Stripe(mContext).createToken(
                 cardToSave,
@@ -74,7 +89,7 @@ public class AsyncTaskTokenController {
                         NoodlioPayClass pay = new NoodlioPayClass();
                         String url = "https://noodlio-pay.p.mashape.com/charge/token";
                         RequestParams params = new RequestParams();
-                        params.add("amount","100");
+                        params.add("amount",Integer.toString(fprice));
                         params.add("currency","usd");
                         params.add("description","Test");
                         params.add("source",token.getId());
@@ -86,6 +101,7 @@ public class AsyncTaskTokenController {
                                 System.out.println("HTTP POST Call successful");
                                 System.out.println(statusCode);
                                 System.out.println(response);
+                                firebaseReference.child("isLive").setValue(false);
                             }
                         });
 

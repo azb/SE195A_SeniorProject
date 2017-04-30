@@ -58,10 +58,12 @@ public class DependencyHandler {
      * @return a reference to the {@link AsyncTaskTokenController}
      */
     @NonNull
-    public AsyncTaskTokenController attachAsyncTaskTokenController(Button button) {
+    public AsyncTaskTokenController attachAsyncTaskTokenController(Button button, String listing_id, Double price) {
         if (mAsyncTaskController == null) {
             mAsyncTaskController = new AsyncTaskTokenController(
                     button,
+                    listing_id,
+                    price,
                     mCardInputWidget,
                     mContext,
                     mErrorDialogHandler,

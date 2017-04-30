@@ -134,9 +134,16 @@ public class NavigationDrawerActivity extends AppCompatActivity
             Intent intent = new Intent(getBaseContext(), WelcomeActivity.class);
             startActivity(intent);
         }
+
         else if(id == R.id.nav_pay){
-        Intent intent = new Intent(getBaseContext(), PaymentTestActivity.class);
-        startActivity(intent);
+            Intent intent = new Intent(getBaseContext(), PaymentTestActivity.class);
+            Bundle bundle = new Bundle();
+            String listing_id = "-KiqEnj9EPavAqF117kT";
+            Double price = 100.00;
+            bundle.putString("listing_id",listing_id);
+            bundle.putDouble("price",price);
+            intent.putExtras(bundle);
+            startActivity(intent);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

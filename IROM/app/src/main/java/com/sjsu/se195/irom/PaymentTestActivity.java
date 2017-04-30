@@ -19,14 +19,21 @@ public class PaymentTestActivity extends NavigationDrawerActivity{
         LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View contentView = inflater.inflate(R.layout.activity_payment_test, null, false);
         drawer.addView(contentView, 0);
-
+        Bundle b = getIntent().getExtras();
+        String listing_id = "default_item";
+        Double price = 0.00;
+        if(b != null)
+            listing_id = b.getString("listing_id");
+            price = b.getDouble("price");
+            System.out.println(listing_id);
+            System.out.println(price);
         mDependencyHandler = new DependencyHandler(
                 this,
                 (CardInputWidget) findViewById(R.id.card_input_widget),
                 (ListView) findViewById(R.id.listview));
 
         Button saveButton = (Button) findViewById(R.id.save);
-        mDependencyHandler.attachAsyncTaskTokenController(saveButton);
+        mDependencyHandler.attachAsyncTaskTokenController(saveButton,listing_id,price);
 
     }
 
