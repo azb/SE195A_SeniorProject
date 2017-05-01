@@ -29,6 +29,10 @@ import android.Manifest;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.api.services.vision.v1.model.BatchAnnotateImagesResponse;
+import com.google.api.services.vision.v1.model.EntityAnnotation;
+import com.google.api.services.vision.v1.model.WebDetection;
+import com.google.api.services.vision.v1.model.WebEntity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -45,7 +49,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -69,7 +75,9 @@ public class ItemActivity extends NavigationDrawerActivity{
     private DatabaseReference mListingDatabaseRef;
     private FirebaseUser mUser;
     private IROMazon passedIROMazon;
-
+    private ArrayList<IROMazon> IROMazonList;
+    private ArrayList<IROMazon> entityR;
+    private ArrayList<IROMazon> textR;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -425,5 +433,85 @@ public class ItemActivity extends NavigationDrawerActivity{
             return false;
         }
         return true; // Else true
+    }
+
+    /**
+     * Get any existing IROMazon data that matches the current Cloud Vision response web entities data
+     * @param response Cloud Vision response data
+     * @return List of matching IROMazon data
+     */
+    private ArrayList<IROMazon> getIROMazon_Entity(BatchAnnotateImagesResponse response) {
+        ArrayList<IROMazon> result = new ArrayList<>();
+        ArrayList<String> entityResults = new ArrayList<>();
+        WebDetection webDetection = response.getResponses().get(0).getWebDetection();
+
+        // Store Cloud Vision Web Entity Results into ArrayList<String>. Only return results with Score > 0.5
+        if (webDetection != null) {
+            for (WebEntity entity : webDetection.getWebEntities()) {
+                if (entity.getDescription() != null && entity.getScore() >= 0.5) {
+                    entityResults.add(entity.getDescription());
+                }
+            }
+
+            for (IROMazon storedData : IROMazonList) {
+                for (String newData : entityResults) {
+                    if (storedData.name.equals(newData)) {
+                        result.add(storedData);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Get any existing IROMazon data that matches the current Cloud Vision response text data
+     * @param response Cloud Vision response data
+     * @return List of matching IROMazon objects
+     */
+    private ArrayList<IROMazon> getIROMazon_Text(BatchAnnotateImagesResponse response) {
+        ArrayList<IROMazon> result = new ArrayList<>();
+        ArrayList<String> textResults = new ArrayList<>();
+        List<EntityAnnotation> texts = response.getResponses().get(0).getTextAnnotations();
+
+        if (texts != null) {
+            for (EntityAnnotation text : texts) {
+                if (text.getDescription() != null) {
+                    textResults.add(text.getDescription());
+                }
+            }
+
+            for (IROMazon storedData : IROMazonList) {
+                if (storedData.text != null && getIROMazon_TLLScore(textResults, storedData.text) >= 0.5) {
+                    result.add(storedData);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private double getIROMazon_TLLScore(ArrayList<String> a, ArrayList<String> b) {
+        int found = 0;
+        if(a.size() > 0 && b.size() > 0) {
+            for(String text_b : b) {
+                for (String text_a : a) {
+                    //System.out.println("Checking Text/Label/Logo ");
+                    //System.out.println(text_a);
+                    if (text_b.contains(text_a)) {
+                        //System.out.println("Found Text/Label/Logo ");
+                        //System.out.println(text_a);
+                        found += 1;
+                    }
+                }
+            }
+            //System.out.println("Score: ");
+            //System.out.println(((double)found)/(((double)a.size())));
+            return ((double) found) / (((double) a.size()));
+        }
+        else{
+            return 0;
+        }
     }
 }
