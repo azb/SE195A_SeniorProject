@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dollardollarbillyall">
+
+
+    <Button
+        android:id="@+id/skip_button"
+        style="@style/Base.Widget.AppCompat.Button.Borderless"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No Thanks"
+        android:layout_below="@+id/yespleasebutton"
+        android:layout_alignStart="@+id/imageButton"
+        android:layout_marginTop="55dp" />
+
+    <Button
+        android:id="@+id/yespleasebutton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/skip_button"
+        android:layout_alignStart="@+id/imageButton"
+        android:layout_below="@+id/textView"
+        android:background="@color/colorPrimaryDark"
+        android:text="Yes Please"
+        android:textColor="@color/white" />
+
+    <ImageView
+        android:id="@+id/imageButton"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        app:srcCompat="@drawable/camera_add"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/imageButton"
+        android:gravity="center_horizontal"
+        android:paddingBottom="8dp"
+        android:paddingTop="8dp"
+        android:text="Take a profile picture?"
+        android:textSize="20sp" />
+
+</RelativeLayout>
