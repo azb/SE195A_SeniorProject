@@ -27,8 +27,8 @@ public class NavigationDrawerActivity extends AppCompatActivity
     protected FirebaseUser usr;
     protected DrawerLayout drawer;
     protected TextView navHeaderEmail;
-    protected TextView navHeaderFirstName;
-    protected TextView navHeaderLastName;
+    protected TextView navHeaderName;
+    //protected TextView navHeaderLastName;
     private static final FirebaseDatabase database = FirebaseDatabase.getInstance();
 
 
@@ -52,8 +52,8 @@ public class NavigationDrawerActivity extends AppCompatActivity
 
         usr = FirebaseAuth.getInstance().getCurrentUser();
         navHeaderEmail = (TextView) header.findViewById(R.id.nav_header_user_email);
-        navHeaderFirstName = (TextView) header.findViewById(R.id.nav_bar_first_name);
-        navHeaderLastName = (TextView) header.findViewById(R.id.nav_bar_last_name);
+        navHeaderName = (TextView) header.findViewById(R.id.nav_bar_name);
+        //navHeaderLastName = (TextView) header.findViewById(R.id.nav_bar_last_name);
 
         if(usr!=null){
             final DatabaseReference userprofileref = database.getReference("profile/"+usr.getUid());
@@ -62,8 +62,8 @@ public class NavigationDrawerActivity extends AppCompatActivity
                 public void onDataChange(DataSnapshot ds) {
                     String fn=ds.child("firstName").getValue().toString();
                     String ln=ds.child("lastName").getValue().toString();
-                    navHeaderFirstName.setText(fn);
-                    navHeaderLastName.setText(ln);
+                    navHeaderName.setText(fn +" "+ ln);
+                    //navHeaderLastName.setText(ln);
 
                     navHeaderEmail.setText(usr.getEmail());
                 }
