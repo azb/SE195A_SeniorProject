@@ -131,47 +131,51 @@ public class NavigationDrawerActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_item) {
-            //handle item activity
-            Intent intent = new Intent(getBaseContext(), ItemActivity.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_inventory) {
+//        if (id == R.id.nav_item) {
+//            //handle item activity
+//            Intent intent = new Intent(getBaseContext(), ItemActivity.class);
+//            startActivity(intent);
+//        }
+        if (id == R.id.nav_inventory) {
             //go to inventory activity
             Intent intent = new Intent(getBaseContext(), InventoryActivity.class);
             startActivity(intent);
-        } else if (id == R.id.nav_listing) {
-            //go to listing activity
-            Intent intent = new Intent(getBaseContext(), ListingActivity.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_manage) {
-            //TODO amazon activity intent
-            Toast.makeText(NavigationDrawerActivity.this,"This is currently under construction",Toast.LENGTH_SHORT).show();
-            //Intent intent = new Intent(getBaseContext(), AmazonActivity.class);
-            //startActivity(intent);
-        } else if (id == R.id.nav_profile) {
+        }
+//        else if (id == R.id.nav_listing) {
+//            //go to listing activity
+//            Intent intent = new Intent(getBaseContext(), ListingActivity.class);
+//            startActivity(intent);
+//        }
+// else if (id == R.id.nav_manage) {
+//            //TODO amazon activity intent
+//            Toast.makeText(NavigationDrawerActivity.this,"This is currently under construction",Toast.LENGTH_SHORT).show();
+//            //Intent intent = new Intent(getBaseContext(), AmazonActivity.class);
+//            //startActivity(intent);
+//        }
+        else if (id == R.id.nav_profile) {
             Intent intent = new Intent(getBaseContext(), ProfileActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_vision) {
             Intent intent = new Intent(getBaseContext(), CloudVisionTestActivity.class);
             startActivity(intent);
-        } else if (id == R.id.nav_welcome) {
-            Intent intent = new Intent(getBaseContext(), WelcomeActivity.class);
+        } else if (id == R.id.nav_marketplace) {
+            Intent intent = new Intent(getBaseContext(), MarketplaceActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_cloud_vision) {
             Intent intent = new Intent(getBaseContext(), IROMazonSearchActivity.class);
             startActivity(intent);
         }
 
-        else if(id == R.id.nav_pay){
-            Intent intent = new Intent(getBaseContext(), PaymentTestActivity.class);
-            Bundle bundle = new Bundle();
-            String listing_id = "-KiqEnj9EPavAqF117kT";
-            Double price = 100.00;
-            bundle.putString("listing_id",listing_id);
-            bundle.putDouble("price",price);
-            intent.putExtras(bundle);
-            startActivity(intent);
-        }
+//        else if(id == R.id.nav_pay){
+//            Intent intent = new Intent(getBaseContext(), PaymentTestActivity.class);
+//            Bundle bundle = new Bundle();
+//            String listing_id = "-KiqEnj9EPavAqF117kT";
+//            Double price = 100.00;
+//            bundle.putString("listing_id",listing_id);
+//            bundle.putDouble("price",price);
+//            intent.putExtras(bundle);
+//            startActivity(intent);
+//        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);

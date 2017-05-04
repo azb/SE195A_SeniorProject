@@ -39,8 +39,8 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Locale;
 
-public class WelcomeActivity extends NavigationDrawerActivity {
-    private static final String TAG = WelcomeActivity.class.getSimpleName();
+public class MarketplaceActivity extends NavigationDrawerActivity {
+    private static final String TAG = MarketplaceActivity.class.getSimpleName();
     private static final FirebaseDatabase database = FirebaseDatabase.getInstance();
     private final long ONE_MEGABYTE = 1024 * 1024; // Max image download size to avoid issues
     private FirebaseUser mUser;
@@ -114,7 +114,7 @@ public class WelcomeActivity extends NavigationDrawerActivity {
             @Override
             public void onItemClick(ListingProfile listingProfile) {
                 // Move to listing detail page
-                Intent i = new Intent(WelcomeActivity.this, ListingDetailActivity.class);
+                Intent i = new Intent(MarketplaceActivity.this, ListingDetailActivity.class);
                 // Create bundle to hold everything
                 Bundle b = new Bundle();
                 b.putParcelable("listing", listingProfile.listing);
@@ -167,7 +167,7 @@ public class WelcomeActivity extends NavigationDrawerActivity {
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 // Get listings failed, log a message
-                Toast.makeText(WelcomeActivity.this, "Download failed", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MarketplaceActivity.this, "Download failed", Toast.LENGTH_SHORT).show();
                 // Stop refresh
                 swipeLayout.setRefreshing(false);
             }
@@ -246,7 +246,7 @@ public class WelcomeActivity extends NavigationDrawerActivity {
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 // Get profile failed, log a message
-                Toast.makeText(WelcomeActivity.this, "Cancelled. Refresh", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MarketplaceActivity.this, "Cancelled. Refresh", Toast.LENGTH_SHORT).show();
             }
         });
     }
