@@ -7,7 +7,7 @@
     android:orientation="vertical"
     android:paddingTop="?android:actionBarSize"
     android:focusableInTouchMode="true"
-    tools:context=".WelcomeActivity">
+    tools:context=".MarketplaceActivity">
 
     <SearchView
         android:id="@+id/listing_search_view"
@@ -21,7 +21,7 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".WelcomeActivity">
+        tools:context=".MarketplaceActivity">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/listing_recycler_view"

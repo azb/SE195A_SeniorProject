@@ -3,12 +3,12 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_welcome"
-            android:title="Welcome Page" />
-        <item
-            android:id="@+id/nav_item"
-            android:icon="@drawable/ic_menu_camera"
-            android:title="Item" />
+            android:id="@+id/nav_marketplace"
+            android:title="Marketplace" />
+        <!--<item-->
+            <!--android:id="@+id/nav_item"-->
+            <!--android:icon="@drawable/ic_menu_camera"-->
+            <!--android:title="Item" />-->
         <item
             android:id="@+id/nav_cloud_vision"
             android:icon="@drawable/ic_menu_camera"
@@ -17,21 +17,21 @@
             android:id="@+id/nav_inventory"
             android:icon="@drawable/ic_menu_gallery"
             android:title="Inventory" />
-        <item
-            android:id="@+id/nav_listing"
-            android:title="Listing" />
+        <!--<item-->
+            <!--android:id="@+id/nav_listing"-->
+            <!--android:title="Listing" />-->
         <!--android:icon="@drawable/ic_menu_slideshow" //put iniside above item if wanted-->
 
-        <item
-            android:id="@+id/nav_manage"
-            android:icon="@drawable/ic_menu_manage"
-            android:title="Amazon" />
+        <!--<item-->
+            <!--android:id="@+id/nav_manage"-->
+            <!--android:icon="@drawable/ic_menu_manage"-->
+            <!--android:title="Amazon" />-->
         <item
             android:id="@+id/nav_vision"
             android:title="Google Vision Test" />
-        <item
-            android:id="@+id/nav_pay"
-            android:title="Google Pay Test" />
+        <!--<item-->
+            <!--android:id="@+id/nav_pay"-->
+            <!--android:title="Google Pay Test" />-->
 
         <!--android:icon="@drawable/ic_menu_send"-->
     </group>

@@ -23,7 +23,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.sjsu.se195.irom.Classes.Profile;
 import com.sjsu.se195.irom.R;
 import com.sjsu.se195.irom.SignInActivity;
-import com.sjsu.se195.irom.WelcomeActivity;
+import com.sjsu.se195.irom.MarketplaceActivity;
 
 public class SignUpActivity extends AppCompatActivity {
     private EditText email;
@@ -57,7 +57,7 @@ public class SignUpActivity extends AppCompatActivity {
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
                     //logged in already, MOVE ALONG!
-                    Intent intent = new Intent( getBaseContext(), WelcomeActivity.class);
+                    Intent intent = new Intent( getBaseContext(), MarketplaceActivity.class);
                     startActivity(intent);
                 } else {
                     // User is signed out
@@ -163,7 +163,7 @@ public class SignUpActivity extends AppCompatActivity {
                                     }else{
                                         Profile p = new Profile(mAuth.getCurrentUser().getUid(),firstName.getText().toString(),lastName.getText().toString());
                                         mDatabase.child("profile").child(mAuth.getCurrentUser().getUid()).setValue(p);
-                                        Intent intent = new Intent( getBaseContext(), WelcomeActivity.class);
+                                        Intent intent = new Intent( getBaseContext(), MarketplaceActivity.class);
                                         startActivity(intent);
                                     }
                                 }

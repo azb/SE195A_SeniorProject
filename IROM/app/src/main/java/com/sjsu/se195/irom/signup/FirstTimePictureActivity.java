@@ -20,10 +20,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.sjsu.se195.irom.PermissionUtils;
 import com.sjsu.se195.irom.R;
-import com.sjsu.se195.irom.WelcomeActivity;
+import com.sjsu.se195.irom.MarketplaceActivity;
 
-import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -75,7 +73,7 @@ public class FirstTimePictureActivity extends AppCompatActivity {
         noButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent i = new Intent(getBaseContext(), WelcomeActivity.class);
+                Intent i = new Intent(getBaseContext(), MarketplaceActivity.class);
                 startActivity(i);
             }
         });

@@ -51,7 +51,7 @@ public class SignInActivity extends AppCompatActivity {
                 if (user != null) {
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                    Intent intent = new Intent( getBaseContext(), WelcomeActivity.class);
+                    Intent intent = new Intent( getBaseContext(), MarketplaceActivity.class);
                     startActivity(intent);
                 } else {
                     // User is signed out
@@ -255,7 +255,7 @@ public class SignInActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
                 if (task.isSuccessful()){
-                        Intent intent = new Intent( getBaseContext(), WelcomeActivity.class);
+                        Intent intent = new Intent( getBaseContext(), MarketplaceActivity.class);
                         startActivity(intent);
 
                 }
