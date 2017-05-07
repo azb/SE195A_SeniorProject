@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.sjsu.se195.irom">
 
     <uses-feature
@@ -29,13 +30,9 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".signup.SignUpActivity"
+            android:name=".SignUpActivity"
             android:label="Sign Up"
             android:windowSoftInputMode="adjustPan"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
-        <activity
-            android:name=".signup.FirstTimePictureActivity"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
 
@@ -99,10 +96,12 @@
 
         <provider
             android:name="android.support.v4.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
+            android:authorities="${applicationId}.com.vansuita.pickimage.provider"
             android:exported="false"
-            android:grantUriPermissions="true">
+            android:grantUriPermissions="true"
+            tools:replace="android:authorities">
             <meta-data
+                tools:replace="android:resource"
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
         </provider>

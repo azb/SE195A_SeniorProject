@@ -1,5 +1,7 @@
 package com.sjsu.se195.irom;
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -54,6 +56,11 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.sjsu.se195.irom.Classes.IROMazon;
+import com.vansuita.pickimage.bean.PickResult;
+import com.vansuita.pickimage.bundle.PickSetup;
+import com.vansuita.pickimage.dialog.PickImageDialog;
+import com.vansuita.pickimage.listeners.IPickClick;
+import com.vansuita.pickimage.listeners.IPickResult;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -87,7 +94,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
     private ArrayList<IROMazonImage> IROMazonImageList = new ArrayList<>();
     private IROMazonAdapter iromazonAdapter;
     private ArrayList<ArrayList<String>> IROMazonStringLists;
-
+    private PickImageDialog dialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,21 +103,23 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
         drawer.addView(contentView, 0);
 
         // Layout items
-        Button cameraButton = (Button) findViewById(R.id.cameraButton);
-        Button galleryButton = (Button) findViewById(R.id.galleryButton);
+        ImageView addImageView = (ImageView) findViewById(R.id.imageHolder);
+      //  Button imagePickerButton = (Button) findViewById(R.id.imgpickerButton);
         Button searchButton = (Button) findViewById(R.id.searchItem);
         final Button submitIROMazonButton = (Button) findViewById(R.id.submitIROMazon);
         final EditText submitIROMazonText = (EditText) findViewById(R.id.nameText);
         RecyclerView IROMazonRecyclerView = (RecyclerView) findViewById(R.id.IROMazon_recycler_view);
-
-        // Firebase references
-        IROMazonDatabaseRef = FirebaseDatabase.getInstance().getReference("IROMazon");
-        storageRef = FirebaseStorage.getInstance().getReference("IROMazon/");
-
-        // Button listeners
-        cameraButton.setOnClickListener(new View.OnClickListener() {
+        //dialog setup for choosing gallery/camera
+        PickSetup setup = new PickSetup().setCameraIcon(R.drawable.camera).setGalleryIcon(R.drawable.gallery);
+        dialog = PickImageDialog.build(setup).setOnClick(new IPickClick() {
             @Override
-            public void onClick(View view) {
+            public void onGalleryClick() {
+                startGalleryChooser();
+                submitIROMazonButton.setEnabled(false);
+            }
+
+            @Override
+            public void onCameraClick() {
                 try {
                     startCamera();
                     submitIROMazonButton.setEnabled(false);
@@ -120,14 +129,18 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             }
         });
 
-        galleryButton.setOnClickListener(new View.OnClickListener() {
+        // Firebase references
+        IROMazonDatabaseRef = FirebaseDatabase.getInstance().getReference("IROMazon");
+        storageRef = FirebaseStorage.getInstance().getReference("IROMazon/");
+
+        // Button listeners
+        addImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startGalleryChooser();
-                submitIROMazonButton.setEnabled(false);
+               dialog.show(getSupportFragmentManager());
             }
         });
-
+//
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -259,9 +272,16 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
     private void startCamera() throws IOException {
         if (PermissionUtils.requestPermission(this, CAMERA_PERMISSIONS_REQUEST, Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.CAMERA)) {
+            dialog.dismiss();
+            System.out.println("YOU GOT HERE1");
+
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            System.out.println("YOU GOT HERE2");
+
             // Make sure camera activity available
             if (intent.resolveActivity(getPackageManager()) != null) {
+                System.out.println("YOU GOT HERE3");
+
                 // Create the file
                 File photoFile = null;
                 try {
@@ -273,7 +293,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
 
                 // If file created
                 if (photoFile != null) {
-                    Uri photoURI = FileProvider.getUriForFile(this, "com.sjsu.se195.irom.fileprovider", photoFile);
+                    Uri photoURI = FileProvider.getUriForFile(this, "com.sjsu.se195.irom.com.vansuita.pickimage.provider", photoFile);
                     currentPhotoURI = photoURI;
                     intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                     startActivityForResult(intent, CAMERA_IMAGE_REQUEST);
@@ -290,6 +310,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
 
     private void startGalleryChooser() {
         if (PermissionUtils.requestPermission(this, GALLERY_PERMISSIONS_REQUEST, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            dialog.dismiss();
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             startActivityForResult(intent, GALLERY_IMAGE_REQUEST);
         }

@@ -1,4 +1,4 @@
-package com.sjsu.se195.irom.signup;
+package com.sjsu.se195.irom;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -21,9 +21,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.sjsu.se195.irom.Classes.Profile;
-import com.sjsu.se195.irom.R;
-import com.sjsu.se195.irom.SignInActivity;
-import com.sjsu.se195.irom.MarketplaceActivity;
 
 public class SignUpActivity extends AppCompatActivity {
     private EditText email;
