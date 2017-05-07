@@ -36,16 +36,13 @@ public class DependencyHandler {
 
     public DependencyHandler(
             AppCompatActivity activity,
-            CardInputWidget cardInputWidget,
-            ListView outputListView) {
+            CardInputWidget cardInputWidget) {
 
         mCardInputWidget = cardInputWidget;
         mContext = activity.getBaseContext();
 
         mProgresDialogController =
                 new ProgressDialogController(activity.getSupportFragmentManager());
-
-        mListViewController = new ListViewController(outputListView);
 
         mErrorDialogHandler = new ErrorDialogHandler(activity.getSupportFragmentManager());
     }
@@ -58,9 +55,10 @@ public class DependencyHandler {
      * @return a reference to the {@link AsyncTaskTokenController}
      */
     @NonNull
-    public AsyncTaskTokenController attachAsyncTaskTokenController(Button button, String listing_id, Double price) {
+    public AsyncTaskTokenController attachAsyncTaskTokenController(AppCompatActivity activity,Button button, String listing_id, Double price) {
         if (mAsyncTaskController == null) {
             mAsyncTaskController = new AsyncTaskTokenController(
+                    activity,
                     button,
                     listing_id,
                     price,

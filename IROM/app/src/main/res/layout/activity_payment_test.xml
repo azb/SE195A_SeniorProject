@@ -22,13 +22,13 @@
         />
 
     <Button
-        android:id="@+id/save"
+        android:id="@+id/pay"
         android:layout_height="wrap_content"
         android:layout_width="160dp"
-        android:text="Save"
+        android:text="Pay "
         />
 
-    <TextView android:id="@+id/token_list_title"
+    <!--<TextView android:id="@+id/token_list_title"
         android:text="Payment Methods"
         android:layout_marginTop="12dp"
         style="@style/Header.Light" />
@@ -37,6 +37,6 @@
         android:id="@+id/listview"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_weight="1"/>-->
 
 </LinearLayout>

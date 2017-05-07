@@ -109,6 +109,7 @@ public class MarketplaceActivity extends NavigationDrawerActivity {
             }
         });
 
+
         // Set up adapter
         listingAdapter = new ListingAdapter(mListingList, new OnItemClickListener() {
             @Override
@@ -135,6 +136,14 @@ public class MarketplaceActivity extends NavigationDrawerActivity {
         refreshItems(ref);
     }
 
+    @Override
+    public void onRestart(){
+        super.onRestart();
+        DatabaseReference ref = database.getReference("listings/");
+        refreshItems(ref);
+    }
+
+
     private void refreshItems(DatabaseReference ref) {
         // Initial setup
         mListingList = new ArrayList<>();
@@ -149,6 +158,7 @@ public class MarketplaceActivity extends NavigationDrawerActivity {
                 totalToLoadCount = (int) dataSnapshot.getChildrenCount();
                 for (DataSnapshot listingSnapshot : dataSnapshot.getChildren()) {
                     Listing listing = listingSnapshot.getValue(Listing.class);
+                    listing.setListID(listingSnapshot.getKey());
                     if (!listing.creator.equals(mUser.getUid()) && listing.isLive) {
                         // Next get profile
                         getProfile(listing);

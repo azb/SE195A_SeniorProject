@@ -2,6 +2,7 @@ package com.sjsu.se195.irom;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -22,18 +23,21 @@ public class PaymentTestActivity extends NavigationDrawerActivity{
         Bundle b = getIntent().getExtras();
         String listing_id = "default_item";
         Double price = 0.00;
-        if(b != null)
+        if(b != null) {
+            System.out.println("Did it work?");
             listing_id = b.getString("listing_id");
             price = b.getDouble("price");
             System.out.println(listing_id);
             System.out.println(price);
+        }
         mDependencyHandler = new DependencyHandler(
                 this,
-                (CardInputWidget) findViewById(R.id.card_input_widget),
-                (ListView) findViewById(R.id.listview));
+                (CardInputWidget) findViewById(R.id.card_input_widget));
 
-        Button saveButton = (Button) findViewById(R.id.save);
-        mDependencyHandler.attachAsyncTaskTokenController(saveButton,listing_id,price);
+        Button saveButton = (Button) findViewById(R.id.pay);
+        saveButton.setText("Pay $" + price);
+
+        mDependencyHandler.attachAsyncTaskTokenController(this,saveButton,listing_id,price);
 
     }
 

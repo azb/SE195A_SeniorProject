@@ -1,9 +1,13 @@
 package com.sjsu.se195.irom.Classes.stripe.controller;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.content.Intent;
+import android.widget.Toast;
 
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -36,10 +40,11 @@ public class AsyncTaskTokenController {
     private ProgressDialogController mProgressDialogController;
     private String mPublishableKey;
 
-    private FirebaseDatabase firebaseEntry;
-    private DatabaseReference firebaseReference;
+    private FirebaseDatabase db = FirebaseDatabase.getInstance();
+    private DatabaseReference ref;
 
     public AsyncTaskTokenController(
+            @NonNull final AppCompatActivity activity,
             @NonNull Button button,
             @NonNull final String listing_id,
             @NonNull final Double price,
@@ -59,7 +64,7 @@ public class AsyncTaskTokenController {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                payButton(listing_id,price*100);
+                payButton(listing_id,price*100,activity);
             }
         });
     }
@@ -68,50 +73,86 @@ public class AsyncTaskTokenController {
         mCardInputWidget = null;
     }
 
-    private void payButton(String listing_id, final Double price) {
-        Card cardToSave = mCardInputWidget.getCard();
+    private void payButton(String listing_id, final Double price, final AppCompatActivity activity) {
+        final Card cardToSave = mCardInputWidget.getCard();
         if (cardToSave == null) {
             mErrorDialogHandler.showError("Invalid Card Data");
             return;
         }
-        firebaseEntry = FirebaseDatabase.getInstance();
-        firebaseReference = firebaseEntry.getReference().child("listings").child(listing_id);
-        System.out.println(price);
-        final int fprice = price.intValue();
-        mProgressDialogController.startProgress();
-        new Stripe(mContext).createToken(
-                cardToSave,
-                mPublishableKey,
-                new TokenCallback() {
-                    public void onSuccess(Token token) {
-                        mOutputListController.addToList(token);
-                        mProgressDialogController.finishProgress();
-                        NoodlioPayClass pay = new NoodlioPayClass();
-                        String url = "https://noodlio-pay.p.mashape.com/charge/token";
-                        RequestParams params = new RequestParams();
-                        params.add("amount",Integer.toString(fprice));
-                        params.add("currency","usd");
-                        params.add("description","Test");
-                        params.add("source",token.getId());
-                        params.add("stripe_account","acct_1A6SPtKvjOLIhzMH");
-                        params.add("test","true");
-                        pay.post(url,params, new JsonHttpResponseHandler(){
-                            @Override
-                            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                                System.out.println("HTTP POST Call successful");
-                                System.out.println(statusCode);
-                                System.out.println(response);
-                                firebaseReference.child("isLive").setValue(false);
-                            }
-                        });
+        System.out.println("Databasing");
+        System.out.println(listing_id);
 
-                    }
-                    public void onError(Exception error) {
-                        mErrorDialogHandler.showError(error.getLocalizedMessage());
-                        mProgressDialogController.finishProgress();
-                    }
+        ref = db.getReference().child("listings").child(listing_id);
+        ref.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                System.out.println(dataSnapshot.getKey().toString());
+                System.out.println(dataSnapshot.getValue().toString());
+                if(dataSnapshot.getKey().toString().equals("isLive") && dataSnapshot.getValue().toString().equals("false")) {
+                    Toast.makeText(activity, "Cannot Purchase Item; Item may have been already sold.", Toast.LENGTH_LONG).show();
+                    activity.finish();
                 }
-        );
+                else if(dataSnapshot.getKey().toString().equals("isLive") && dataSnapshot.getValue().toString().equals("true")){
+                    System.out.println(price);
+                    final int fprice = price.intValue();
+                    mProgressDialogController.startProgress();
+                    new Stripe(mContext).createToken(
+                            cardToSave,
+                            mPublishableKey,
+                            new TokenCallback() {
+                                public void onSuccess(Token token) {
+                                    NoodlioPayClass pay = new NoodlioPayClass();
+                                    String url = "https://noodlio-pay.p.mashape.com/charge/token";
+                                    RequestParams params = new RequestParams();
+                                    params.add("amount",Integer.toString(fprice));
+                                    params.add("currency","usd");
+                                    params.add("description","Test");
+                                    params.add("source",token.getId());
+                                    params.add("stripe_account","acct_1A6SPtKvjOLIhzMH");
+                                    params.add("test","true");
+                                    pay.post(url,params, new JsonHttpResponseHandler(){
+                                        @Override
+                                        public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                                            System.out.println("HTTP POST Call successful");
+                                            System.out.println(statusCode);
+                                            System.out.println(response);
+                                            ref.child("isLive").setValue(false);
+                                            mProgressDialogController.finishProgress();
+                                            Toast.makeText(activity, "Purchase Successful!", Toast.LENGTH_LONG).show();
+                                            activity.finish();
+                                        }
+                                    });
+
+                                }
+                                public void onError(Exception error) {
+                                    mErrorDialogHandler.showError(error.getLocalizedMessage());
+                                    mProgressDialogController.finishProgress();
+                                }
+                            }
+                    );
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 }
 
