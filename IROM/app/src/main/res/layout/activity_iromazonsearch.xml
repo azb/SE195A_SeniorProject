@@ -68,6 +68,19 @@
             android:hint="Don't See Your Item? Enter Its Name Here."
             android:layout_alignParentStart="true" />
 
+        <EditText
+            android:id="@+id/descriptionText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="And description." />
+
+        <EditText
+            android:id="@+id/priceText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:hint="And price!" />
+
         <Button
             android:id="@+id/submitIROMazon"
             android:layout_width="match_parent"

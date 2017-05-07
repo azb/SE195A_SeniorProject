@@ -130,6 +130,10 @@ public class ItemActivity extends NavigationDrawerActivity{
                             mName.getText().toString(),
                             Integer.parseInt(mQuantity.getText().toString()),
                             mNotes.getText().toString());
+                    if (passedIROMazon != null) {
+                        newItem.savedDescription = passedIROMazon.description;
+                        newItem.savedPrice = passedIROMazon.price;
+                    }
                     writeNewItemAndImage(newItem);
                 } else {
                     Toast.makeText(ItemActivity.this, "Something wasn't filled", Toast.LENGTH_SHORT).show();
@@ -181,7 +185,10 @@ public class ItemActivity extends NavigationDrawerActivity{
 
                     // Set IROMazon data if present
                     if (passedIROMazon != null) {
-                        priceField.setText(String.format(Locale.US, Double.toString(passedIROMazon.price)));
+                        if (passedIROMazon.description != null) {
+                            descriptionField.setText(passedIROMazon.description);
+                        }
+                        priceField.setText(String.format(Locale.US, "$%.2f", passedIROMazon.price));
                     }
                 } else {
                     Toast.makeText(ItemActivity.this, "Something wasn't filled", Toast.LENGTH_SHORT).show();
@@ -330,7 +337,7 @@ public class ItemActivity extends NavigationDrawerActivity{
     private void writeNewItemAndImage(final Item item) {
         // Upload item
         final String key = mItemDatabaseRef.child("items").push().getKey();
-        item.setItemID(key);
+        item.itemID = key;
         mItemDatabaseRef.child(key).setValue(item);
 
         // Upload image
@@ -382,6 +389,7 @@ public class ItemActivity extends NavigationDrawerActivity{
 
         // Create and upload listing
         final Listing listing = new Listing(item.uID, item, description, price);
+        listing.listID = listingKey;
         mListingDatabaseRef.child(listingKey).setValue(listing);
 
         // Now upload image

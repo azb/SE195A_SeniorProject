@@ -22,6 +22,8 @@ public class Item implements Parcelable{
     //public String tag;
     public boolean forSale;
     public String listingID; // Default null, set if listing created
+    public double savedPrice; // Hold IROMazon data if not immediately made into listing
+    public String savedDescription; // Hold IROMazon data if not immediately made into listing
 
     public Item() {
     }
@@ -162,5 +164,21 @@ public class Item implements Parcelable{
 
     public void setForSale(boolean fs) {
         forSale = fs;
+    }
+
+    public double getSavedPrice() {
+        return savedPrice;
+    }
+
+    public void setSavedPrice(double savedPrice) {
+        this.savedPrice = savedPrice;
+    }
+
+    public String getSavedDescription() {
+        return savedDescription;
+    }
+
+    public void setSavedDescription(String savedDescription) {
+        this.savedDescription = savedDescription;
     }
 }

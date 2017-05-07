@@ -45,7 +45,6 @@ import com.google.api.services.vision.v1.model.Feature;
 import com.google.api.services.vision.v1.model.Image;
 import com.google.api.services.vision.v1.model.WebDetection;
 import com.google.api.services.vision.v1.model.WebEntity;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -197,10 +196,12 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
 
     private void createIROMazonEntry() {
         // Create IROMazon object
-        EditText submitIROMazonText = (EditText) findViewById(R.id.nameText);
-        // TODO: Include entity data in IROMazon objects
-        final IROMazon newEntry = new IROMazon(submitIROMazonText.getText().toString(), IROMazonStringLists.get(0), IROMazonStringLists.get(1),
-                                               IROMazonStringLists.get(2), IROMazonStringLists.get(3), 19.95);
+        EditText IROMazonName = (EditText) findViewById(R.id.nameText);
+        EditText IROMazonDescription = (EditText) findViewById(R.id.descriptionText);
+        EditText IROMazonPrice = (EditText) findViewById(R.id.priceText);
+        final IROMazon newEntry = new IROMazon(IROMazonName.getText().toString(), IROMazonStringLists.get(0), IROMazonStringLists.get(1),
+                                               IROMazonStringLists.get(2), IROMazonStringLists.get(3), Double.parseDouble(IROMazonPrice.getText().toString()));
+        newEntry.description = IROMazonDescription.getText().toString();
 
         // Get key for entry
         final String key = IROMazonDatabaseRef.child("IROMazon").push().getKey();
@@ -227,6 +228,19 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
                 // Upload successful, can add to database as well
                 IROMazonDatabaseRef.child(key).setValue(newEntry);
                 Toast.makeText(IROMazonSearchActivity.this, "Successfully uploaded to database!", Toast.LENGTH_SHORT).show();
+                // Move to add item activity
+                Intent i = new Intent(IROMazonSearchActivity.this, ItemActivity.class);
+                // Create bundle to hold everything
+                Bundle b = new Bundle();
+                b.putParcelable("IROMazon", newEntry);
+                // Get image and scale for Parcel
+                Bitmap image = ((BitmapDrawable) ((ImageView) findViewById(R.id.imageHolder)).getDrawable()).getBitmap();
+                image = scaleBitmapDown(image, 1200);
+                image = Bitmap.createScaledBitmap(image, (image.getWidth() / 4), (image.getHeight() / 4), true);
+                b.putParcelable("image", image);
+                // Add into intent
+                i.putExtras(b);
+                startActivity(i);
             }
         });
     }

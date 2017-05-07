@@ -28,13 +28,14 @@ public class Listing implements Parcelable{
         creator = c;
         item = i;
         description = d;
+        dateCreated = new Date();
         price = p;
         isLive=true;
     }
 
     public Listing(Parcel in) {
         listID = in.readString();
-        dateCreated = (Date) in.readValue(getClass().getClassLoader());
+        dateCreated = new Date(in.readLong());
         creator = in.readString();
         item = (Item) in.readValue(getClass().getClassLoader());
         description = in.readString();
@@ -64,7 +65,7 @@ public class Listing implements Parcelable{
     @Override
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeString(this.listID);
-        parcel.writeValue(this.dateCreated);
+        parcel.writeLong(this.dateCreated.getTime());
         parcel.writeString(this.creator);
         parcel.writeValue(this.item);
         parcel.writeString(this.description);

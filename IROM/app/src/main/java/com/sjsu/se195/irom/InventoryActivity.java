@@ -152,9 +152,10 @@ public class InventoryActivity extends NavigationDrawerActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 totalToLoadCount = (int) dataSnapshot.getChildrenCount();
+                String UID = mUser.getUid();
                 for (DataSnapshot itemSnapshot : dataSnapshot.getChildren()) {
                     Item item = itemSnapshot.getValue(Item.class);
-                    if (item.uID.equals(mUser.getUid())) {
+                    if (item.uID.equals(UID)) {
                         if (item.itemID == null) { // Update itemID for items that don't have it yet
                             item.itemID = itemSnapshot.getKey();
                         }
