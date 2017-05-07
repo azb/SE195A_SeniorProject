@@ -6,7 +6,9 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
@@ -82,10 +84,22 @@ public class ItemActivity extends NavigationDrawerActivity{
         // Fill out fields if coming from IROMazon search activity
         Intent i = getIntent();
         if (i.hasExtra("IROMazon")) {
-            Bitmap image = i.getParcelableExtra("image");
+            Uri imageURI = i.getParcelableExtra("imageURI");
             IROMazon iromazon = i.getParcelableExtra("IROMazon");
-            imageHolder.setImageBitmap(image);
+            // Set image
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageURI);
+                imageHolder.setImageBitmap(bitmap);
+            } catch (java.io.IOException e) {
+                Log.d(TAG, "Image selection failed: " + e.getMessage());
+            }
+
+            // Set fields
             mName.setText(iromazon.name);
+            if (iromazon.description != null) {
+                mNotes.setText(iromazon.description);
+            }
+
             passedIROMazon = iromazon;
         }
 

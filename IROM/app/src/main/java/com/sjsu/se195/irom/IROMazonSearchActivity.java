@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -24,6 +23,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.Manifest;
@@ -65,7 +65,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Created by Ricky on 4/3/2017.
+ * Main activity for handling Cloud Vision data
  */
 
 public class IROMazonSearchActivity extends NavigationDrawerActivity {
@@ -162,11 +162,8 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
                 // Create bundle to hold everything
                 Bundle b = new Bundle();
                 b.putParcelable("IROMazon", itemimage.iromazon);
-                // Get image and scale for Parcel
-                Bitmap image = ((BitmapDrawable) ((ImageView) findViewById(R.id.imageHolder)).getDrawable()).getBitmap();
-                image = scaleBitmapDown(image, 1200);
-                image = Bitmap.createScaledBitmap(image, (image.getWidth() / 4), (image.getHeight() / 4), true);
-                b.putParcelable("image", image);
+                // Include image URI for ItemActivity
+                b.putParcelable("imageURI", currentPhotoURI);
                 // Add into intent
                 i.putExtras(b);
                 startActivity(i);
@@ -235,11 +232,8 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
                 // Create bundle to hold everything
                 Bundle b = new Bundle();
                 b.putParcelable("IROMazon", newEntry);
-                // Get image and scale for Parcel
-                Bitmap image = ((BitmapDrawable) ((ImageView) findViewById(R.id.imageHolder)).getDrawable()).getBitmap();
-                image = scaleBitmapDown(image, 1200);
-                image = Bitmap.createScaledBitmap(image, (image.getWidth() / 4), (image.getHeight() / 4), true);
-                b.putParcelable("image", image);
+                // Include image URI for ItemActivity
+                b.putParcelable("imageURI", currentPhotoURI);
                 // Add into intent
                 i.putExtras(b);
                 startActivity(i);
@@ -252,8 +246,12 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         String imageFileName = "JPEG_" + timestamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File temp = File.createTempFile(imageFileName, ".jpg", storageDir);
 
-        return File.createTempFile(imageFileName, ".jpg", storageDir);
+        // Delete file on exit of app so we don't waste user storage
+        temp.deleteOnExit();
+
+        return temp;
     }
 
     private void startCamera() throws IOException {
@@ -299,19 +297,13 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
             if (requestCode == GALLERY_IMAGE_REQUEST && data != null) {
-                Uri selectedImage = data.getData();
-                String[] filePathColumn = {MediaStore.Images.Media.DATA};
-                try (Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null)) {
-                    if (cursor != null) {
-                        cursor.moveToFirst();
-                        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                        String picturePath = cursor.getString(columnIndex);
-
-                        ImageView imageHolder = (ImageView) findViewById(R.id.imageHolder);
-                        imageHolder.setImageBitmap(BitmapFactory.decodeFile(picturePath));
-                    }
-                } catch (java.lang.NullPointerException e) {
-                    Log.d(TAG, "Null pointer exception with local image: " + e.getMessage());
+                currentPhotoURI = data.getData();
+                try {
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), currentPhotoURI);
+                    ImageView imageHolder = (ImageView) findViewById(R.id.imageHolder);
+                    imageHolder.setImageBitmap(bitmap);
+                } catch (java.io.IOException e) {
+                    Log.d(TAG, "Image selection failed: " + e.getMessage());
                 }
             }
             if (requestCode == CAMERA_IMAGE_REQUEST) {
@@ -735,6 +727,8 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
         //set up layout of each thing on a row for an item
         ImageView IROMazonImage;
         TextView IROMazonName;
+        TextView IROMazonDescription;
+        TextView IROMazonPrice;
 
 
         IROMazonHolder(View IROMazonView) {
@@ -743,7 +737,8 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             // Initialize name/q/forsale status/item image
             IROMazonImage = (ImageView) IROMazonView.findViewById(R.id.IROMazon_list_item_image);
             IROMazonName = (TextView) IROMazonView.findViewById(R.id.IROMazon_list_item_name);
-
+            IROMazonDescription = (TextView) IROMazonView.findViewById(R.id.IROMazon_list_item_description);
+            IROMazonPrice = (TextView) IROMazonView.findViewById(R.id.IROMazon_list_item_price);
         }
 
         // Bind item to the holder and set name accordingly
@@ -756,6 +751,13 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             IROMazonName.setText(iromazon.name);
             if (image != null) {
                 IROMazonImage.setImageBitmap(image);
+            }
+            if (iromazon.description != null) {
+                IROMazonDescription.setText(iromazon.description);
+                IROMazonPrice.setText(String.format(Locale.US, "Suggested: $%.2f", iromazon.price));
+            } else {
+                IROMazonDescription.setText(null);
+                IROMazonPrice.setText(null);
             }
 
             // Set up custom click listener

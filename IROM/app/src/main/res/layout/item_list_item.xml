@@ -57,17 +57,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
+            android:layout_below="@+id/item_list_item_forSale"
+            android:layout_marginTop="10dp"
             android:layout_marginRight="5dp"
             android:text="date" />
-
-        <TextView
-            android:id="@+id/item_list_item_sold"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignEnd="@+id/item_list_item_date"
-            android:layout_below="@+id/item_list_item_quantity"
-            android:text="" />
 
     </RelativeLayout>
 
