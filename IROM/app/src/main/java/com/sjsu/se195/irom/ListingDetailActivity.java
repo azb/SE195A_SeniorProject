@@ -77,50 +77,11 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
         purchaseButton = (Button) findViewById(R.id.listing_detail_purchase);
         progressBar = (ProgressBar) findViewById(R.id.listing_detail_progressbar);
 
+        // Start loading while image is downloaded
         startLoading();
 
-        final Intent i = getIntent();
-        if (i.hasExtra("listing")) {
-            // First get updated listing due to time sensitivity of marketplace, as well as image
-            final Listing listing = i.getParcelableExtra("listing");
-            FirebaseDatabase db = FirebaseDatabase.getInstance();
-            DatabaseReference ref = db.getReference().child("listings/").child(listing.getListID());
-            ref.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    final Listing updatedListing = dataSnapshot.getValue(Listing.class);
-                    // Get image so higher quality instead of passing through bundle
-                    StorageReference imageRef = FirebaseStorage.getInstance().getReference("items/" + updatedListing.item.itemID);
-                    imageRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-                        @Override
-                        public void onSuccess(byte[] bytes) {
-                            Bitmap image = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-
-                            // Check if coming to page from marketplace or user's own inventory
-                            if (i.hasExtra("profile")) {
-                                // Coming from marketplace
-                                Profile profile = i.getParcelableExtra("profile");
-
-                                initializeFromMarketplace(updatedListing, profile, image);
-                            } else {
-                                // Coming from Item detail activity or direct listing creation
-                                initializeFromItemDetail(updatedListing, image);
-                            }
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.d(TAG, "Something went wrong downloading the image!");
-                        }
-                    });
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    Log.d(TAG, "Error downloading listing: " + databaseError.toString());
-                }
-            });
-        }
+        // Get data
+        refreshData(getIntent());
     }
 
     private void startLoading() {
@@ -149,10 +110,51 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
     @Override
     public void onRestart(){
         super.onRestart();
-        Intent i = getIntent();
-        Listing listing = i.getParcelableExtra("listing");
-        Profile profile = i.getParcelableExtra("profile");
-        initializeFromMarketplaceBase(listing,profile);
+        refreshData(getIntent());
+    }
+
+    private void refreshData(final Intent intent) {
+        if (intent.hasExtra("listing")) {
+            // First get updated listing due to time sensitivity of marketplace, as well as image
+            final Listing listing = intent.getParcelableExtra("listing");
+            FirebaseDatabase db = FirebaseDatabase.getInstance();
+            DatabaseReference ref = db.getReference().child("listings/").child(listing.getListID());
+            ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    final Listing updatedListing = dataSnapshot.getValue(Listing.class);
+                    // Get image so higher quality instead of passing through bundle
+                    StorageReference imageRef = FirebaseStorage.getInstance().getReference("items/" + updatedListing.item.itemID);
+                    imageRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                        @Override
+                        public void onSuccess(byte[] bytes) {
+                            Bitmap image = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+
+                            // Check if coming to page from marketplace or user's own inventory
+                            if (intent.hasExtra("profile")) {
+                                // Coming from marketplace
+                                Profile profile = intent.getParcelableExtra("profile");
+
+                                initializeFromMarketplace(updatedListing, profile, image);
+                            } else {
+                                // Coming from Item detail activity or direct listing creation
+                                initializeFromItemDetail(updatedListing, image);
+                            }
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.d(TAG, "Something went wrong downloading the image!");
+                        }
+                    });
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Log.d(TAG, "Error downloading listing: " + databaseError.toString());
+                }
+            });
+        }
     }
 
     private void initializeFromMarketplace(final Listing listing, Profile profile, Bitmap image) {
