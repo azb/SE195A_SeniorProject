@@ -88,11 +88,10 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
     @Override
     public void onRestart(){
         super.onRestart();
-        purchaseButton.setVisibility(View.INVISIBLE);
-        listingName.setText("This item has been sold.");
-        listingCreator.setText(null);
-        listingDescription.setText(null);
-        listingPrice.setText(null);
+        Intent i = getIntent();
+        Listing listing = i.getParcelableExtra("listing");
+        Profile profile = i.getParcelableExtra("profile");
+        initializeFromMarketplaceBase(listing,profile);
     }
 
     private void initializeFromMarketplaceBase(final Listing listing,final Profile profile) {
