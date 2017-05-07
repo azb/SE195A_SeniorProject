@@ -28,6 +28,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.sjsu.se195.irom.Classes.Item;
 import com.sjsu.se195.irom.Classes.Listing;
 
+import java.util.Locale;
+
 public class InventoryItemDetailActivity extends NavigationDrawerActivity {
     private static final String TAG = InventoryItemDetailActivity.class.getSimpleName();
     private Item item;
@@ -127,6 +129,10 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
                     Button submit = (Button) layout.findViewById(R.id.submit_button);
                     final EditText descriptionField = (EditText) layout.findViewById(R.id.description);
                     final EditText priceField = (EditText) layout.findViewById(R.id.price);
+                    if (item.savedDescription != null) {
+                        descriptionField.setText(item.savedDescription);
+                        priceField.setText(String.format(Locale.US, "$%.2f", item.savedPrice));
+                    }
                     submit.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {

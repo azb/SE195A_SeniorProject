@@ -16,6 +16,7 @@ public class IROMazon implements Parcelable {
     public ArrayList<String> logo = new ArrayList<>();
     public ArrayList<String> label = new ArrayList<>();
     public double price;
+    public String description;
 
     /*public double entityScore;
     public double textScore;
@@ -96,4 +97,69 @@ public class IROMazon implements Parcelable {
     //public void setiID(String Key) {this.iID = Key;}
     //public Integer getPrice() {return Price;}
     //public void setKey(Integer Price) {this.Price = Price;}
+
+    // Getters/Setters
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public ArrayList<String> getEntity() {
+        return entity;
+    }
+
+    public void setEntity(ArrayList<String> entity) {
+        this.entity = entity;
+    }
+
+    public ArrayList<String> getText() {
+        return text;
+    }
+
+    public void setText(ArrayList<String> text) {
+        this.text = text;
+    }
+
+    public ArrayList<String> getLogo() {
+        return logo;
+    }
+
+    public void setLogo(ArrayList<String> logo) {
+        this.logo = logo;
+    }
+
+    public ArrayList<String> getLabel() {
+        return label;
+    }
+
+    public void setLabel(ArrayList<String> label) {
+        this.label = label;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
 }

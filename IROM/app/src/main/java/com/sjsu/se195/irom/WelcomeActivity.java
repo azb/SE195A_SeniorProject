@@ -147,9 +147,10 @@ public class WelcomeActivity extends NavigationDrawerActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 totalToLoadCount = (int) dataSnapshot.getChildrenCount();
+                String UID = mUser.getUid();
                 for (DataSnapshot listingSnapshot : dataSnapshot.getChildren()) {
                     Listing listing = listingSnapshot.getValue(Listing.class);
-                    if (!listing.creator.equals(mUser.getUid()) && listing.isLive) {
+                    if (!listing.creator.equals(UID) && listing.isLive) {
                         // Next get profile
                         getProfile(listing);
                     } else {
