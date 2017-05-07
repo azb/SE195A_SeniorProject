@@ -129,8 +129,6 @@ public class InventoryActivity extends NavigationDrawerActivity {
                 Bundle b = new Bundle();
                 //put your custom thing in the holder
                 b.putParcelable("item", itemImage.item);
-                // Add image as well
-                b.putParcelable("image", itemImage.image);
                 //stuff your holder into the new intent to start an activity
                 i.putExtras(b);
                 //actually follow through with your intent. you can now fill in details about the item.
@@ -284,7 +282,6 @@ public class InventoryActivity extends NavigationDrawerActivity {
         TextView itemQuantity;
         TextView itemForSale;
         TextView itemDate;
-        TextView itemSold;
 
 
         ItemHolder(View itemView) {
@@ -297,7 +294,6 @@ public class InventoryActivity extends NavigationDrawerActivity {
             itemQuantity = (TextView) itemView.findViewById(R.id.item_list_item_quantity);
             itemForSale = (TextView) itemView.findViewById(R.id.item_list_item_forSale);
             itemDate = (TextView) itemView.findViewById(R.id.item_list_item_date);
-            itemSold = (TextView) itemView.findViewById(R.id.item_list_item_sold);
         }
 
         // Bind item to the holder and set name accordingly
@@ -317,8 +313,7 @@ public class InventoryActivity extends NavigationDrawerActivity {
             }
             if (item.forSale && !listing.isLive) {
                 // Listing has been sold
-                itemSold.setText("SOLD!");
-                itemSold.setTextColor(Color.RED);
+                itemForSale.setText("For Sale: SOLD!");
             }
             if (item.forSale) {
                 //is for sale, cannot be used

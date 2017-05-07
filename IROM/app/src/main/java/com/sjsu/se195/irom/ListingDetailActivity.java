@@ -13,12 +13,10 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -26,24 +24,15 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.loopj.android.http.JsonHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
 import com.sjsu.se195.irom.Classes.Listing;
-import com.sjsu.se195.irom.Classes.NoodlioPayClass;
 import com.sjsu.se195.irom.Classes.Profile;
-import com.stripe.android.Stripe;
-import com.stripe.android.TokenCallback;
-import com.stripe.android.model.Token;
-
-import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
-import cz.msebera.android.httpclient.Header;
 
 /**
- * Created by Krystle on 3/29/2017.
+ * Shows detail for passed listing object
  */
 
 public class ListingDetailActivity extends NavigationDrawerActivity {
@@ -61,6 +50,7 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState){
+        // Drawer setup
         super.onCreate(savedInstanceState);
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View contentView = inflater.inflate(R.layout.activity_listing_detail, null, false);
@@ -110,6 +100,7 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
     @Override
     public void onRestart(){
         super.onRestart();
+        startLoading();
         refreshData(getIntent());
     }
 
