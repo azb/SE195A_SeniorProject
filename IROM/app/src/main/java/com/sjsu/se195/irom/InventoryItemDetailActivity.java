@@ -132,7 +132,7 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
                     final EditText priceField = (EditText) layout.findViewById(R.id.price);
                     if (item.savedDescription != null) {
                         descriptionField.setText(item.savedDescription);
-                        priceField.setText(String.format(Locale.US, "$%.2f", item.savedPrice));
+                        priceField.setText(String.format(Locale.US, "%.2f", item.savedPrice));
                     }
                     submit.setOnClickListener(new View.OnClickListener() {
                         @Override

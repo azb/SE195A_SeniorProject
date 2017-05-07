@@ -188,7 +188,7 @@ public class ItemActivity extends NavigationDrawerActivity{
                         if (passedIROMazon.description != null) {
                             descriptionField.setText(passedIROMazon.description);
                         }
-                        priceField.setText(String.format(Locale.US, "$%.2f", passedIROMazon.price));
+                        priceField.setText(String.format(Locale.US, "%.2f", passedIROMazon.price));
                     }
                 } else {
                     Toast.makeText(ItemActivity.this, "Something wasn't filled", Toast.LENGTH_SHORT).show();
