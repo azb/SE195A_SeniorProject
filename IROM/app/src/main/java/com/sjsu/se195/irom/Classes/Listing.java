@@ -35,7 +35,7 @@ public class Listing implements Parcelable{
 
     public Listing(Parcel in) {
         listID = in.readString();
-        //dateCreated = new Date(in.readLong());
+        dateCreated = new Date(in.readLong());
         creator = in.readString();
         item = (Item) in.readValue(getClass().getClassLoader());
         description = in.readString();

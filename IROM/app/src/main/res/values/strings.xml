@@ -110,4 +110,9 @@
     <string name="don_t_have_an_account_sign_up">Don\'t have an account? Sign up!</string>
     <string name="forgot_password">Forgot password?</string>
 
+    <!--Stripe Stuff-->
+    <string name="progressMessage">Please Wait&#8230;</string>
+    <string name="verify">Verify</string>
+    <string name="endingIn">Card ending in </string>
+    <string name="validationErrors">Validation Errors</string>
 </resources>

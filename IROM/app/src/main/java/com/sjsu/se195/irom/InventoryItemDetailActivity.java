@@ -28,6 +28,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.sjsu.se195.irom.Classes.Item;
 import com.sjsu.se195.irom.Classes.Listing;
 
+import java.util.Date;
 import java.util.Locale;
 
 public class InventoryItemDetailActivity extends NavigationDrawerActivity {
@@ -162,7 +163,7 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
             public void onSuccess(Void aVoid) {
                 // Create and upload listing
                 final Listing listing = new Listing(item.uID, item, description, price);
-                // TODO: Set date once that's figured out
+                listing.listID = key;
                 listingsReference.child(key).setValue(listing).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {

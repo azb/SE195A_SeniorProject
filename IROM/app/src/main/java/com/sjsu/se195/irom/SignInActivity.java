@@ -51,7 +51,7 @@ public class SignInActivity extends AppCompatActivity {
                 if (user != null) {
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                    Intent intent = new Intent( getBaseContext(), WelcomeActivity.class);
+                    Intent intent = new Intent( getBaseContext(), MarketplaceActivity.class);
                     startActivity(intent);
                 } else {
                     // User is signed out
@@ -62,6 +62,11 @@ public class SignInActivity extends AppCompatActivity {
         };
 
         //set up edit texts (email and password fields)
+        setUpFields();
+
+    }
+
+    private void setUpFields() {
         email = (EditText) findViewById(R.id.signin_email);
         //if focus isnt on email, close kb
         email.setOnFocusChangeListener(new View.OnFocusChangeListener(){
@@ -97,7 +102,7 @@ public class SignInActivity extends AppCompatActivity {
 
             }
 
-            });
+        });
         password = (EditText) findViewById(R.id.signin_password_text);
         //when you change stuff, remove that error
         password.addTextChangedListener(new TextWatcher() {
@@ -111,7 +116,7 @@ public class SignInActivity extends AppCompatActivity {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count,
                                           int after) {
-                // TODO Auto-generated method stub
+
 
             }
 
@@ -152,7 +157,7 @@ public class SignInActivity extends AppCompatActivity {
         signInButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
-               //sign in attempt
+                //sign in attempt
                 signInAttempt();
             }
         });
@@ -206,7 +211,6 @@ public class SignInActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
     }
 
     private void signInAttempt() {
@@ -251,7 +255,7 @@ public class SignInActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
                 if (task.isSuccessful()){
-                        Intent intent = new Intent( getBaseContext(), WelcomeActivity.class);
+                        Intent intent = new Intent( getBaseContext(), MarketplaceActivity.class);
                         startActivity(intent);
 
                 }

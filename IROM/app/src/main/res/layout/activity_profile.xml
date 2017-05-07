@@ -55,6 +55,16 @@
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 android:id="@+id/last_name_edit_text"/>
+            <TextView
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="last name: "
+                android:labelFor="@+id/last_name_edit_text"
+                android:id="@+id/email_label"/>
+            <EditText
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:id="@+id/email_edit_text"/>
 
             <Spinner
                 android:layout_width="wrap_content"

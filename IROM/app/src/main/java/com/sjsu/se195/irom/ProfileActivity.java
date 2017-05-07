@@ -1,8 +1,10 @@
 package com.sjsu.se195.irom;
 
 import android.content.Context;
-import android.icu.util.Currency;
 import android.os.Bundle;
+
+import android.support.design.widget.NavigationView; //added by Arthur
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -15,8 +17,13 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
+import com.google.firebase.database.DataSnapshot; //added by Arthur
+import com.google.firebase.database.DatabaseError; //added by Arthur
+
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener; //added by Arthur
 import com.sjsu.se195.irom.Classes.Profile;
 
 import java.util.HashMap;
@@ -36,9 +43,14 @@ public class ProfileActivity extends NavigationDrawerActivity {
     private FirebaseUser mUser;
     private EditText mFirstNameEditText;
     private EditText mLastNameEditText;
+    private EditText mEmailEditText;
     private Spinner mCurrencySpinner;
     private TextView mFirstNameTextView;
     private TextView mLastNameTextView;
+    private TextView mEmailTextView;
+
+    private static final FirebaseDatabase database = FirebaseDatabase.getInstance();//added by Arthur
+
 
 
     //private Spinner currency;
@@ -53,6 +65,7 @@ public class ProfileActivity extends NavigationDrawerActivity {
         initializeAllTheThings();
         //get current user
         mUser = FirebaseAuth.getInstance().getCurrentUser();
+
         //get database reference
         mDatabase = FirebaseDatabase.getInstance().getReference();
         //get current user to set up welcome
@@ -60,9 +73,6 @@ public class ProfileActivity extends NavigationDrawerActivity {
         userEmailWelcome.setText(profileName);
 
         setupClickListeners();
-
-
-
 
 //TODO currency spinner
   //      currency = (Spinner) findViewById(R.id.currency_spinner);
@@ -74,10 +84,15 @@ public class ProfileActivity extends NavigationDrawerActivity {
         saveButton = (Button) findViewById(R.id.profile_save_button);
         userEmailWelcome = (TextView) findViewById(R.id.profile_page__user_welcome);
         editForm = (ScrollView) findViewById(R.id.profile_edit_form);
+
+        //Get text input fields IDs
         mLastNameEditText = (EditText) findViewById(R.id.last_name_edit_text);
         mFirstNameEditText = (EditText) findViewById(R.id.first_name_edit_text);
+        mEmailEditText = (EditText) findViewById(R.id.email_edit_text);
+        //Get text labels IDs
         mFirstNameTextView = (TextView) findViewById(R.id.first_name_label);
         mLastNameTextView = (TextView) findViewById(R.id.last_name_label);
+        mEmailTextView = (TextView) findViewById(R.id.email_label);
         //TODO PULL FROM PROFILE FOR NAMES
 
         //set up spinner
@@ -88,9 +103,41 @@ public class ProfileActivity extends NavigationDrawerActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
         mCurrencySpinner.setAdapter(adapter);
+
+        mFirstNameTextView.setText("First Name");
+        mLastNameTextView.setText("Last Name");
+        mEmailTextView.setText("Email");
+
+        //////////////added by Arthur///////////////////////////////////////////////////////////////////////////
+        //NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        //navigationView.setNavigationItemSelectedListener(this);
+        //View header=navigationView.getHeaderView(0);
+
+        usr = FirebaseAuth.getInstance().getCurrentUser();
+
+        if(usr!=null){
+            final DatabaseReference userprofileref = database.getReference("profile/"+usr.getUid());
+            userprofileref.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot ds) {
+                    String fn=ds.child("firstName").getValue().toString();
+                    String ln=ds.child("lastName").getValue().toString();
+
+                    mFirstNameEditText.setText(fn);
+                    mLastNameEditText.setText(ln);
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+        //////////////////////////////////////////////////////////////////////////////////////////
     }
 
     private void setupClickListeners() {
+        //Edit Profile Button
         editButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -98,15 +145,13 @@ public class ProfileActivity extends NavigationDrawerActivity {
                 if(editForm.getVisibility()==View.INVISIBLE){
                     editForm.setVisibility(View.VISIBLE);
                 }else{
-                    //clear fields
-                    mLastNameEditText.getText().clear();
-                    mFirstNameEditText.getText().clear();
                     //set invisible
                     editForm.setVisibility(View.INVISIBLE);
                 }
             }
         });
 
+        //Save Changes Button
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -117,7 +162,7 @@ public class ProfileActivity extends NavigationDrawerActivity {
                 Toast.makeText(ProfileActivity.this, "you clicked save!", Toast.LENGTH_SHORT).show();
                 //update labels
                 mFirstNameTextView.setText( "first name: " + fn);
-                mLastNameTextView.setText("last name: " + ln);
+                mLastNameTextView.setText("last name: " + ln );
             }
 
             private void writeProfile(Profile profile) {

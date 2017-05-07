@@ -9,16 +9,29 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.loopj.android.http.JsonHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 import com.sjsu.se195.irom.Classes.Listing;
+import com.sjsu.se195.irom.Classes.NoodlioPayClass;
 import com.sjsu.se195.irom.Classes.Profile;
+import com.stripe.android.Stripe;
+import com.stripe.android.TokenCallback;
+import com.stripe.android.model.Token;
+
+import org.json.JSONObject;
 
 import java.util.Locale;
+
+import cz.msebera.android.httpclient.Header;
 
 /**
  * Created by Krystle on 3/29/2017.
@@ -72,16 +85,83 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
         }
     }
 
-    private void initializeFromMarketplaceBase(Listing listing, Profile profile) {
-        listingName.setText(listing.item.name);
-        listingCreator.setText(profile.firstName + " " + profile.lastName);
-        listingDescription.setText(listing.description);
-        listingPrice.setText(String.format(Locale.US, "$%.2f", listing.price));
+    @Override
+    public void onRestart(){
+        super.onRestart();
+        purchaseButton.setVisibility(View.INVISIBLE);
+        listingName.setText("This item has been sold.");
+        listingCreator.setText(null);
+        listingDescription.setText(null);
+        listingPrice.setText(null);
+    }
 
-        // Check if this listing is owned by current user or not
-        if (profile.uID.equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
-            purchaseButton.setVisibility(View.INVISIBLE);
-        }
+    private void initializeFromMarketplaceBase(final Listing listing,final Profile profile) {
+        FirebaseDatabase db = FirebaseDatabase.getInstance();
+        DatabaseReference ref = db.getReference().child("listings").child(listing.getListID());
+        ref.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
+                if(dataSnapshot.getKey().toString().equals("isLive") && dataSnapshot.getValue().toString().equals("false")) {
+                    purchaseButton.setVisibility(View.INVISIBLE);
+                    if (profile.uID.equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+                        listingName.setText("You have sold this item.");
+                    }
+                    else {
+                        listingName.setText("This item has been sold.");
+                    }
+                    listingCreator.setText(null);
+                    listingDescription.setText(null);
+                    listingPrice.setText(null);
+                }
+                else if(dataSnapshot.getKey().toString().equals("isLive") && dataSnapshot.getValue().toString().equals("true")){
+                    listingName.setText(listing.item.name);
+                    listingCreator.setText(profile.firstName + " " + profile.lastName);
+                    listingDescription.setText(listing.description);
+                    listingPrice.setText(String.format(Locale.US, "$%.2f", listing.price));
+                    // Check if this listing is owned by current user or not
+                    if (profile.uID.equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+                        purchaseButton.setVisibility(View.INVISIBLE);
+                    }
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        purchaseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Intent intent = new Intent(getBaseContext(), PaymentTestActivity.class);
+                Bundle bundle = new Bundle();
+                String listing_id = listing.getListID();
+                Double price = listing.getPrice();
+                bundle.putString("listing_id",listing_id);
+                bundle.putDouble("price",price);
+                intent.putExtras(bundle);
+                startActivity(intent);
+            }
+        });
+
+
     }
 
     private void initializeFromItemDetail(final Listing listing, final Bitmap image) {
@@ -104,4 +184,5 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
             }
         });
     }
+
 }

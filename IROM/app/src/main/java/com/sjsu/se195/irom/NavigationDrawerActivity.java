@@ -3,12 +3,10 @@ package com.sjsu.se195.irom;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AppCompatAutoCompleteTextView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,9 +14,13 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class NavigationDrawerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -26,6 +28,9 @@ public class NavigationDrawerActivity extends AppCompatActivity
     protected DrawerLayout drawer;
     protected TextView navHeaderEmail;
     protected TextView navHeaderName;
+    //protected TextView navHeaderLastName;
+    private static final FirebaseDatabase database = FirebaseDatabase.getInstance();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,10 +39,11 @@ public class NavigationDrawerActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
+        drawer.addDrawerListener(toggle);
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -46,11 +52,29 @@ public class NavigationDrawerActivity extends AppCompatActivity
 
         usr = FirebaseAuth.getInstance().getCurrentUser();
         navHeaderEmail = (TextView) header.findViewById(R.id.nav_header_user_email);
-        navHeaderName = (TextView) header.findViewById(R.id.nav_header_user_name);
+        navHeaderName = (TextView) header.findViewById(R.id.nav_bar_name);
+        //navHeaderLastName = (TextView) header.findViewById(R.id.nav_bar_last_name);
+
         if(usr!=null){
-            navHeaderEmail.setText(usr.getEmail());
-            String name = usr.getDisplayName();
-            navHeaderName.setText(name);
+            final DatabaseReference userprofileref = database.getReference("profile/"+usr.getUid());
+            userprofileref.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot ds) {
+                    String fn=ds.child("firstName").getValue().toString();
+                    String ln=ds.child("lastName").getValue().toString();
+                    navHeaderName.setText(fn +" "+ ln);
+                    //navHeaderLastName.setText(ln);
+
+                    navHeaderEmail.setText(usr.getEmail());
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+
+
         }
     }
 
@@ -107,36 +131,51 @@ public class NavigationDrawerActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_item) {
-            //handle item activity
-            Intent intent = new Intent(getBaseContext(), ItemActivity.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_inventory) {
+//        if (id == R.id.nav_item) {
+//            //handle item activity
+//            Intent intent = new Intent(getBaseContext(), ItemActivity.class);
+//            startActivity(intent);
+//        }
+        if (id == R.id.nav_inventory) {
             //go to inventory activity
             Intent intent = new Intent(getBaseContext(), InventoryActivity.class);
             startActivity(intent);
-        } else if (id == R.id.nav_listing) {
-            //go to listing activity
-            Intent intent = new Intent(getBaseContext(), ListingActivity.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_manage) {
-            //TODO amazon activity intent
-            Toast.makeText(NavigationDrawerActivity.this,"This is currently under construction",Toast.LENGTH_SHORT).show();
-            //Intent intent = new Intent(getBaseContext(), AmazonActivity.class);
-            //startActivity(intent);
-        } else if (id == R.id.nav_profile) {
+        }
+//        else if (id == R.id.nav_listing) {
+//            //go to listing activity
+//            Intent intent = new Intent(getBaseContext(), ListingActivity.class);
+//            startActivity(intent);
+//        }
+// else if (id == R.id.nav_manage) {
+//            //TODO amazon activity intent
+//            Toast.makeText(NavigationDrawerActivity.this,"This is currently under construction",Toast.LENGTH_SHORT).show();
+//            //Intent intent = new Intent(getBaseContext(), AmazonActivity.class);
+//            //startActivity(intent);
+//        }
+        else if (id == R.id.nav_profile) {
             Intent intent = new Intent(getBaseContext(), ProfileActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_vision) {
             Intent intent = new Intent(getBaseContext(), CloudVisionTestActivity.class);
             startActivity(intent);
-        } else if (id == R.id.nav_welcome) {
-            Intent intent = new Intent(getBaseContext(), WelcomeActivity.class);
+        } else if (id == R.id.nav_marketplace) {
+            Intent intent = new Intent(getBaseContext(), MarketplaceActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_cloud_vision) {
             Intent intent = new Intent(getBaseContext(), IROMazonSearchActivity.class);
             startActivity(intent);
         }
+
+//        else if(id == R.id.nav_pay){
+//            Intent intent = new Intent(getBaseContext(), PaymentTestActivity.class);
+//            Bundle bundle = new Bundle();
+//            String listing_id = "-KiqEnj9EPavAqF117kT";
+//            Double price = 100.00;
+//            bundle.putString("listing_id",listing_id);
+//            bundle.putDouble("price",price);
+//            intent.putExtras(bundle);
+//            startActivity(intent);
+//        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);

@@ -244,7 +244,7 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
                         int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
                         String picturePath = cursor.getString(columnIndex);
 
-                        ImageView imageView = (ImageView) findViewById(R.id.imageView);
+                        ImageView imageView = (ImageView) findViewById(R.id.nav_bar_logo);
                         imageView.setImageBitmap(BitmapFactory.decodeFile(picturePath));
                     }
                 } catch (java.lang.NullPointerException e) {
@@ -254,7 +254,7 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
             if (requestCode == CAMERA_IMAGE_REQUEST) {
                 try {
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), currentPhotoURI);
-                    ImageView imageView = (ImageView) findViewById(R.id.imageView);
+                    ImageView imageView = (ImageView) findViewById(R.id.nav_bar_logo);
                     imageView.setImageBitmap(bitmap);
                 } catch (java.io.IOException e) {
                     Log.d(TAG, "Image selection failed: " + e.getMessage());
@@ -283,7 +283,7 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
 
     public void uploadImage() {
         try {
-            ImageView imageView = (ImageView) findViewById(R.id.imageView);
+            ImageView imageView = (ImageView) findViewById(R.id.nav_bar_logo);
             Drawable drawable = imageView.getDrawable();
             Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
             bitmap = scaleBitmapDown(bitmap, 1200);
@@ -364,9 +364,11 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
 
                     ArrayList<IROMazon> entityR = getIROMazon_Entity(response);
                     ArrayList<IROMazon> textR = getIROMazon_Text(response);
+                    ArrayList<IROMazon> logolabelR = getIROMazon_Logo(response);
+                    ArrayList<IROMazon> labelR = getIROMazon_Label(response);
                     createNewIROMazon = entityR.size() == 0 && textR.size() == 0;
                     //return convertResponseToString(response);
-                    String result = resultstoString(entityR,textR);
+                    String result = resultstoString(entityR,textR,logolabelR,labelR);
                     result += "\n";
                     result += convertResponseToString(response);
                     return result;
@@ -506,7 +508,7 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
         //cWebEntitySearch.child(key).setValue(newEntry);
     }
 
-    private String resultstoString(ArrayList<IROMazon> entityResults,ArrayList<IROMazon> textResults){
+    private String resultstoString(ArrayList<IROMazon> entityResults,ArrayList<IROMazon> textResults,ArrayList<IROMazon> logolabelResults,ArrayList<IROMazon> labelResults){
         String result = "";
         result += "Entity Matches";
         result += "\n";
@@ -527,6 +529,26 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
             result += textResults.get(i).key;
             result += "\n";
         }
+        result += "\n";
+        result += "LogoLabel Matches";
+        result += "\n";
+        for(int i = 0;i<logolabelResults.size();i++){
+            result += i;
+            result += ". ";
+            result += logolabelResults.get(i).name;
+            result += logolabelResults.get(i).key;
+            result += "\n";
+        }
+        result += "\n";
+        result += "Label Matches";
+        result += "\n";
+        for(int i = 0;i<labelResults.size();i++){
+            result += i;
+            result += ". ";
+            result += labelResults.get(i).name;
+            result += labelResults.get(i).key;
+            result += "\n";
+        }
         return result;
     }
 
@@ -540,9 +562,9 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
             for (WebEntity entity : webDetection.getWebEntities()) {
                 if (entity.getDescription() != null && entity.getScore() >= 0.5) {
                     entityResults.add(entity.getDescription());
-                    System.out.println("Adding to entityResults");
-                    System.out.println(entity.getDescription());
-                    System.out.println("\n");
+                    //System.out.println("Adding to entityResults");
+                    //System.out.println(entity.getDescription());
+                    //System.out.println("\n");
                 }
             }
         }
@@ -551,9 +573,9 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
             for(int j = 0;j<entityResults.size();j++){
                 if(cEntryList.get(i).name.equals(entityResults.get(j))){
                     result.add(cEntryList.get(i));
-                    System.out.println("Adding to result");
-                    System.out.println(cEntryList.get(i).name);
-                    System.out.println("\n");
+                    //System.out.println("Adding to result");
+                    //System.out.println(cEntryList.get(i).name);
+                    //System.out.println("\n");
                 }
             }
         }
@@ -573,6 +595,7 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
             }
         }
         for(int i = 0;i<cEntryList.size();i++){
+
                 if(getIROMazon_TLLScore(textResults,cEntryList.get(i).text) >= 0.5){
                     result.add(cEntryList.get(i));
                 }
@@ -580,25 +603,80 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
         return result;
     }
 
-    private double getIROMazon_TLLScore(ArrayList<String> a,ArrayList<String> b){
-        int found = 0;
-        System.out.println("Check Text: ");
-        System.out.println(b.get(0));
-        System.out.println("\n");
-        for(int i = 0;i<a.size();i++){
-            if(b.get(0).contains(a.get(i))) {
-                System.out.println("Found Text ");
-                System.out.println(a.get(i));
-                System.out.println("\n");
-                found += 1;
-                System.out.println(found);
-                System.out.println("\n");
+    private ArrayList<IROMazon> getIROMazon_Logo(BatchAnnotateImagesResponse response){
+        ArrayList<IROMazon> result = new ArrayList<>();
+        ArrayList<String> logoResults = new ArrayList<>();
+        ArrayList<String> labelResults = new ArrayList<>();
+        List<EntityAnnotation> logos = response.getResponses().get(0).getLogoAnnotations();
+        List<EntityAnnotation> labels = response.getResponses().get(0).getLabelAnnotations();
+        if (logos != null) {
+            for (EntityAnnotation logo : logos) {
+                if(logo.getDescription() != null){
+                    logoResults.add(logo.getDescription());
+                }
             }
         }
-        System.out.println("Score: ");
-        System.out.println(((double)found)/(((double)a.size())));
-        System.out.println("\n");
-        return ((double)found)/(((double)a.size()));
+        if(labels != null){
+            for (EntityAnnotation label : labels){
+                if(label.getDescription() != null){
+                    logoResults.add(label.getDescription());
+                }
+            }
+        }
+
+        for(int i = 0;i<cEntryList.size();i++){
+            if(getIROMazon_TLLScore(logoResults,cEntryList.get(i).logo) >= 0.5){
+                if(getIROMazon_TLLScore(labelResults,cEntryList.get(i).label) >= 0.5) {
+                    result.add(cEntryList.get(i));
+                }
+            }
+        }
+        return result;
     }
 
+    private ArrayList<IROMazon> getIROMazon_Label(BatchAnnotateImagesResponse response){
+        ArrayList<IROMazon> result = new ArrayList<>();
+        ArrayList<String> labelResults = new ArrayList<>();
+        List<EntityAnnotation> labels = response.getResponses().get(0).getLabelAnnotations();
+        if (labels != null) {
+            for (EntityAnnotation label : labels) {
+                if(label.getDescription() != null){
+                    System.out.println("Adding to labelResults");
+                    System.out.println(label.getDescription());
+                    labelResults.add(label.getDescription());
+                }
+            }
+        }
+        for(int i = 0;i<cEntryList.size();i++){
+
+            if(getIROMazon_TLLScore(labelResults,cEntryList.get(i).label) >= 0.5){
+                result.add(cEntryList.get(i));
+            }
+        }
+        return result;
+    }
+
+    private double getIROMazon_TLLScore(ArrayList<String> a, ArrayList<String> b) {
+        int found = 0;
+        if(a.size() > 0 && b.size() > 0) {
+            for(String text_b : b) {
+                for (String text_a : a) {
+                    //System.out.println("Checking Text/Label/Logo ");
+                    //System.out.println(text_a);
+                    if (text_b.contains(text_a)) {
+                        //System.out.println("Found Text/Label/Logo ");
+                        //System.out.println(text_a);
+                        found += 1;
+                    }
+                }
+            }
+            //System.out.println("Score: ");
+            //System.out.println(((double)found)/(((double)a.size())));
+            return ((double) found) / (((double) a.size()));
+        }
+        else{
+            return 0;
+        }
+    }
 }
+
