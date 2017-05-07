@@ -46,7 +46,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".MarketplaceActivity"
-            android:label="Welcome"
+            android:label="Marketplace"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".CloudVisionTestActivity"
@@ -75,7 +75,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".InventoryItemDetailActivity"
-            android:label="Details"
+            android:label="Item Detail"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ListingActivity"
@@ -83,7 +83,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ListingDetailActivity"
-            android:label="ListingDetail"
+            android:label="Listing Detail"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".SettingsActivity"

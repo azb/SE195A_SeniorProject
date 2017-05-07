@@ -63,6 +63,33 @@
             android:layout_toStartOf="@+id/listing_detail_price"
             android:layout_marginEnd="5dp" />
 
+        <TextView
+            android:id="@+id/listing_detail_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/listing_detail_creator"
+            android:layout_below="@+id/listing_detail_description"
+            android:layout_marginTop="5dp"
+            android:text="Date" />
+
+        <TextView
+            android:id="@+id/listing_detail_sold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/listing_detail_date"
+            android:layout_marginTop="5dp"
+            android:layout_centerHorizontal="true"
+            android:text="" />
+
+        <ProgressBar
+            android:id="@+id/listing_detail_progressbar"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true" />
+
     </RelativeLayout>
 
 </ScrollView>

@@ -33,6 +33,7 @@ import com.google.firebase.storage.StorageReference;
 import com.sjsu.se195.irom.Classes.Listing;
 import com.sjsu.se195.irom.Classes.Profile;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -120,11 +121,6 @@ public class MarketplaceActivity extends NavigationDrawerActivity {
                 Bundle b = new Bundle();
                 b.putParcelable("listing", listingProfile.listing);
                 b.putParcelable("profile", listingProfile.profile);
-                // Get image and scale for Parcel
-                if (listingProfile.image != null) {
-                    Bitmap image = listingProfile.image;
-                    b.putParcelable("image", image);
-                }
                 // Add into intent
                 i.putExtras(b);
                 startActivity(i);
@@ -137,7 +133,7 @@ public class MarketplaceActivity extends NavigationDrawerActivity {
     }
 
     @Override
-    public void onRestart(){
+    public void onRestart() {
         super.onRestart();
         DatabaseReference ref = database.getReference("listings/");
         refreshItems(ref);
@@ -171,6 +167,7 @@ public class MarketplaceActivity extends NavigationDrawerActivity {
                 // Handle case where no listings to be shown
                 if (totalToLoadCount == 0) {
                     swipeLayout.setRefreshing(false);
+                    listingAdapter.notifyDataSetChanged();
                 }
             }
 
@@ -190,7 +187,8 @@ public class MarketplaceActivity extends NavigationDrawerActivity {
             Collections.sort(mListingList, new Comparator<ListingProfile>() {
                 @Override
                 public int compare(ListingProfile o1, ListingProfile o2) {
-                    return o1.listing.price.compareTo(o2.listing.price);
+                    // Want new items to show first so need to compare second to first
+                    return o2.listing.dateCreated.compareTo(o1.listing.dateCreated);
                 }
             });
             if (queryText != null) {
@@ -238,8 +236,6 @@ public class MarketplaceActivity extends NavigationDrawerActivity {
         profileRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d(TAG, "onDataChange: " + dataSnapshot.getKey());
-
                 Profile profile = dataSnapshot.getValue(Profile.class);
                 ListingProfile listingProfile = new ListingProfile(listing, profile);
 
@@ -299,6 +295,7 @@ public class MarketplaceActivity extends NavigationDrawerActivity {
         TextView listingPrice;
         TextView listingCreator;
         TextView listingDescription;
+        TextView listingDate;
 
 
         ListingHolder(View listingView) {
@@ -310,6 +307,7 @@ public class MarketplaceActivity extends NavigationDrawerActivity {
             listingPrice = (TextView) listingView.findViewById(R.id.listing_list_item_price);
             listingCreator = (TextView) listingView.findViewById(R.id.listing_list_item_creator);
             listingDescription = (TextView) listingView.findViewById(R.id.listing_list_item_description);
+            listingDate = (TextView) listingView.findViewById(R.id.listing_list_item_date);
         }
 
         // Bind listing to the holder and set details accordingly
@@ -324,6 +322,7 @@ public class MarketplaceActivity extends NavigationDrawerActivity {
             listingPrice.setText(String.format(Locale.US, "$%.2f", listing.price));
             listingCreator.setText(profile.firstName + " " + profile.lastName);
             listingDescription.setText(listing.description);
+            listingDate.setText(new SimpleDateFormat("MMM d, yyyy hh:mm a", Locale.US).format(listing.dateCreated));
             if (image != null) {
                 listingImage.setImageBitmap(image);
             }

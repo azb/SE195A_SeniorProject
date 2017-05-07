@@ -28,6 +28,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.sjsu.se195.irom.Classes.Item;
 import com.sjsu.se195.irom.Classes.Listing;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
@@ -38,11 +39,9 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
     private ImageView itemImage;
     private TextView itemName;
     private TextView itemDesc;
-    private TextView itemCreatedDateLabel;
     private TextView itemCreatedDate;
     private Button itemListingButton;
     private TextView itemQuantity;
-    private DatabaseReference mDatabaseRef;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -57,8 +56,6 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
     }
 
     private void initializeAndFillInInfo(final Item item) {
-        mDatabaseRef = FirebaseDatabase.getInstance().getReference();
-
         itemImage = (ImageView) findViewById(R.id.item_detail_picture);
         itemImage.setImageBitmap(image);
 
@@ -68,10 +65,8 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
         itemDesc = (TextView) findViewById(R.id.item_detail_desc);
         itemDesc.setText(item.getNote());
 
-        itemCreatedDateLabel = (TextView) findViewById(R.id.item_detail_date_label);
-
         itemCreatedDate = (TextView) findViewById(R.id.item_detail_date);
-        itemCreatedDate.setText(item.getDateAdded().toString());
+        itemCreatedDate.setText(new SimpleDateFormat("MMM d, yyyy hh:mm a", Locale.US).format(item.dateAdded));
 
         itemQuantity = (TextView) findViewById(R.id.item_detail_quantity);
         itemQuantity.setText(String.valueOf(item.getQuantity()));
@@ -100,7 +95,6 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
                                 // Add to bundle
                                 Bundle b = new Bundle();
                                 b.putParcelable("listing", listing);
-                                b.putParcelable("image", ((BitmapDrawable) itemImage.getDrawable()).getBitmap());
                                 i.putExtras(b);
                                 startActivity(i);
                             }

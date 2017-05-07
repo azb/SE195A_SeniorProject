@@ -32,11 +32,14 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.sjsu.se195.irom.Classes.Item;
+import com.sjsu.se195.irom.Classes.Listing;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Locale;
 
 /**
  * Created by Arthur on 11/9/2016.
@@ -119,15 +122,15 @@ public class InventoryActivity extends NavigationDrawerActivity {
         // Set up adapter
         itemAdapter = new ItemAdapter(mItemList, new OnItemClickListener() {
             @Override
-            public void onItemClick(ItemImage itemimage) {
+            public void onItemClick(ItemImage itemImage) {
                 //you want to make a new activity
                 Intent i = new Intent(InventoryActivity.this, InventoryItemDetailActivity.class);
                 //you need to put info into that new activity, here is a bundle to store it in
                 Bundle b = new Bundle();
                 //put your custom thing in the holder
-                b.putParcelable("item", itemimage.item);
+                b.putParcelable("item", itemImage.item);
                 // Add image as well
-                b.putParcelable("image", itemimage.image);
+                b.putParcelable("image", itemImage.image);
                 //stuff your holder into the new intent to start an activity
                 i.putExtras(b);
                 //actually follow through with your intent. you can now fill in details about the item.
@@ -171,6 +174,7 @@ public class InventoryActivity extends NavigationDrawerActivity {
                 // Handle case where no listings to be shown
                 if (totalToLoadCount == 0) {
                     swipeLayout.setRefreshing(false);
+                    itemAdapter.notifyDataSetChanged();
                 }
             }
 
@@ -190,7 +194,8 @@ public class InventoryActivity extends NavigationDrawerActivity {
             Collections.sort(mItemList, new Comparator<ItemImage>() {
                 @Override
                 public int compare(ItemImage o1, ItemImage o2) {
-                   return o1.item.name.compareTo(o2.item.name);
+                    // Want new items to show first so need to compare second to first
+                   return o2.item.dateAdded.compareTo(o1.item.dateAdded);
                 }
             });
             if (queryText != null) {
@@ -214,6 +219,7 @@ public class InventoryActivity extends NavigationDrawerActivity {
     private class ItemImage {
         Item item;
         Bitmap image;
+        Listing listing;
 
         ItemImage(Item item) {
             this.item = item;
@@ -225,28 +231,44 @@ public class InventoryActivity extends NavigationDrawerActivity {
         }
     }
 
-    public void getImage(final ItemImage itemimage) {
+    private void getImage(final ItemImage itemImage) {
         // Set up the storage ref
-        StorageReference imageRef = storage.getReference("items/" + itemimage.item.itemID);
+        StorageReference imageRef = storage.getReference("items/" + itemImage.item.itemID);
 
         // Get the image
         imageRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
             @Override
             public void onSuccess(byte[] bytes) {
                 Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                itemimage.image = Bitmap.createScaledBitmap(bmp, (bmp.getWidth() / 4), (bmp.getHeight() / 4), true);
-                mItemList.add(itemimage);
-                currentLoadedCount++;
-                onLoadComplete();
+                itemImage.image = Bitmap.createScaledBitmap(bmp, (bmp.getWidth() / 4), (bmp.getHeight() / 4), true);
+                getListing(itemImage);
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Log.d(TAG, "Something went wrong downloading the image!");
-                // Still want to put the item up since quite a few still do not have images currently
-                mItemList.add(itemimage);
+            }
+        });
+    }
+
+    private void getListing(final ItemImage itemImage) {
+        DatabaseReference listingRef = FirebaseDatabase.getInstance().getReference("listings/" + itemImage.item.listingID);
+
+        listingRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Listing listing = dataSnapshot.getValue(Listing.class);
+                itemImage.listing = listing;
+
+                // Now finally update RecyclerView
+                mItemList.add(itemImage);
                 currentLoadedCount++;
                 onLoadComplete();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.d(TAG, "Error downloading listing.");
             }
         });
     }
@@ -254,12 +276,15 @@ public class InventoryActivity extends NavigationDrawerActivity {
     private class ItemHolder extends RecyclerView.ViewHolder {
         Item item;
         Bitmap image;
+        Listing listing;
 
         //set up layout of each thing on a row for an item
         ImageView itemImage;
         TextView itemName;
         TextView itemQuantity;
         TextView itemForSale;
+        TextView itemDate;
+        TextView itemSold;
 
 
         ItemHolder(View itemView) {
@@ -271,6 +296,8 @@ public class InventoryActivity extends NavigationDrawerActivity {
             itemName = (TextView) itemView.findViewById(R.id.item_list_item_name);
             itemQuantity = (TextView) itemView.findViewById(R.id.item_list_item_quantity);
             itemForSale = (TextView) itemView.findViewById(R.id.item_list_item_forSale);
+            itemDate = (TextView) itemView.findViewById(R.id.item_list_item_date);
+            itemSold = (TextView) itemView.findViewById(R.id.item_list_item_sold);
         }
 
         // Bind item to the holder and set name accordingly
@@ -278,16 +305,22 @@ public class InventoryActivity extends NavigationDrawerActivity {
             // Pass the object to the main activity so the individual item can be pulled
             item = i.item;
             image = i.image;
+            listing = i.listing;
 
             // Set the info for the current item
             itemName.setText(item.getName());
-            itemQuantity.setText(item.getQuantity().toString());
-            itemForSale.setText("for sale: " + item.getForSale().toString());
+            itemQuantity.setText("Quantity: " + item.getQuantity().toString());
+            itemForSale.setText("For Sale: " + item.getForSale().toString());
+            itemDate.setText(new SimpleDateFormat("MMM d, yyyy hh:mm a", Locale.US).format(item.dateAdded));
             if (image != null) {
                 itemImage.setImageBitmap(image);
             }
-
-            if (itemForSale.getText().toString().contains("true")) {
+            if (item.forSale && !listing.isLive) {
+                // Listing has been sold
+                itemSold.setText("SOLD!");
+                itemSold.setTextColor(Color.RED);
+            }
+            if (item.forSale) {
                 //is for sale, cannot be used
                 itemForSale.setTextColor(Color.RED);
             } else {
@@ -306,7 +339,7 @@ public class InventoryActivity extends NavigationDrawerActivity {
     }
 
     interface OnItemClickListener {
-        void onItemClick(ItemImage itemimage);
+        void onItemClick(ItemImage itemImage);
     }
 
 

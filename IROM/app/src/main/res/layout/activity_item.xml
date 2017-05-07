@@ -33,27 +33,12 @@ TODO: When user clicks "Manually Add Item" button it and the "add item from came
                 android:scaleType="fitCenter"
                 app:srcCompat="@android:drawable/ic_menu_camera" />
 
-            <Button
-                android:id="@+id/cameraButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_below="@+id/imageHolder"
-                android:text="Camera" />
-
-            <Button
-                android:id="@+id/galleryButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/cameraButton"
-                android:text="Gallery" />
-
             <TextView
                 android:id="@+id/nameLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Name:"
-                android:layout_below="@+id/galleryButton"
+                android:layout_below="@+id/imageHolder"
                 android:layout_alignParentStart="true" />
 
             <EditText

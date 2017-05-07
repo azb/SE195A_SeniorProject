@@ -82,6 +82,8 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
     private ArrayList<IROMazon> IROMazonList;
     private ArrayList<IROMazon> entityR;
     private ArrayList<IROMazon> textR;
+    private ArrayList<IROMazon> logolabelR;
+    private ArrayList<IROMazon> labelR;
     private ArrayList<IROMazonImage> IROMazonImageList = new ArrayList<>();
     private IROMazonAdapter iromazonAdapter;
     private ArrayList<ArrayList<String>> IROMazonStringLists;
@@ -425,6 +427,8 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
                     // Use response to compare with IROMazon data
                     entityR = getIROMazon_Entity(response);
                     textR = getIROMazon_Text(response);
+                    logolabelR = getIROMazon_Logo(response);
+                    labelR = getIROMazon_Label(response);
 
                     // Get data in case creating new IROMazon entry
                     convertResponseToString(response);
@@ -440,24 +444,36 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
 
             protected void onPostExecute(String result) {
                 if (result != null) {
-                    // Use result of comparison with IROMazon data to update field with suggested data
-                    if (entityR != null && entityR.size() > 0) {
-                        if (textR != null && textR.size() > 0) {
-                            // Both have items in them, display both results without duplicates
-                            for (IROMazon current : textR) {
-                                if (!entityR.contains(current)) {
-                                    entityR.add(current);
-                                }
-                            }
-                            getImages(entityR);
-                        } else {
-                            // No text matches, just use entities
-                            getImages(entityR);
+                    // Use result of comparison with IROMazon data to update field with potential matches
+                    ArrayList<IROMazon> potentialMatches = new ArrayList<>();
+
+                    // Loop through each result list, avoiding duplicates
+                    for (IROMazon current : entityR) {
+                        if (!potentialMatches.contains(current)) {
+                            potentialMatches.add(current);
                         }
-                    } else if (textR != null && textR.size() > 0) {
-                        getImages(textR);
-                    } else {
+                    }
+                    for (IROMazon current : textR) {
+                        if (!potentialMatches.contains(current)) {
+                            potentialMatches.add(current);
+                        }
+                    }
+                    for (IROMazon current : logolabelR) {
+                        if (!potentialMatches.contains(current)) {
+                            potentialMatches.add(current);
+                        }
+                    }
+                    for (IROMazon current : labelR) {
+                        if (!potentialMatches.contains(current)) {
+                            potentialMatches.add(current);
+                        }
+                    }
+
+                    // Handle case that there were no matches found, no items added to ArrayList
+                    if (potentialMatches.size() == 0) {
                         Toast.makeText(IROMazonSearchActivity.this, "No matches found in database", Toast.LENGTH_SHORT).show();
+                    } else {
+                        getImages(potentialMatches);
                     }
 
                     Toast.makeText(IROMazonSearchActivity.this, "Cloud Vision Request complete", Toast.LENGTH_SHORT).show();
@@ -592,7 +608,63 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             }
 
             for (IROMazon storedData : IROMazonList) {
-                if (storedData.text != null && getIROMazon_TLLScore(textResults, storedData.text) >= 0.5) {
+                if (storedData.text.size() != 0 && getIROMazon_TLLScore(textResults, storedData.text) >= 0.5) {
+                    result.add(storedData);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private ArrayList<IROMazon> getIROMazon_Logo(BatchAnnotateImagesResponse response){
+        ArrayList<IROMazon> result = new ArrayList<>();
+        ArrayList<String> logoResults = new ArrayList<>();
+        ArrayList<String> labelResults = new ArrayList<>();
+        List<EntityAnnotation> logos = response.getResponses().get(0).getLogoAnnotations();
+        List<EntityAnnotation> labels = response.getResponses().get(0).getLabelAnnotations();
+
+        if (logos != null) {
+            for (EntityAnnotation logo : logos) {
+                if(logo.getDescription() != null) {
+                    logoResults.add(logo.getDescription());
+                }
+            }
+
+            if (labels != null) {
+                for (EntityAnnotation label : labels) {
+                    if(label.getDescription() != null) {
+                        logoResults.add(label.getDescription());
+                    }
+                }
+
+                for (IROMazon storedData : IROMazonList) {
+                    if (storedData.logo.size() != 0 && getIROMazon_TLLScore(logoResults, storedData.logo) >= 0.5) {
+                        if (storedData.label.size() != 0 && getIROMazon_TLLScore(labelResults, storedData.label) >= 0.5) {
+                            result.add(storedData);
+                        }
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private ArrayList<IROMazon> getIROMazon_Label(BatchAnnotateImagesResponse response){
+        ArrayList<IROMazon> result = new ArrayList<>();
+        ArrayList<String> labelResults = new ArrayList<>();
+        List<EntityAnnotation> labels = response.getResponses().get(0).getLabelAnnotations();
+
+        if (labels != null) {
+            for (EntityAnnotation label : labels) {
+                if(label.getDescription() != null) {
+                    labelResults.add(label.getDescription());
+                }
+            }
+
+            for (IROMazon storedData : IROMazonList) {
+                if (storedData.label.size() != 0 && getIROMazon_TLLScore(labelResults, storedData.label) >= 0.5) {
                     result.add(storedData);
                 }
             }
@@ -611,7 +683,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
                     }
                 }
             }
-            return ((double) found) / (((double) a.size()));
+            return ((double) found) / ((double) a.size());
         }
         else{
             return 0;
