@@ -6,9 +6,9 @@
     android:paddingTop="?android:actionBarSize"
     android:layout_height="match_parent">
     <ImageView
-        android:layout_height="107dp"
-        android:layout_width="135dp"
-        android:src="@drawable/a12633702"
+        android:layout_height="200dp"
+        android:layout_width="200dp"
+        android:src="@drawable/user_large"
         android:layout_gravity="center"
         android:id="@+id/profile_picture" />
     <TextView

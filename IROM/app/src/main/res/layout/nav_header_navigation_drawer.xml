@@ -63,8 +63,7 @@
             android:paddingEnd="2dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toLeftOf="@+id/nav_header_user_email"
-            app:srcCompat="@drawable/a12633702" />
+            app:layout_constraintRight_toLeftOf="@+id/nav_header_user_email" />
         <!--<TextView-->
         <!--android:id="@+id/nav_header_user_name"-->
         <!--android:layout_width="0dp"-->

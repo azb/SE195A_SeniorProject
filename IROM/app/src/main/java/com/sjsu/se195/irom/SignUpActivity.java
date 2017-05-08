@@ -1,6 +1,7 @@
 package com.sjsu.se195.irom;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -145,6 +146,11 @@ public class SignUpActivity extends AppCompatActivity {
                     password1.setError(null);
                     firstName.setError(null);
                     lastName.setError(null);
+                    final ProgressDialog progressDialog = new ProgressDialog(SignUpActivity.this,
+                            R.style.AppTheme_Dialog);
+                    progressDialog.setIndeterminate(true);
+                    progressDialog.setMessage("Creating Account...");
+                    progressDialog.show();
                     mAuth.createUserWithEmailAndPassword(email.getText().toString(), password1.getText().toString())
                             .addOnCompleteListener(SignUpActivity.this, new OnCompleteListener<AuthResult>() {
                                 @Override
@@ -160,6 +166,7 @@ public class SignUpActivity extends AppCompatActivity {
                                     }else{
                                         Profile p = new Profile(mAuth.getCurrentUser().getUid(),firstName.getText().toString(),lastName.getText().toString());
                                         mDatabase.child("profile").child(mAuth.getCurrentUser().getUid()).setValue(p);
+                                        progressDialog.dismiss();
                                         Intent intent = new Intent( getBaseContext(), MarketplaceActivity.class);
                                         startActivity(intent);
                                     }

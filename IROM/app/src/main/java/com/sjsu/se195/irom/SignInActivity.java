@@ -2,6 +2,7 @@ package com.sjsu.se195.irom;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -248,19 +249,27 @@ public class SignInActivity extends AppCompatActivity {
         Log.d(TAG, "signIn:" + e);
 
         signInButton.setEnabled(false);
+        final ProgressDialog progressDialog = new ProgressDialog(SignInActivity.this,
+                R.style.AppTheme_Dialog);
+        progressDialog.setIndeterminate(true);
+        progressDialog.setMessage("Authenticating...");
+        progressDialog.show();
         //maybe check validity here instead of oncreate...
         mAuth.signInWithEmailAndPassword(e,p).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
                 if (task.isSuccessful()){
-                        Intent intent = new Intent( getBaseContext(), MarketplaceActivity.class);
-                        startActivity(intent);
+                    progressDialog.dismiss();
+                    signInButton.setEnabled(true);
+                    Intent intent = new Intent( getBaseContext(), MarketplaceActivity.class);
+                    startActivity(intent);
 
                 }
                 //if the task isn't successful
                 if(!task.isSuccessful()){
                     Log.w(TAG, "signInWithEmail:failed", task.getException());
+                    progressDialog.dismiss();
                     signInButton.setEnabled(true);
                     Toast.makeText(SignInActivity.this, "Please enter a valid email and password", Toast.LENGTH_SHORT).show();
                 }

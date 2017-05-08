@@ -63,7 +63,7 @@ public class InventoryActivity extends NavigationDrawerActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //INSTEAD OF setContentView(R.layout.activity_welcome); USE NEXT 3 LINES IF YOU WANT TH NAV BAR TO WORK
+        //INSTEAD OF setContentView(R.layout.activity_marketplace); USE NEXT 3 LINES IF YOU WANT TH NAV BAR TO WORK
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View contentView = inflater.inflate(R.layout.activity_inventory, null, false);
         this.drawer.addView(contentView, 0);

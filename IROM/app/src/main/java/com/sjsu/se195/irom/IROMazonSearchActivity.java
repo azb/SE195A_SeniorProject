@@ -81,8 +81,8 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
     private static final int CAMERA_PERMISSIONS_REQUEST = 4;
     private static final String TAG = IROMazonSearchActivity.class.getSimpleName();
     private static final String CLOUD_VISION_API_KEY = "AIzaSyAHnhDlz-V1OTUivtflxsQwFShuAzeh-6w";
-    private final long ONE_MEGABYTE = 1024 * 1024; // Max image download size to avoid issues
     private Uri currentPhotoURI;
+    private final long ONE_MEGABYTE = 1024 * 1024; // Max image download size to avoid issues
     private DatabaseReference IROMazonDatabaseRef;
     private StorageReference storageRef;
     private ArrayList<IROMazon> IROMazonList;
@@ -270,14 +270,11 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
         if (PermissionUtils.requestPermission(this, CAMERA_PERMISSIONS_REQUEST, Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.CAMERA)) {
             dialog.dismiss();
-            System.out.println("YOU GOT HERE1");
 
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            System.out.println("YOU GOT HERE2");
 
             // Make sure camera activity available
             if (intent.resolveActivity(getPackageManager()) != null) {
-                System.out.println("YOU GOT HERE3");
 
                 // Create the file
                 File photoFile = null;
@@ -340,21 +337,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (PermissionUtils.permissionGranted(requestCode, GALLERY_PERMISSIONS_REQUEST, grantResults)) {
-            startGalleryChooser();
-        }
-        if (PermissionUtils.permissionGranted(requestCode, CAMERA_PERMISSIONS_REQUEST, grantResults)) {
-            try {
-                startCamera();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     public void uploadImage() {
         try {

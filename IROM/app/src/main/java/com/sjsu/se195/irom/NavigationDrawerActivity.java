@@ -1,19 +1,26 @@
 package com.sjsu.se195.irom;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -21,6 +28,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 public class NavigationDrawerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -28,10 +37,12 @@ public class NavigationDrawerActivity extends AppCompatActivity
     protected DrawerLayout drawer;
     protected TextView navHeaderEmail;
     protected TextView navHeaderName;
+    protected ImageView navheaderProfilePic;
+    private final long ONE_MEGABYTE = 1024 * 1024; // Max image download size to avoid issues
     //protected TextView navHeaderLastName;
     private static final FirebaseDatabase database = FirebaseDatabase.getInstance();
-
-
+    private static final FirebaseStorage storage = FirebaseStorage.getInstance();
+    private static final String TAG = NavigationDrawerActivity.class.getSimpleName();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,10 +64,12 @@ public class NavigationDrawerActivity extends AppCompatActivity
         usr = FirebaseAuth.getInstance().getCurrentUser();
         navHeaderEmail = (TextView) header.findViewById(R.id.nav_header_user_email);
         navHeaderName = (TextView) header.findViewById(R.id.nav_bar_name);
+        navheaderProfilePic = (ImageView) header.findViewById(R.id.nav_bar_header_profile_pic);
         //navHeaderLastName = (TextView) header.findViewById(R.id.nav_bar_last_name);
 
         if(usr!=null){
             final DatabaseReference userprofileref = database.getReference("profile/"+usr.getUid());
+            final StorageReference userProfilePicRef = storage.getReference("profile/"+usr.getUid());
             userprofileref.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot ds) {
@@ -66,6 +79,22 @@ public class NavigationDrawerActivity extends AppCompatActivity
                     //navHeaderLastName.setText(ln);
 
                     navHeaderEmail.setText(usr.getEmail());
+                    // Get the image
+                    final Bitmap[] b = new Bitmap[1];
+                    userProfilePicRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                        @Override
+                        public void onSuccess(byte[] bytes) {
+                            Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+
+                            navheaderProfilePic.setImageBitmap(Bitmap.createScaledBitmap(bmp, (bmp.getWidth() / 4), (bmp.getHeight() / 4), true));
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.d(TAG, "Something went wrong downloading the image!");
+                            // Still want to put the listing up since quite a few still do not have images currently
+                        }
+                    });
                 }
 
                 @Override

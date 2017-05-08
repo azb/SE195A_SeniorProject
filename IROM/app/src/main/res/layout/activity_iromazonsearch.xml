@@ -7,6 +7,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingTop="?android:actionBarSize"
+    android:paddingLeft="2dp"
+    android:paddingRight="2dp"
+    android:paddingBottom="2dp"
     tools:context=".IROMazonSearchActivity">
     <LinearLayout
         android:layout_width="match_parent"
@@ -27,7 +30,8 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+           >
 
             <ScrollView
                 android:id="@+id/scrollView2"
@@ -46,7 +50,10 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/scrollView2"
                 android:layout_alignParentEnd="true"
-                android:background="@drawable/disabled_green_button_shape"
+                android:textColor="@color/white"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:background="@drawable/green_button_shape"
                 android:text="Search IROM" />
         </RelativeLayout>
         <EditText
@@ -75,7 +82,7 @@
             android:layout_height="wrap_content"
             android:paddingLeft="8dp"
             android:paddingRight="8dp"
-            android:background="@drawable/green_button_shape"
+            android:background="@drawable/disabled_green_button_shape"
             android:text="Submit Photo to Product Database"
             android:enabled="false" />
 
