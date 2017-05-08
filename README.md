@@ -32,3 +32,21 @@ Install Instructions
 
 
 4. Use a file browser application to locate the IROM APK and install it.
+
+Libraries Used:
+
+   Firebase
+
+   Google Cloud Vision
+
+   PickImage - https://github.com/jrvansuita/PickImage
+
+   Stripe
+
+   Noodlio Pay - https://noodliopay.com/
+
+
+Vector Icon Credit:
+
+   image-add-button_14232  - Icon made by Picol on www.flaticon.com
+
