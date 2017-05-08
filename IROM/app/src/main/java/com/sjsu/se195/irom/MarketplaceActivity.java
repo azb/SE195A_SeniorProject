@@ -322,7 +322,7 @@ public class MarketplaceActivity extends NavigationDrawerActivity {
             listingPrice.setText(String.format(Locale.US, "$%.2f", listing.price));
             listingCreator.setText(profile.firstName + " " + profile.lastName);
             listingDescription.setText(listing.description);
-            listingDate.setText(new SimpleDateFormat("MMM d, yyyy hh:mm a", Locale.US).format(listing.dateCreated));
+            listingDate.setText(new SimpleDateFormat("MMM d, yyyy", Locale.US).format(listing.dateCreated));
             if (image != null) {
                 listingImage.setImageBitmap(image);
             }

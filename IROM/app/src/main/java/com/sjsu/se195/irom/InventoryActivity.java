@@ -305,9 +305,9 @@ public class InventoryActivity extends NavigationDrawerActivity {
 
             // Set the info for the current item
             itemName.setText(item.getName());
-            itemQuantity.setText("Quantity: " + item.getQuantity().toString());
+            itemQuantity.setText(String.format(Locale.US, "Quantity: %d", item.quantity));
             itemForSale.setText("For Sale: " + item.getForSale().toString());
-            itemDate.setText(new SimpleDateFormat("MMM d, yyyy hh:mm a", Locale.US).format(item.dateAdded));
+            itemDate.setText(new SimpleDateFormat("MMM d, yyyy", Locale.US).format(item.dateAdded));
             if (image != null) {
                 itemImage.setImageBitmap(image);
             }
