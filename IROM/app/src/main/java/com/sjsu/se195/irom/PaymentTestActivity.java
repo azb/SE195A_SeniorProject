@@ -2,14 +2,13 @@ package com.sjsu.se195.irom;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ListView;
-import android.os.StrictMode;
 import com.stripe.android.view.CardInputWidget;
 import com.sjsu.se195.irom.Classes.stripe.module.DependencyHandler;
+
+import java.util.Locale;
 
 public class PaymentTestActivity extends NavigationDrawerActivity{
 
@@ -35,7 +34,7 @@ public class PaymentTestActivity extends NavigationDrawerActivity{
                 (CardInputWidget) findViewById(R.id.card_input_widget));
 
         Button saveButton = (Button) findViewById(R.id.pay);
-        saveButton.setText("Pay $" + price);
+        saveButton.setText(String.format(Locale.US, "Pay $%.2f", price));
 
         mDependencyHandler.attachAsyncTaskTokenController(this,saveButton,listing_id,price);
 
