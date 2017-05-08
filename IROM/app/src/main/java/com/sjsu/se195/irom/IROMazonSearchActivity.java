@@ -1,8 +1,11 @@
 package com.sjsu.se195.irom;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 
@@ -94,6 +97,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
     private IROMazonAdapter iromazonAdapter;
     private ArrayList<ArrayList<String>> IROMazonStringLists;
     private PickImageDialog dialog;
+    private ProgressDialog progressDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -115,6 +119,8 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             public void onGalleryClick() {
                 startGalleryChooser();
                 submitIROMazonButton.setEnabled(false);
+                findViewById(R.id.submitIROMazon).setBackground(ContextCompat.getDrawable(getBaseContext(),R.drawable.disabled_green_button_shape));
+
             }
 
             @Override
@@ -122,6 +128,8 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
                 try {
                     startCamera();
                     submitIROMazonButton.setEnabled(false);
+                    findViewById(R.id.submitIROMazon).setBackground(ContextCompat.getDrawable(getBaseContext(),R.drawable.disabled_green_button_shape));
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -140,10 +148,16 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             }
         });
 //
+       progressDialog = new ProgressDialog(IROMazonSearchActivity.this,
+                R.style.AppTheme_Dialog);
+        progressDialog.setIndeterminate(true);
+
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // Reset recycler view
+                progressDialog.setMessage("Searching...");
+                progressDialog.show();
                 IROMazonImageList = new ArrayList<>();
                 iromazonAdapter.mList = IROMazonImageList;
                 iromazonAdapter.notifyDataSetChanged();
@@ -226,10 +240,14 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
         image.compress(Bitmap.CompressFormat.JPEG, 93, byteStream);
         byte[] data = byteStream.toByteArray();
         UploadTask uploadTask = imageUpload.putBytes(data);
+
+        progressDialog.setMessage("Uploading...");
+        progressDialog.show();
         uploadTask.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 // Upload failed
+                progressDialog.dismiss();
                 Toast.makeText(IROMazonSearchActivity.this, "Image upload failed", Toast.LENGTH_SHORT).show();
             }
         });
@@ -237,6 +255,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 // Upload successful, can add to database as well
+                progressDialog.dismiss();
                 IROMazonDatabaseRef.child(key).setValue(newEntry);
                 Toast.makeText(IROMazonSearchActivity.this, "Successfully uploaded to database!", Toast.LENGTH_SHORT).show();
                 // Move to add item activity
@@ -346,6 +365,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
             bitmap = scaleBitmapDown(bitmap, 1200);
 
+
             callCloudVision(bitmap);
         } catch (IOException e) {
             Log.d(TAG, "Image picking failed because " + e.getMessage());
@@ -354,7 +374,6 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
 
     private void callCloudVision(final Bitmap bitmap) throws IOException {
         // Show loading
-        Toast.makeText(IROMazonSearchActivity.this, R.string.loading_text, Toast.LENGTH_SHORT).show();
 
         new AsyncTask<Object, Void, String>() {
             @Override
@@ -438,6 +457,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             }
 
             protected void onPostExecute(String result) {
+                progressDialog.dismiss();
                 if (result != null) {
                     // Use result of comparison with IROMazon data to update field with potential matches
                     ArrayList<IROMazon> potentialMatches = new ArrayList<>();
@@ -473,6 +493,8 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
 
                     Toast.makeText(IROMazonSearchActivity.this, "Cloud Vision Request complete", Toast.LENGTH_SHORT).show();
                     findViewById(R.id.submitIROMazon).setEnabled(true);
+                    findViewById(R.id.submitIROMazon).setBackground(ContextCompat.getDrawable(getBaseContext(),R.drawable.green_button_shape));
+
                 } else {
                     Toast.makeText(IROMazonSearchActivity.this, "Cloud Vision Timeout", Toast.LENGTH_SHORT).show();
                 }
