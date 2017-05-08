@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="colorPrimary">#35ab4a</color>
+    <color name="colorPrimaryDisabled">#9ad5a4</color>
     <color name="colorPrimaryDark">#20672D</color>
     <color name="colorAccent">#4a35ab</color>
     <color name="dollardollarbillyall">#85bb65</color>

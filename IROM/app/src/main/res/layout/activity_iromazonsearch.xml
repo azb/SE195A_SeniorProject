@@ -46,7 +46,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/scrollView2"
                 android:layout_alignParentEnd="true"
-                android:background="@drawable/green_button_shape"
+                android:background="@drawable/disabled_green_button_shape"
                 android:text="Search IROM" />
         </RelativeLayout>
         <EditText
@@ -73,6 +73,9 @@
             android:id="@+id/submitIROMazon"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:background="@drawable/green_button_shape"
             android:text="Submit Photo to Product Database"
             android:enabled="false" />
 
