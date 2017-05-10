@@ -15,15 +15,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="200dp">
+
             <ImageView
                 android:id="@+id/imageHolder"
                 android:layout_width="match_parent"
                 android:layout_height="150dp"
                 app:srcCompat="@android:drawable/ic_menu_camera" />
-
 
 
         </RelativeLayout>
@@ -43,18 +44,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
             </ScrollView>
-
-            <Button
-                android:id="@+id/searchItem"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/scrollView2"
-                android:layout_alignParentEnd="true"
-                android:textColor="@color/white"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"
-                android:background="@drawable/green_button_shape"
-                android:text="Search IROM" />
         </RelativeLayout>
         <EditText
             android:id="@+id/nameText"

@@ -48,6 +48,7 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
     private TextView itemSold;
     private ImageView itemImage;
     private Button itemListingButton;
+    private View itemDivider;
     private ProgressBar progressBar;
 
     @Override
@@ -67,6 +68,7 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
         itemSold = (TextView) findViewById(R.id.item_detail_sold);
         itemImage = (ImageView) findViewById(R.id.item_detail_image);
         itemListingButton = (Button) findViewById(R.id.item_detail_button);
+        itemDivider = findViewById(R.id.item_detail_divider);
         progressBar = (ProgressBar) findViewById(R.id.item_detail_progressbar);
 
         // Start loading while image is downloaded
@@ -85,6 +87,7 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
         itemSold.setVisibility(View.INVISIBLE);
         itemImage.setVisibility(View.INVISIBLE);
         itemListingButton.setVisibility(View.INVISIBLE);
+        itemDivider.setVisibility(View.INVISIBLE);
         progressBar.setVisibility(View.VISIBLE);
     }
 
@@ -97,6 +100,7 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
         itemSold.setVisibility(View.VISIBLE);
         itemImage.setVisibility(View.VISIBLE);
         itemListingButton.setVisibility(View.VISIBLE);
+        itemDivider.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.INVISIBLE);
     }
 

@@ -46,6 +46,7 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
     private TextView listingSold;
     private ImageView listingImage;
     private Button purchaseButton;
+    private View listingDivider;
     private ProgressBar progressBar;
 
     @Override
@@ -65,6 +66,7 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
         listingSold = (TextView) findViewById(R.id.listing_detail_sold);
         listingImage = (ImageView) findViewById(R.id.listing_detail_image);
         purchaseButton = (Button) findViewById(R.id.listing_detail_purchase);
+        listingDivider = findViewById(R.id.listing_detail_divider);
         progressBar = (ProgressBar) findViewById(R.id.listing_detail_progressbar);
 
         // Start loading while image is downloaded
@@ -83,6 +85,8 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
         listingSold.setVisibility(View.INVISIBLE);
         listingImage.setVisibility(View.INVISIBLE);
         purchaseButton.setVisibility(View.INVISIBLE);
+        listingDivider.setVisibility(View.INVISIBLE);
+        progressBar.setVisibility(View.VISIBLE);
     }
 
     private void stopLoading() {
@@ -94,6 +98,7 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
         listingSold.setVisibility(View.VISIBLE);
         listingImage.setVisibility(View.VISIBLE);
         purchaseButton.setVisibility(View.VISIBLE);
+        listingDivider.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.INVISIBLE);
     }
 
@@ -152,10 +157,10 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
         if (listing.isLive) { // Still for sale
             listingImage.setImageBitmap(image);
             listingName.setText(listing.item.name);
-            listingCreator.setText(profile.firstName + " " + profile.lastName);
-            listingDescription.setText(listing.description);
+            listingCreator.setText("Posted By: " + profile.firstName + " " + profile.lastName);
+            listingDescription.setText("Description: " + listing.description);
             listingPrice.setText(String.format(Locale.US, "$%.2f", listing.price));
-            listingDate.setText(new SimpleDateFormat("MMM d, yyyy hh:mm a", Locale.US).format(listing.dateCreated));
+            listingDate.setText(new SimpleDateFormat("'Posted: 'MMM d, yyyy hh:mm a", Locale.US).format(listing.dateCreated));
 
             // Check if this listing is owned by current user or not
             if (profile.uID.equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
@@ -181,10 +186,10 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
         } else { // No longer for sale
             listingImage.setImageBitmap(image);
             listingName.setText(listing.item.name);
-            listingCreator.setText(profile.firstName + " " + profile.lastName);
-            listingDescription.setText(listing.description);
+            listingCreator.setText("Posted By: " + profile.firstName + " " + profile.lastName);
+            listingDescription.setText("Description: " + listing.description);
             listingPrice.setText(String.format(Locale.US, "$%.2f", listing.price));
-            listingDate.setText(new SimpleDateFormat("MMM d, yyyy hh:mm a", Locale.US).format(listing.dateCreated));
+            listingDate.setText(new SimpleDateFormat("'Posted: 'MMM d, yyyy hh:mm a", Locale.US).format(listing.dateCreated));
             listingSold.setText("Listing has been SOLD!");
 
             // Check if this listing is owned by current user or not
@@ -204,10 +209,10 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Profile profile = dataSnapshot.getValue(Profile.class);
                 listingName.setText(listing.item.name);
-                listingCreator.setText(profile.firstName + " " + profile.lastName);
-                listingDescription.setText(listing.description);
+                listingCreator.setText("Posted By: " + profile.firstName + " " + profile.lastName);
+                listingDescription.setText("Description: " + listing.description);
                 listingPrice.setText(String.format(Locale.US, "$%.2f", listing.price));
-                listingDate.setText(new SimpleDateFormat("MMM d, yyyy hh:mm a", Locale.US).format(listing.dateCreated));
+                listingDate.setText(new SimpleDateFormat("'Posted: 'MMM d, yyyy hh:mm a", Locale.US).format(listing.dateCreated));
                 listingImage.setImageBitmap(image);
 
                 // If coming from Item detail, can only be current user's own item

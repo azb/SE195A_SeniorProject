@@ -17,22 +17,47 @@
             android:layout_alignParentTop="true"
             app:srcCompat="@drawable/a12633702" />
 
+        <View
+            android:id="@+id/listing_detail_divider"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_below="@+id/listing_detail_image"
+            android:layout_margin="5dp"
+            android:background="@android:color/darker_gray" />
+
         <TextView
             android:id="@+id/listing_detail_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
-            android:layout_below="@+id/listing_detail_image"
+            android:layout_below="@+id/listing_detail_divider"
             android:layout_marginLeft="5dp"
             android:layout_marginTop="12dp"
+            android:layout_marginRight="5dp"
+            android:layout_toStartOf="@+id/listing_detail_purchase"
+            android:maxLines="2"
+            android:ellipsize="end"
             android:text="Name" />
+
+        <TextView
+            android:id="@+id/listing_detail_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/listing_detail_creator"
+            android:layout_below="@+id/listing_detail_name"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_toStartOf="@+id/listing_detail_purchase"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:text="Date" />
 
         <TextView
             android:id="@+id/listing_detail_creator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignStart="@+id/listing_detail_name"
-            android:layout_below="@+id/listing_detail_name"
+            android:layout_below="@+id/listing_detail_date"
             android:layout_marginTop="5dp"
             android:text="Creator" />
 
@@ -50,8 +75,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:layout_alignTop="@+id/listing_detail_name"
+            android:layout_below="@+id/listing_detail_purchase"
             android:layout_marginEnd="5dp"
+            android:layout_marginTop="5dp"
             android:text="Price" />
 
         <Button
@@ -59,24 +85,20 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Purchase"
-            android:layout_below="@+id/listing_detail_image"
-            android:layout_toStartOf="@+id/listing_detail_price"
-            android:layout_marginEnd="5dp" />
-
-        <TextView
-            android:id="@+id/listing_detail_date"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignStart="@+id/listing_detail_creator"
-            android:layout_below="@+id/listing_detail_description"
+            android:layout_below="@+id/listing_detail_divider"
+            android:layout_alignParentEnd="true"
+            android:textColor="@color/white"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:background="@drawable/green_button_shape"
             android:layout_marginTop="5dp"
-            android:text="Date" />
+            android:layout_marginEnd="5dp" />
 
         <TextView
             android:id="@+id/listing_detail_sold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/listing_detail_date"
+            android:layout_below="@+id/listing_detail_description"
             android:layout_marginTop="5dp"
             android:layout_centerHorizontal="true"
             android:text="" />

@@ -55,6 +55,7 @@ public class ItemActivity extends NavigationDrawerActivity{
     private DatabaseReference mListingDatabaseRef;
     private FirebaseUser mUser;
     private IROMazon passedIROMazon;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -1,9 +1,7 @@
 package com.sjsu.se195.irom;
+
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
@@ -58,11 +56,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.sjsu.se195.irom.Classes.IROMazon;
-import com.vansuita.pickimage.bean.PickResult;
 import com.vansuita.pickimage.bundle.PickSetup;
 import com.vansuita.pickimage.dialog.PickImageDialog;
 import com.vansuita.pickimage.listeners.IPickClick;
-import com.vansuita.pickimage.listeners.IPickResult;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -98,6 +94,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
     private ArrayList<ArrayList<String>> IROMazonStringLists;
     private PickImageDialog dialog;
     private ProgressDialog progressDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,8 +104,6 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
 
         // Layout items
         ImageView addImageView = (ImageView) findViewById(R.id.imageHolder);
-      //  Button imagePickerButton = (Button) findViewById(R.id.imgpickerButton);
-        Button searchButton = (Button) findViewById(R.id.searchItem);
         final Button submitIROMazonButton = (Button) findViewById(R.id.submitIROMazon);
         final EditText submitIROMazonText = (EditText) findViewById(R.id.nameText);
         RecyclerView IROMazonRecyclerView = (RecyclerView) findViewById(R.id.IROMazon_recycler_view);
@@ -119,7 +114,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             public void onGalleryClick() {
                 startGalleryChooser();
                 submitIROMazonButton.setEnabled(false);
-                findViewById(R.id.submitIROMazon).setBackground(ContextCompat.getDrawable(getBaseContext(),R.drawable.disabled_green_button_shape));
+                submitIROMazonButton.setBackground(ContextCompat.getDrawable(getBaseContext(),R.drawable.disabled_green_button_shape));
 
             }
 
@@ -128,7 +123,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
                 try {
                     startCamera();
                     submitIROMazonButton.setEnabled(false);
-                    findViewById(R.id.submitIROMazon).setBackground(ContextCompat.getDrawable(getBaseContext(),R.drawable.disabled_green_button_shape));
+                    submitIROMazonButton.setBackground(ContextCompat.getDrawable(getBaseContext(),R.drawable.disabled_green_button_shape));
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -147,24 +142,9 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
                dialog.show(getSupportFragmentManager());
             }
         });
-//
-       progressDialog = new ProgressDialog(IROMazonSearchActivity.this,
-                R.style.AppTheme_Dialog);
+
+        progressDialog = new ProgressDialog(IROMazonSearchActivity.this, R.style.AppTheme_Dialog);
         progressDialog.setIndeterminate(true);
-
-        searchButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Reset recycler view
-                progressDialog.setMessage("Searching...");
-                progressDialog.show();
-                IROMazonImageList = new ArrayList<>();
-                iromazonAdapter.mList = IROMazonImageList;
-                iromazonAdapter.notifyDataSetChanged();
-
-                uploadImage();
-            }
-        });
 
         submitIROMazonButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -217,6 +197,18 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
                 Toast.makeText(IROMazonSearchActivity.this, "Download failed", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void searchIROMazon() {
+        progressDialog.setMessage("Searching...");
+        progressDialog.show();
+
+        // Reset recycler view
+        IROMazonImageList = new ArrayList<>();
+        iromazonAdapter.mList = IROMazonImageList;
+        iromazonAdapter.notifyDataSetChanged();
+
+        uploadImage();
     }
 
     private void createIROMazonEntry() {
@@ -335,18 +327,26 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             if (requestCode == GALLERY_IMAGE_REQUEST && data != null) {
                 currentPhotoURI = data.getData();
                 try {
+                    // Set image to ImageView
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), currentPhotoURI);
                     ImageView imageHolder = (ImageView) findViewById(R.id.imageHolder);
                     imageHolder.setImageBitmap(bitmap);
+
+                    // Search IROMazon database automatically
+                    searchIROMazon();
                 } catch (java.io.IOException e) {
                     Log.d(TAG, "Image selection failed: " + e.getMessage());
                 }
             }
             if (requestCode == CAMERA_IMAGE_REQUEST) {
                 try {
+                    // Set image to ImageView
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), currentPhotoURI);
                     ImageView imageHolder = (ImageView) findViewById(R.id.imageHolder);
                     imageHolder.setImageBitmap(bitmap);
+
+                    // Search IROMazon database automatically
+                    searchIROMazon();
                 } catch (java.io.IOException e) {
                     Log.d(TAG, "Image selection failed: " + e.getMessage());
                 }
@@ -491,10 +491,8 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
                         getImages(potentialMatches);
                     }
 
-                    Toast.makeText(IROMazonSearchActivity.this, "Cloud Vision Request complete", Toast.LENGTH_SHORT).show();
                     findViewById(R.id.submitIROMazon).setEnabled(true);
                     findViewById(R.id.submitIROMazon).setBackground(ContextCompat.getDrawable(getBaseContext(),R.drawable.green_button_shape));
-
                 } else {
                     Toast.makeText(IROMazonSearchActivity.this, "Cloud Vision Timeout", Toast.LENGTH_SHORT).show();
                 }
@@ -779,7 +777,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             }
             if (iromazon.description != null) {
                 IROMazonDescription.setText(iromazon.description);
-                IROMazonPrice.setText(String.format(Locale.US, "Suggested: $%.2f", iromazon.price));
+                IROMazonPrice.setText(String.format(Locale.US, "$%.2f", iromazon.price));
             } else {
                 IROMazonDescription.setText(null);
                 IROMazonPrice.setText(null);

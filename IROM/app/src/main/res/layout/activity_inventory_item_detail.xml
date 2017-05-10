@@ -16,11 +16,19 @@
             android:layout_alignParentTop="true"
             android:src="@drawable/a12633702" />
 
+        <View
+            android:id="@+id/item_detail_divider"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_below="@+id/item_detail_image"
+            android:layout_margin="5dp"
+            android:background="@android:color/darker_gray" />
+
         <TextView
             android:id="@+id/item_detail_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/item_detail_image"
+            android:layout_below="@+id/item_detail_divider"
             android:layout_alignParentStart="true"
             android:layout_marginLeft="5dp"
             android:layout_marginTop="12dp"
@@ -81,6 +89,10 @@
             android:layout_marginRight="5dp"
             android:layout_marginTop="5dp"
             android:text="create/view listing"
+            android:textColor="@color/white"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:background="@drawable/green_button_shape"
             />
 
         <ProgressBar

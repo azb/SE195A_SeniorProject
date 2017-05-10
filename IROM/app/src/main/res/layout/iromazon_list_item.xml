@@ -26,7 +26,11 @@
             android:layout_alignParentTop="true"
             android:layout_marginLeft="5dp"
             android:layout_marginTop="25dp"
+            android:layout_marginRight="5dp"
             android:layout_toEndOf="@+id/IROMazon_list_item_image"
+            android:layout_toStartOf="@+id/IROMazon_list_item_price"
+            android:maxLines="1"
+            android:ellipsize="end"
             android:text="Name" />
 
         <TextView
@@ -45,8 +49,10 @@
             android:layout_below="@+id/IROMazon_list_item_name"
             android:layout_marginLeft="5dp"
             android:layout_marginTop="5dp"
+            android:layout_marginRight="5dp"
             android:layout_toEndOf="@+id/IROMazon_list_item_image"
-            android:maxLines="2"
+            android:maxLines="3"
+            android:ellipsize="end"
             android:text="Description" />
 
     </RelativeLayout>

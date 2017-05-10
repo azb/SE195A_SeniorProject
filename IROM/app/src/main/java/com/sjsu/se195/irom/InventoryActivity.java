@@ -255,8 +255,7 @@ public class InventoryActivity extends NavigationDrawerActivity {
         listingRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Listing listing = dataSnapshot.getValue(Listing.class);
-                itemImage.listing = listing;
+                itemImage.listing = dataSnapshot.getValue(Listing.class);
 
                 // Now finally update RecyclerView
                 mItemList.add(itemImage);

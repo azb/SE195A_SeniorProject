@@ -89,14 +89,17 @@ public class IROMazon implements Parcelable {
         }
     };
 
-    //public String getName() {return name;}
-    //public void setName(String Name) {this.name = name;}
-    //public String getDescription() {return description;}
-    //public void setDescription(String description) {this.description = description;}
-    //public String getiID() {return iID;}
-    //public void setiID(String Key) {this.iID = Key;}
-    //public Integer getPrice() {return Price;}
-    //public void setKey(Integer Price) {this.Price = Price;}
+    // Override equals() method for IROMazon for merging ArrayLists in the SearchActivity
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof IROMazon) {
+            IROMazon temp = (IROMazon) obj;
+            return this.name == temp.name && this.price == temp.price;
+        } else {
+            return false;
+        }
+    }
+
 
     // Getters/Setters
     public String getName() {
