@@ -177,17 +177,16 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
             listingCreator.setText("Posted By: " + profile.firstName + " " + profile.lastName);
             listingDescription.setText("Description: " + listing.description);
             listingPrice.setText(String.format(Locale.US, "$%.2f", listing.price));
-            listingDate.setText(new SimpleDateFormat("'Posted: 'MMM d, yyyy hh:mm a", Locale.US).format(listing.dateCreated));
+            listingDate.setText(new SimpleDateFormat("'Created: 'MMM d, yyyy hh:mm a", Locale.US).format(listing.dateCreated));
             if (profileImage != null) {
                 listingProfileImage.setImageBitmap(profileImage);
-            } else {
-                listingProfileImage.setVisibility(View.GONE);
             }
 
             // Check if this listing is owned by current user or not
             if (profile.uID.equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
                 stopLoading();
                 purchaseButton.setVisibility(View.INVISIBLE);
+                listingSold.setVisibility(View.GONE);
             } else {
                 // Set up listener if for sale and not owned by current user
                 purchaseButton.setOnClickListener(new View.OnClickListener() {
@@ -204,6 +203,7 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
                     }
                 });
                 stopLoading();
+                listingSold.setVisibility(View.GONE);
             }
         } else { // No longer for sale
             listingImage.setImageBitmap(image);
@@ -211,12 +211,10 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
             listingCreator.setText("Posted By: " + profile.firstName + " " + profile.lastName);
             listingDescription.setText("Description: " + listing.description);
             listingPrice.setText(String.format(Locale.US, "$%.2f", listing.price));
-            listingDate.setText(new SimpleDateFormat("'Posted: 'MMM d, yyyy hh:mm a", Locale.US).format(listing.dateCreated));
+            listingDate.setText(new SimpleDateFormat("'Created: 'MMM d, yyyy hh:mm a", Locale.US).format(listing.dateCreated));
             listingSold.setText("Listing has been SOLD!");
             if (profileImage != null) {
                 listingProfileImage.setImageBitmap(profileImage);
-            } else {
-                listingProfileImage.setVisibility(View.GONE);
             }
 
             // Check if this listing is owned by current user or not
@@ -239,13 +237,8 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
                 listingCreator.setText("Posted By: " + profile.firstName + " " + profile.lastName);
                 listingDescription.setText("Description: " + listing.description);
                 listingPrice.setText(String.format(Locale.US, "$%.2f", listing.price));
-                listingDate.setText(new SimpleDateFormat("'Posted: 'MMM d, yyyy hh:mm a", Locale.US).format(listing.dateCreated));
+                listingDate.setText(new SimpleDateFormat("'Created: 'MMM d, yyyy hh:mm a", Locale.US).format(listing.dateCreated));
                 listingImage.setImageBitmap(image);
-
-                // Still can display sold/not sold
-                if (!listing.isLive) {
-                    listingSold.setText("Listing has been SOLD!");
-                }
 
                 StorageReference profileImageRef = FirebaseStorage.getInstance().getReference("profile/" + profile.uID);
                 profileImageRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
@@ -256,15 +249,28 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
 
                         // If coming from Item detail, can only be current user's own item
                         purchaseButton.setVisibility(View.INVISIBLE);
+
+                        // Still can display sold/not sold
+                        if (!listing.isLive) {
+                            listingSold.setText("Listing has been SOLD!");
+                        } else {
+                            listingSold.setVisibility(View.GONE);
+                        }
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        listingProfileImage.setVisibility(View.GONE);
                         stopLoading();
 
                         // If coming from Item detail, can only be current user's own item
                         purchaseButton.setVisibility(View.INVISIBLE);
+
+                        // Still can display sold/not sold
+                        if (!listing.isLive) {
+                            listingSold.setText("Listing has been SOLD!");
+                        } else {
+                            listingSold.setVisibility(View.GONE);
+                        }
                     }
                 });
             }

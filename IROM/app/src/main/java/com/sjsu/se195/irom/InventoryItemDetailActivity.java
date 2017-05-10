@@ -163,12 +163,9 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
 
                 // Now, fill out all the views
                 itemName.setText(item.name);
-                itemNotes.setText(item.note);
+                itemNotes.setText("Notes: " + item.note);
                 itemDate.setText(new SimpleDateFormat("MMM d, yyyy hh:mm a", Locale.US).format(item.dateAdded));
                 itemQuantity.setText(String.format(Locale.US, "Quantity: %d", item.quantity));
-                if (!updatedListing.isLive) {
-                    itemSold.setText("Listing has been SOLD!");
-                }
                 itemImage.setImageBitmap(image);
                 itemListingButton.setText("View Listing");
 
@@ -187,6 +184,12 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
                 });
 
                 stopLoading();
+
+                if (!updatedListing.isLive) {
+                    itemSold.setText("Listing has been SOLD!");
+                } else {
+                    itemSold.setVisibility(View.GONE);
+                }
             }
 
             @Override
@@ -199,7 +202,7 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
     private void initializeWithoutListing(final Item item, Bitmap image) {
         // No listing to get, just fill out views
         itemName.setText(item.name);
-        itemNotes.setText(item.note);
+        itemNotes.setText("Notes: " + item.note);
         itemDate.setText(new SimpleDateFormat("MMM d, yyyy hh:mm a", Locale.US).format(item.dateAdded));
         itemQuantity.setText(String.format(Locale.US, "Quantity: %d", item.quantity));
         itemImage.setImageBitmap(image);
@@ -246,6 +249,9 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
         });
 
         stopLoading();
+
+        // No listing that could possibly be sold yet
+        itemSold.setVisibility(View.GONE);
     }
 
     private void createListing(final Item item, final String description, final double price) {

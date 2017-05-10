@@ -33,6 +33,7 @@
             android:layout_marginRight="5dp"
             android:layout_toEndOf="@+id/item_list_item_image"
             android:layout_toStartOf="@+id/item_list_item_date"
+            android:textSize="17sp"
             android:maxLines="1"
             android:ellipsize="end"
             android:text="item name" />

@@ -24,24 +24,30 @@
             android:layout_margin="5dp"
             android:background="@android:color/darker_gray" />
 
+        <Button
+            android:id="@+id/item_detail_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/item_detail_divider"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="12dp"
+            android:text="create/view listing"
+            android:textColor="@color/white"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:background="@drawable/green_button_shape" />
+
         <TextView
             android:id="@+id/item_detail_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/item_detail_divider"
+            android:layout_below="@+id/item_detail_button"
             android:layout_alignParentStart="true"
             android:layout_marginLeft="5dp"
             android:layout_marginTop="12dp"
+            android:textSize="20sp"
             android:text="itmname" />
-
-        <TextView
-            android:id="@+id/item_detail_notes"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignStart="@+id/item_detail_name"
-            android:layout_below="@+id/item_detail_name"
-            android:layout_marginTop="5dp"
-            android:text="notes" />
 
         <TextView
             android:id="@+id/item_detail_date_label"
@@ -49,7 +55,7 @@
             android:layout_height="wrap_content"
             android:labelFor="@+id/item_detail_date"
             android:layout_alignStart="@+id/item_detail_name"
-            android:layout_below="@+id/item_detail_notes"
+            android:layout_below="@+id/item_detail_name"
             android:layout_marginTop="5dp"
             android:text="Created: " />
 
@@ -58,16 +64,25 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toRightOf="@+id/item_detail_date_label"
-            android:layout_below="@+id/item_detail_notes"
+            android:layout_below="@+id/item_detail_name"
             android:layout_marginTop="5dp"
             android:text="date" />
+
+        <TextView
+            android:id="@+id/item_detail_notes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/item_detail_name"
+            android:layout_below="@+id/item_detail_date_label"
+            android:layout_marginTop="5dp"
+            android:text="notes" />
 
         <TextView
             android:id="@+id/item_detail_quantity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignStart="@+id/item_detail_name"
-            android:layout_below="@+id/item_detail_date_label"
+            android:layout_below="@+id/item_detail_notes"
             android:layout_marginTop="5dp"
             android:text="quantity" />
 
@@ -76,24 +91,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/item_detail_quantity"
-            android:layout_marginTop="5dp"
+            android:layout_marginTop="10dp"
             android:layout_centerHorizontal="true"
             android:text="" />
 
-        <Button
-            android:id="@+id/item_detail_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/item_detail_sold"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:layout_marginTop="5dp"
-            android:text="create/view listing"
-            android:textColor="@color/white"
-            android:paddingLeft="8dp"
-            android:paddingRight="8dp"
-            android:background="@drawable/green_button_shape"
-            />
 
         <ProgressBar
             android:id="@+id/item_detail_progressbar"
