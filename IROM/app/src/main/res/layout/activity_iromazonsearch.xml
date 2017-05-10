@@ -24,7 +24,7 @@
                 android:id="@+id/imageHolder"
                 android:layout_width="match_parent"
                 android:layout_height="150dp"
-                app:srcCompat="@android:drawable/ic_menu_camera" />
+                app:srcCompat="@drawable/image_add_button_black" />
 
 
         </RelativeLayout>
@@ -72,6 +72,7 @@
             android:paddingLeft="8dp"
             android:paddingRight="8dp"
             android:background="@drawable/disabled_green_button_shape"
+            android:textColor="@color/white"
             android:text="Submit Photo to Product Database"
             android:enabled="false" />
 

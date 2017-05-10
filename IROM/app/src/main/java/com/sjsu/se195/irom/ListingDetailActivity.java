@@ -45,6 +45,7 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
     private TextView listingPrice;
     private TextView listingSold;
     private ImageView listingImage;
+    private ImageView listingProfileImage;
     private Button purchaseButton;
     private View listingDivider;
     private ProgressBar progressBar;
@@ -65,6 +66,7 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
         listingPrice = (TextView) findViewById(R.id.listing_detail_price);
         listingSold = (TextView) findViewById(R.id.listing_detail_sold);
         listingImage = (ImageView) findViewById(R.id.listing_detail_image);
+        listingProfileImage = (ImageView) findViewById(R.id.listing_detail_profile_image);
         purchaseButton = (Button) findViewById(R.id.listing_detail_purchase);
         listingDivider = findViewById(R.id.listing_detail_divider);
         progressBar = (ProgressBar) findViewById(R.id.listing_detail_progressbar);
@@ -84,6 +86,7 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
         listingPrice.setVisibility(View.INVISIBLE);
         listingSold.setVisibility(View.INVISIBLE);
         listingImage.setVisibility(View.INVISIBLE);
+        listingProfileImage.setVisibility(View.INVISIBLE);
         purchaseButton.setVisibility(View.INVISIBLE);
         listingDivider.setVisibility(View.INVISIBLE);
         progressBar.setVisibility(View.VISIBLE);
@@ -97,6 +100,7 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
         listingPrice.setVisibility(View.VISIBLE);
         listingSold.setVisibility(View.VISIBLE);
         listingImage.setVisibility(View.VISIBLE);
+        listingProfileImage.setVisibility(View.VISIBLE);
         purchaseButton.setVisibility(View.VISIBLE);
         listingDivider.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.INVISIBLE);
@@ -124,14 +128,27 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
                     imageRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
                         @Override
                         public void onSuccess(byte[] bytes) {
-                            Bitmap image = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                            final Bitmap image = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 
                             // Check if coming to page from marketplace or user's own inventory
                             if (intent.hasExtra("profile")) {
                                 // Coming from marketplace
-                                Profile profile = intent.getParcelableExtra("profile");
+                                final Profile profile = intent.getParcelableExtra("profile");
 
-                                initializeFromMarketplace(updatedListing, profile, image);
+                                // Get profile image if exists
+                                StorageReference profileImageRef = FirebaseStorage.getInstance().getReference("profile/" + profile.uID);
+                                profileImageRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                                    @Override
+                                    public void onSuccess(byte[] bytes) {
+                                        Bitmap profileImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                                        initializeFromMarketplace(updatedListing, profile, image, profileImage);
+                                    }
+                                }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        initializeFromMarketplace(updatedListing, profile, image, null);
+                                    }
+                                });
                             } else {
                                 // Coming from Item detail activity or direct listing creation
                                 initializeFromItemDetail(updatedListing, image);
@@ -153,7 +170,7 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
         }
     }
 
-    private void initializeFromMarketplace(final Listing listing, Profile profile, Bitmap image) {
+    private void initializeFromMarketplace(final Listing listing, Profile profile, Bitmap image, Bitmap profileImage) {
         if (listing.isLive) { // Still for sale
             listingImage.setImageBitmap(image);
             listingName.setText(listing.item.name);
@@ -161,6 +178,11 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
             listingDescription.setText("Description: " + listing.description);
             listingPrice.setText(String.format(Locale.US, "$%.2f", listing.price));
             listingDate.setText(new SimpleDateFormat("'Posted: 'MMM d, yyyy hh:mm a", Locale.US).format(listing.dateCreated));
+            if (profileImage != null) {
+                listingProfileImage.setImageBitmap(profileImage);
+            } else {
+                listingProfileImage.setVisibility(View.GONE);
+            }
 
             // Check if this listing is owned by current user or not
             if (profile.uID.equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
@@ -191,6 +213,11 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
             listingPrice.setText(String.format(Locale.US, "$%.2f", listing.price));
             listingDate.setText(new SimpleDateFormat("'Posted: 'MMM d, yyyy hh:mm a", Locale.US).format(listing.dateCreated));
             listingSold.setText("Listing has been SOLD!");
+            if (profileImage != null) {
+                listingProfileImage.setImageBitmap(profileImage);
+            } else {
+                listingProfileImage.setVisibility(View.GONE);
+            }
 
             // Check if this listing is owned by current user or not
             if (profile.uID.equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
@@ -215,14 +242,31 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
                 listingDate.setText(new SimpleDateFormat("'Posted: 'MMM d, yyyy hh:mm a", Locale.US).format(listing.dateCreated));
                 listingImage.setImageBitmap(image);
 
-                // If coming from Item detail, can only be current user's own item
-                stopLoading();
-                purchaseButton.setVisibility(View.INVISIBLE);
-
                 // Still can display sold/not sold
                 if (!listing.isLive) {
                     listingSold.setText("Listing has been SOLD!");
                 }
+
+                StorageReference profileImageRef = FirebaseStorage.getInstance().getReference("profile/" + profile.uID);
+                profileImageRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                    @Override
+                    public void onSuccess(byte[] bytes) {
+                        listingProfileImage.setImageBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
+                        stopLoading();
+
+                        // If coming from Item detail, can only be current user's own item
+                        purchaseButton.setVisibility(View.INVISIBLE);
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        listingProfileImage.setVisibility(View.GONE);
+                        stopLoading();
+
+                        // If coming from Item detail, can only be current user's own item
+                        purchaseButton.setVisibility(View.INVISIBLE);
+                    }
+                });
             }
 
             @Override

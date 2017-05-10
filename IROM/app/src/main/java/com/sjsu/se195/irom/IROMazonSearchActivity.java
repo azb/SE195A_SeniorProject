@@ -65,6 +65,8 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -85,15 +87,17 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
     private DatabaseReference IROMazonDatabaseRef;
     private StorageReference storageRef;
     private ArrayList<IROMazon> IROMazonList;
-    private ArrayList<IROMazon> entityR;
-    private ArrayList<IROMazon> textR;
-    private ArrayList<IROMazon> logolabelR;
-    private ArrayList<IROMazon> labelR;
+    private ArrayList<IROMazonImage> entityR;
+    private ArrayList<IROMazonImage> textR;
+    private ArrayList<IROMazonImage> logolabelR;
+    private ArrayList<IROMazonImage> labelR;
     private ArrayList<IROMazonImage> IROMazonImageList = new ArrayList<>();
     private IROMazonAdapter iromazonAdapter;
     private ArrayList<ArrayList<String>> IROMazonStringLists;
     private PickImageDialog dialog;
     private ProgressDialog progressDialog;
+    private int currentLoadedCount;
+    private int totalToLoadCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -457,30 +461,57 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             }
 
             protected void onPostExecute(String result) {
-                progressDialog.dismiss();
                 if (result != null) {
                     // Use result of comparison with IROMazon data to update field with potential matches
-                    ArrayList<IROMazon> potentialMatches = new ArrayList<>();
+                    ArrayList<IROMazonImage> potentialMatches = new ArrayList<>();
 
                     // Loop through each result list, avoiding duplicates
-                    for (IROMazon current : entityR) {
+                    for (IROMazonImage current : entityR) {
                         if (!potentialMatches.contains(current)) {
                             potentialMatches.add(current);
+                            Log.d(TAG, "Added in entityR: " + current.iromazon.name);
+                        } else {
+                            // If already in the matches list, check if this has higher score and update so it shows higher
+                            IROMazonImage existingMatch = potentialMatches.get(potentialMatches.indexOf(current));
+                            if (existingMatch.score < current.score) {
+                                existingMatch.score = current.score;
+                            }
                         }
                     }
-                    for (IROMazon current : textR) {
+                    for (IROMazonImage current : textR) {
                         if (!potentialMatches.contains(current)) {
                             potentialMatches.add(current);
+                            Log.d(TAG, "Added in textR: " + current.iromazon.name);
+                        } else {
+                            // If already in the matches list, check if this has higher score and update so it shows higher
+                            IROMazonImage existingMatch = potentialMatches.get(potentialMatches.indexOf(current));
+                            if (existingMatch.score < current.score) {
+                                existingMatch.score = current.score;
+                            }
                         }
                     }
-                    for (IROMazon current : logolabelR) {
+                    for (IROMazonImage current : logolabelR) {
                         if (!potentialMatches.contains(current)) {
                             potentialMatches.add(current);
+                            Log.d(TAG, "Added in logolabelR: " + current.iromazon.name);
+                        } else {
+                            // If already in the matches list, check if this has higher score and update so it shows higher
+                            IROMazonImage existingMatch = potentialMatches.get(potentialMatches.indexOf(current));
+                            if (existingMatch.score < current.score) {
+                                existingMatch.score = current.score;
+                            }
                         }
                     }
-                    for (IROMazon current : labelR) {
+                    for (IROMazonImage current : labelR) {
                         if (!potentialMatches.contains(current)) {
                             potentialMatches.add(current);
+                            Log.d(TAG, "Added in labelR: " + current.iromazon.name);
+                        } else {
+                            // If already in the matches list, check if this has higher score and update so it shows higher
+                            IROMazonImage existingMatch = potentialMatches.get(potentialMatches.indexOf(current));
+                            if (existingMatch.score < current.score) {
+                                existingMatch.score = current.score;
+                            }
                         }
                     }
 
@@ -488,6 +519,8 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
                     if (potentialMatches.size() == 0) {
                         Toast.makeText(IROMazonSearchActivity.this, "No matches found in database", Toast.LENGTH_SHORT).show();
                     } else {
+                        currentLoadedCount = 0;
+                        totalToLoadCount = potentialMatches.size();
                         getImages(potentialMatches);
                     }
 
@@ -574,8 +607,8 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
      * @param response Cloud Vision response data
      * @return List of matching IROMazon data
      */
-    private ArrayList<IROMazon> getIROMazon_Entity(BatchAnnotateImagesResponse response) {
-        ArrayList<IROMazon> result = new ArrayList<>();
+    private ArrayList<IROMazonImage> getIROMazon_Entity(BatchAnnotateImagesResponse response) {
+        ArrayList<IROMazonImage> result = new ArrayList<>();
         ArrayList<String> entityResults = new ArrayList<>();
         WebDetection webDetection = response.getResponses().get(0).getWebDetection();
 
@@ -588,15 +621,10 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             }
 
             for (IROMazon storedData : IROMazonList) {
-                if (storedData.entity.size() != 0) { // Handle the previous IROMazon entries that don't have this
-                    if (getIROMazon_TLLScore(entityResults, storedData.entity) >= 0.5) {
-                        result.add(storedData);
-                    }
-                } else { // Here use old method of just comparing with IROMazon entry name
-                    for (String newData : entityResults) {
-                        if (storedData.name.equals(newData)) {
-                            result.add(storedData);
-                        }
+                if (storedData.entity.size() != 0) {
+                    double score = getIROMazon_TLLScore(entityResults, storedData.entity);
+                    if (score >= 0.5) {
+                        result.add(new IROMazonImage(storedData, score));
                     }
                 }
             }
@@ -610,8 +638,8 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
      * @param response Cloud Vision response data
      * @return List of matching IROMazon objects
      */
-    private ArrayList<IROMazon> getIROMazon_Text(BatchAnnotateImagesResponse response) {
-        ArrayList<IROMazon> result = new ArrayList<>();
+    private ArrayList<IROMazonImage> getIROMazon_Text(BatchAnnotateImagesResponse response) {
+        ArrayList<IROMazonImage> result = new ArrayList<>();
         ArrayList<String> textResults = new ArrayList<>();
         List<EntityAnnotation> texts = response.getResponses().get(0).getTextAnnotations();
 
@@ -623,8 +651,11 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             }
 
             for (IROMazon storedData : IROMazonList) {
-                if (storedData.text.size() != 0 && getIROMazon_TLLScore(textResults, storedData.text) >= 0.5) {
-                    result.add(storedData);
+                if (storedData.text.size() != 0) {
+                    double score = getIROMazon_TLLScore(textResults, storedData.text);
+                    if (score >= 0.5) {
+                        result.add(new IROMazonImage(storedData, score));
+                    }
                 }
             }
         }
@@ -632,8 +663,8 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
         return result;
     }
 
-    private ArrayList<IROMazon> getIROMazon_Logo(BatchAnnotateImagesResponse response){
-        ArrayList<IROMazon> result = new ArrayList<>();
+    private ArrayList<IROMazonImage> getIROMazon_Logo(BatchAnnotateImagesResponse response){
+        ArrayList<IROMazonImage> result = new ArrayList<>();
         ArrayList<String> logoResults = new ArrayList<>();
         ArrayList<String> labelResults = new ArrayList<>();
         List<EntityAnnotation> logos = response.getResponses().get(0).getLogoAnnotations();
@@ -654,9 +685,12 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
                 }
 
                 for (IROMazon storedData : IROMazonList) {
-                    if (storedData.logo.size() != 0 && getIROMazon_TLLScore(logoResults, storedData.logo) >= 0.5) {
-                        if (storedData.label.size() != 0 && getIROMazon_TLLScore(labelResults, storedData.label) >= 0.5) {
-                            result.add(storedData);
+                    if (storedData.logo.size() != 0) {
+                        double score = getIROMazon_TLLScore(logoResults, storedData.logo);
+                        if (score >= 0.5) {
+                            if (storedData.label.size() != 0 && getIROMazon_TLLScore(labelResults, storedData.label) >= 0.5) {
+                                result.add(new IROMazonImage(storedData, score));
+                            }
                         }
                     }
                 }
@@ -666,8 +700,8 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
         return result;
     }
 
-    private ArrayList<IROMazon> getIROMazon_Label(BatchAnnotateImagesResponse response){
-        ArrayList<IROMazon> result = new ArrayList<>();
+    private ArrayList<IROMazonImage> getIROMazon_Label(BatchAnnotateImagesResponse response){
+        ArrayList<IROMazonImage> result = new ArrayList<>();
         ArrayList<String> labelResults = new ArrayList<>();
         List<EntityAnnotation> labels = response.getResponses().get(0).getLabelAnnotations();
 
@@ -679,8 +713,11 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             }
 
             for (IROMazon storedData : IROMazonList) {
-                if (storedData.label.size() != 0 && getIROMazon_TLLScore(labelResults, storedData.label) >= 0.5) {
-                    result.add(storedData);
+                if (storedData.label.size() != 0) {
+                    double score = getIROMazon_TLLScore(labelResults, storedData.label);
+                    if (score >= 0.5) {
+                        result.add(new IROMazonImage(storedData, score));
+                    }
                 }
             }
         }
@@ -705,11 +742,11 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
         }
     }
 
-    private void getImages(ArrayList<IROMazon> IROMazonList) {
+    private void getImages(ArrayList<IROMazonImage> IROMazonList) {
         // Get image for each IROMazon match, add to the RecyclerView
-        for (final IROMazon match : IROMazonList) {
+        for (final IROMazonImage potentialMatch : IROMazonList) {
             // Set up the storage ref
-            StorageReference imageRef = storageRef.child(match.key);
+            StorageReference imageRef = storageRef.child(potentialMatch.iromazon.key);
             Log.d(TAG, "ImageRef: " + imageRef.toString());
 
             // Get the image
@@ -720,9 +757,10 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
                     bmp = Bitmap.createScaledBitmap(bmp, (bmp.getWidth() / 4), (bmp.getHeight() / 4), true);
 
                     // Update RecyclerView
-                    IROMazonImageList.add(new IROMazonImage(match, bmp));
-                    iromazonAdapter.mList = IROMazonImageList;
-                    iromazonAdapter.notifyDataSetChanged();
+                    potentialMatch.image = bmp;
+                    IROMazonImageList.add(potentialMatch);
+                    currentLoadedCount++;
+                    onLoadComplete();
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
@@ -733,13 +771,50 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
         }
     }
 
+    private void onLoadComplete() {
+        if (currentLoadedCount == totalToLoadCount) {
+            // First sort so highest scoring items should be at the top
+            Collections.sort(IROMazonImageList, new Comparator<IROMazonImage>() {
+                @Override
+                public int compare(IROMazonImage o1, IROMazonImage o2) {
+                    Log.d(TAG, "o1 (" + o1.iromazon.name + ") score: " + o1.score);
+                    Log.d(TAG, "o2 (" + o2.iromazon.name + ") score: " + o2.score);
+                    if (o1.score > o2.score) {
+                        return -1;
+                    } else if (o2.score > o1.score) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                }
+            });
+            // Update adapter
+            iromazonAdapter.mList = IROMazonImageList;
+            iromazonAdapter.notifyDataSetChanged();
+
+            // Remove dialog
+            progressDialog.dismiss();
+        }
+    }
+
     private class IROMazonImage {
         IROMazon iromazon;
         Bitmap image;
+        double score;
+
+        IROMazonImage(IROMazon iromazon, double score) {
+            this.iromazon = iromazon;
+            this.score = score;
+        }
 
         IROMazonImage(IROMazon iromazon, Bitmap image) {
             this.iromazon = iromazon;
             this.image = image;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return (obj instanceof IROMazonImage) && (this.iromazon.equals(((IROMazonImage) obj).iromazon));
         }
     }
 
