@@ -8,9 +8,8 @@
 
     <EditText
         android:id="@+id/price"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
@@ -47,7 +46,9 @@
         tools:layout_conversion_absoluteWidth="395dp"
         tools:layout_conversion_absoluteX="8dp"
         tools:layout_conversion_absoluteY="32dp"
-        android:layout_marginRight="8dp" />
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
 
     <TextView
         android:id="@+id/textView3"
@@ -61,7 +62,8 @@
         tools:layout_conversion_absoluteHeight="16dp"
         tools:layout_conversion_absoluteWidth="105dp"
         tools:layout_conversion_absoluteX="8dp"
-        tools:layout_conversion_absoluteY="82dp" />
+        tools:layout_conversion_absoluteY="82dp"
+        android:layout_marginStart="8dp" />
 
     <TextView
         android:id="@+id/textView2"
@@ -75,11 +77,12 @@
         tools:layout_conversion_absoluteHeight="16dp"
         tools:layout_conversion_absoluteWidth="220dp"
         tools:layout_conversion_absoluteX="8dp"
-        tools:layout_conversion_absoluteY="8dp" />
+        tools:layout_conversion_absoluteY="8dp"
+        android:layout_marginStart="8dp" />
 
     <Button
         android:id="@+id/submit_button"
-        android:layout_width="395dp"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="11dp"
         android:text="Submit"
@@ -87,12 +90,22 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/price"
-        tools:layout_conversion_absoluteHeight="48dp"
-        tools:layout_conversion_absoluteWidth="395dp"
         tools:layout_conversion_absoluteX="8dp"
         tools:layout_conversion_absoluteY="156dp"
+        android:textColor="@color/white"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:background="@drawable/green_button_shape"
         android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp" />
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
+
+    <View
+        android:id="@+id/listing_popup_spacer"
+        android:layout_width="0dp"
+        android:layout_height="10dp"
+        app:layout_constraintTop_toBottomOf="@+id/submit_button" />
 
 
 </android.support.constraint.ConstraintLayout>

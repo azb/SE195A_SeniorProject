@@ -1,25 +1,22 @@
 package com.sjsu.se195.irom;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.PopupWindow;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -55,6 +52,7 @@ public class ItemActivity extends NavigationDrawerActivity{
     private DatabaseReference mListingDatabaseRef;
     private FirebaseUser mUser;
     private IROMazon passedIROMazon;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +69,10 @@ public class ItemActivity extends NavigationDrawerActivity{
         mNotes = (EditText) findViewById(R.id.notesText);
         Button createListingButton = (Button) findViewById(R.id.createListingButton);
         ImageView imageHolder = (ImageView) findViewById(R.id.imageHolder);
+
+        // Set up progress dialog
+        progressDialog = new ProgressDialog(ItemActivity.this, R.style.AppTheme_Dialog);
+        progressDialog.setIndeterminate(true);
 
         // Get current user
         mUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -141,21 +143,10 @@ public class ItemActivity extends NavigationDrawerActivity{
                             mNotes.getText().toString());
 
                     // Get extra listing input
-                    LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    LayoutInflater inflater = getLayoutInflater();
                     View layout = inflater.inflate(R.layout.create_listing_popup, null);
 
-                    // Create popup
-                    PopupWindow listingPopup = new PopupWindow();
-                    listingPopup.setContentView(layout);
-                    listingPopup.setWidth(RelativeLayout.LayoutParams.WRAP_CONTENT);
-                    listingPopup.setHeight(RelativeLayout.LayoutParams.WRAP_CONTENT);
-                    listingPopup.setFocusable(true);
-                    listingPopup.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
-
-                    // Display in center
-                    listingPopup.showAtLocation(layout, Gravity.CENTER, 0, 0);
-
-                    // Set listener
+                    // Set up view and listener
                     Button submit = (Button) layout.findViewById(R.id.submit_button);
                     final EditText descriptionField = (EditText) layout.findViewById(R.id.description);
                     final EditText priceField = (EditText) layout.findViewById(R.id.price);
@@ -177,6 +168,11 @@ public class ItemActivity extends NavigationDrawerActivity{
                         }
                         priceField.setText(String.format(Locale.US, "%.2f", passedIROMazon.price));
                     }
+
+                    // Create dialog
+                    AlertDialog.Builder builder = new AlertDialog.Builder(ItemActivity.this);
+                    builder.setView(layout);
+                    builder.show();
                 } else {
                     Toast.makeText(ItemActivity.this, "Something wasn't filled", Toast.LENGTH_SHORT).show();
                 }
@@ -205,6 +201,10 @@ public class ItemActivity extends NavigationDrawerActivity{
     }
 
     private void writeNewItemAndImage(final Item item) {
+        // Show dialog
+        progressDialog.setMessage("Uploading...");
+        progressDialog.show();
+
         // Upload item
         final String key = mItemDatabaseRef.child("items").push().getKey();
         item.itemID = key;
@@ -236,19 +236,28 @@ public class ItemActivity extends NavigationDrawerActivity{
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 Toast.makeText(ItemActivity.this, "Success!", Toast.LENGTH_SHORT).show();
-                // Transition to Item detail page
+                // Set up intent
                 Intent i = new Intent(ItemActivity.this, InventoryItemDetailActivity.class);
                 Bundle b = new Bundle();
                 b.putParcelable("item", item);
                 Bitmap image = Bitmap.createScaledBitmap(finalImage, (finalImage.getWidth() / 4), (finalImage.getHeight() / 4), true);
                 b.putParcelable("image", image);
                 i.putExtras(b);
+
+                // Close dialog
+                progressDialog.hide();
+
+                // Change to Item Detail activity
                 startActivity(i);
             }
         });
     }
 
     private void writeNewItemImageAndListing(Item item, String description, double price) {
+        // Show dialog
+        progressDialog.setMessage("Uploading...");
+        progressDialog.show();
+
         // Update and upload item
         final String itemKey = mItemDatabaseRef.push().getKey();
         item.itemID = itemKey;
@@ -289,13 +298,18 @@ public class ItemActivity extends NavigationDrawerActivity{
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 Toast.makeText(ItemActivity.this, "Success!", Toast.LENGTH_SHORT).show();
-                // Transition to Listing detail page
+                // Set up intent
                 Intent i = new Intent(ItemActivity.this, ListingDetailActivity.class);
                 Bundle b = new Bundle();
                 b.putParcelable("listing", listing);
                 Bitmap image = Bitmap.createScaledBitmap(finalImage, (finalImage.getWidth() / 4), (finalImage.getHeight() / 4), true);
                 b.putParcelable("image", image);
                 i.putExtras(b);
+
+                // Close dialog
+                progressDialog.hide();
+
+                // Change to Listing Detail activity
                 startActivity(i);
             }
         });

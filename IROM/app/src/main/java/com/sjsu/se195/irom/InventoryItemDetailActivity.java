@@ -1,24 +1,21 @@
 package com.sjsu.se195.irom;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.PopupWindow;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,8 +45,10 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
     private TextView itemSold;
     private ImageView itemImage;
     private Button itemListingButton;
+    private Button itemListingDeleteButton;
     private View itemDivider;
     private ProgressBar progressBar;
+    private ProgressDialog progressDialog;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,8 +67,13 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
         itemSold = (TextView) findViewById(R.id.item_detail_sold);
         itemImage = (ImageView) findViewById(R.id.item_detail_image);
         itemListingButton = (Button) findViewById(R.id.item_detail_button);
+        itemListingDeleteButton = (Button) findViewById(R.id.item_detail_delete_button);
         itemDivider = findViewById(R.id.item_detail_divider);
         progressBar = (ProgressBar) findViewById(R.id.item_detail_progressbar);
+
+        // Set up progress dialog
+        progressDialog = new ProgressDialog(InventoryItemDetailActivity.this, R.style.AppTheme_Dialog);
+        progressDialog.setIndeterminate(true);
 
         // Start loading while image is downloaded
         startLoading();
@@ -87,6 +91,7 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
         itemSold.setVisibility(View.INVISIBLE);
         itemImage.setVisibility(View.INVISIBLE);
         itemListingButton.setVisibility(View.INVISIBLE);
+        itemListingDeleteButton.setVisibility(View.INVISIBLE);
         itemDivider.setVisibility(View.INVISIBLE);
         progressBar.setVisibility(View.VISIBLE);
     }
@@ -100,6 +105,7 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
         itemSold.setVisibility(View.VISIBLE);
         itemImage.setVisibility(View.VISIBLE);
         itemListingButton.setVisibility(View.VISIBLE);
+        itemListingDeleteButton.setVisibility(View.VISIBLE);
         itemDivider.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.INVISIBLE);
     }
@@ -168,8 +174,9 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
                 itemQuantity.setText(String.format(Locale.US, "Quantity: %d", item.quantity));
                 itemImage.setImageBitmap(image);
                 itemListingButton.setText("View Listing");
+                itemListingDeleteButton.setText("Remove Listing");
 
-                // Set up button handler
+                // Set up button handlers
                 itemListingButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -180,6 +187,13 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
                         b.putParcelable("listing", updatedListing);
                         i.putExtras(b);
                         startActivity(i);
+                    }
+                });
+
+                itemListingDeleteButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        deleteListing(item);
                     }
                 });
 
@@ -207,34 +221,20 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
         itemQuantity.setText(String.format(Locale.US, "Quantity: %d", item.quantity));
         itemImage.setImageBitmap(image);
         itemListingButton.setText("Create Listing");
+        itemListingDeleteButton.setText("Delete");
 
-        // Set up button handler
+        // Set up button handlers
         itemListingButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // Create listing setup
-                LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                LayoutInflater inflater = getLayoutInflater();
                 View layout = inflater.inflate(R.layout.create_listing_popup, null);
 
-                // Create popup
-                PopupWindow listingPopup = new PopupWindow();
-                listingPopup.setContentView(layout);
-                listingPopup.setWidth(RelativeLayout.LayoutParams.WRAP_CONTENT);
-                listingPopup.setHeight(RelativeLayout.LayoutParams.WRAP_CONTENT);
-                listingPopup.setFocusable(true);
-                listingPopup.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
-
-                // Display in center
-                listingPopup.showAtLocation(layout, Gravity.CENTER, 0, 0);
-
-                // Set listener
+                // Set up view and listener
                 Button submit = (Button) layout.findViewById(R.id.submit_button);
                 final EditText descriptionField = (EditText) layout.findViewById(R.id.description);
                 final EditText priceField = (EditText) layout.findViewById(R.id.price);
-                if (item.savedDescription != null) {
-                    descriptionField.setText(item.savedDescription);
-                    priceField.setText(String.format(Locale.US, "%.2f", item.savedPrice));
-                }
                 submit.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -245,6 +245,24 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
                         }
                     }
                 });
+
+                // Set saved IROMazon data if present
+                if (item.savedDescription != null) {
+                    descriptionField.setText(item.savedDescription);
+                    priceField.setText(String.format(Locale.US, "%.2f", item.savedPrice));
+                }
+
+                // Create dialog
+                AlertDialog.Builder builder = new AlertDialog.Builder(InventoryItemDetailActivity.this);
+                builder.setView(layout);
+                builder.show();
+            }
+        });
+
+        itemListingDeleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deleteItem(item);
             }
         });
 
@@ -255,6 +273,10 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
     }
 
     private void createListing(final Item item, final String description, final double price) {
+        // Show dialog
+        progressDialog.setMessage("Creating...");
+        progressDialog.show();
+
         // Get key first and set to current Item object
         DatabaseReference itemsReference = FirebaseDatabase.getInstance().getReference("items/");
         final DatabaseReference listingsReference = FirebaseDatabase.getInstance().getReference("listings/");
@@ -278,9 +300,102 @@ public class InventoryItemDetailActivity extends NavigationDrawerActivity {
                         Bundle b = new Bundle();
                         b.putParcelable("listing", listing);
                         i.putExtras(b);
+
+                        // Hide progress dialog
+                        progressDialog.hide();
+
                         startActivity(i);
                     }
                 });
+            }
+        });
+    }
+
+    private void deleteItem(final Item item) {
+        // Show progress dialog
+        progressDialog.setMessage("Deleting...");
+        progressDialog.show();
+
+        // First delete the item
+        DatabaseReference itemRef = FirebaseDatabase.getInstance().getReference("items/" + item.itemID);
+        itemRef.removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                // Then if successful delete the image
+                StorageReference imageRef = FirebaseStorage.getInstance().getReference("items/" + item.itemID);
+                imageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        // Successfully deleted, move back to inventory
+                        Intent i = new Intent(InventoryItemDetailActivity.this, InventoryActivity.class);
+
+                        // Hide progress dialog
+                        progressDialog.hide();
+
+                        startActivity(i);
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        // Something went wrong!
+                        progressDialog.hide();
+                        Toast.makeText(InventoryItemDetailActivity.this, "Error deleting image", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "Error deleting item image: " + e);
+                    }
+                });
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                // Something went wrong!
+                progressDialog.hide();
+                Toast.makeText(InventoryItemDetailActivity.this, "Error deleting item", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Error deleting item: " + e);
+            }
+        });
+    }
+
+    private void deleteListing(final Item item) {
+        // Show progress dialog
+        progressDialog.setMessage("Deleting...");
+        progressDialog.show();
+
+        // First delete listing
+        DatabaseReference listingRef = FirebaseDatabase.getInstance().getReference("listings/" + item.listingID);
+        listingRef.removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                // Then, need to update item data to reflect that
+                item.forSale = false;
+                item.listingID = null;
+
+                DatabaseReference itemRef = FirebaseDatabase.getInstance().getReference("items/" + item.itemID);
+                itemRef.setValue(item).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        // Hide progress dialog
+                        progressDialog.hide();
+
+                        // Item successfully updated, refresh the page
+                        onRestart();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        // Something went wrong!
+                        progressDialog.hide();
+                        Toast.makeText(InventoryItemDetailActivity.this, "Error updating item", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "Error updating item: " + e);
+                    }
+                });
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                // Something went wrong!
+                progressDialog.hide();
+                Toast.makeText(InventoryItemDetailActivity.this, "Error deleting listing", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Error deleting listing: " + e);
             }
         });
     }

@@ -63,7 +63,7 @@
             android:layout_marginRight="5dp"
             android:layout_toStartOf="@+id/listing_detail_price"
             android:textSize="20sp"
-            android:maxLines="1"
+            android:maxLines="2"
             android:ellipsize="end"
             android:text="Name" />
 

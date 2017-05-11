@@ -23,6 +23,10 @@
         android:layout_height="wrap_content"
         android:text="edit profile"
         android:layout_gravity="center_horizontal"
+        android:textColor="@color/white"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:background="@drawable/green_button_shape"
         android:id="@+id/profile_edit_form_button" />
     <ScrollView
         android:layout_width="match_parent"

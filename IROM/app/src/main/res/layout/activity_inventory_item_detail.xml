@@ -44,10 +44,28 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/item_detail_button"
             android:layout_alignParentStart="true"
+            android:layout_toStartOf="@+id/item_detail_delete_button"
             android:layout_marginLeft="5dp"
             android:layout_marginTop="12dp"
+            android:layout_marginRight="5dp"
             android:textSize="20sp"
+            android:maxLines="2"
+            android:ellipsize="end"
             android:text="itmname" />
+
+        <Button
+            android:id="@+id/item_detail_delete_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:layout_marginRight="5dp"
+            android:text="Delete"
+            android:layout_below="@+id/item_detail_button"
+            android:layout_alignParentEnd="true"
+            android:textColor="@color/white"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:background="@drawable/green_button_shape" />
 
         <TextView
             android:id="@+id/item_detail_date_label"
@@ -94,7 +112,6 @@
             android:layout_marginTop="10dp"
             android:layout_centerHorizontal="true"
             android:text="" />
-
 
         <ProgressBar
             android:id="@+id/item_detail_progressbar"

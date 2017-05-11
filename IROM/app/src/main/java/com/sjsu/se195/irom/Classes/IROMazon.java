@@ -61,6 +61,7 @@ public class IROMazon implements Parcelable {
         this.logo = (ArrayList<String>) in.readSerializable();
         this.label = (ArrayList<String>) in.readSerializable();
         this.price = in.readDouble();
+        this.description = in.readString();
         this.key = in.readString();
     }
 
@@ -77,6 +78,7 @@ public class IROMazon implements Parcelable {
         parcel.writeSerializable(this.logo);
         parcel.writeSerializable(this.label);
         parcel.writeDouble(this.price);
+        parcel.writeString(this.description);
         parcel.writeString(this.key);
     }
 

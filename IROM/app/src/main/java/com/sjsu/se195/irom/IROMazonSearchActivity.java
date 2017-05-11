@@ -109,7 +109,9 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
         // Layout items
         ImageView addImageView = (ImageView) findViewById(R.id.imageHolder);
         final Button submitIROMazonButton = (Button) findViewById(R.id.submitIROMazon);
-        final EditText submitIROMazonText = (EditText) findViewById(R.id.nameText);
+        final EditText submitIROMazonName = (EditText) findViewById(R.id.nameText);
+        final EditText submitIROMazonDescription = (EditText) findViewById(R.id.descriptionText);
+        final EditText submitIROMazonPrice = (EditText) findViewById(R.id.priceText);
         RecyclerView IROMazonRecyclerView = (RecyclerView) findViewById(R.id.IROMazon_recycler_view);
         //dialog setup for choosing gallery/camera
         PickSetup setup = new PickSetup().setCameraIcon(R.drawable.camera).setGalleryIcon(R.drawable.gallery);
@@ -147,6 +149,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             }
         });
 
+        // Progress dialogue setup
         progressDialog = new ProgressDialog(IROMazonSearchActivity.this, R.style.AppTheme_Dialog);
         progressDialog.setIndeterminate(true);
 
@@ -154,7 +157,8 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
             @Override
             public void onClick(View view) {
                 // Check to see if a name first
-                if (!(TextUtils.isEmpty(submitIROMazonText.getText()))) {
+                if (!(TextUtils.isEmpty(submitIROMazonName.getText()) && TextUtils.isEmpty(submitIROMazonDescription.getText())
+                        && TextUtils.isEmpty(submitIROMazonPrice.getText()))) {
                     createIROMazonEntry();
                 } else {
                     Toast.makeText(IROMazonSearchActivity.this, "No name provided", Toast.LENGTH_SHORT).show();

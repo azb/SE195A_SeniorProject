@@ -75,7 +75,7 @@ public class InventoryActivity extends NavigationDrawerActivity {
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
 
         // Set up the database ref
-        final DatabaseReference ref = database.getReference("items");
+        final DatabaseReference ref = database.getReference("items/");
 
         // Set up refresh listener
         swipeLayout = ((SwipeRefreshLayout) findViewById(R.id.inventory_swipe_layout));
@@ -138,6 +138,13 @@ public class InventoryActivity extends NavigationDrawerActivity {
         itemRecyclerView.setAdapter(itemAdapter);
 
         // Initial load
+        refreshItems(ref);
+    }
+
+    @Override
+    public void onRestart() {
+        super.onRestart();
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("items/");
         refreshItems(ref);
     }
 
