@@ -6,24 +6,24 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.design.widget.NavigationView; //added by Arthur
 
 import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -53,14 +53,13 @@ import com.vansuita.pickimage.listeners.IPickClick;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import static com.sjsu.se195.irom.R.id.imageHolder;
 
 /**
  * Created by Arthur on 11/9/2016.
@@ -334,31 +333,55 @@ public class ProfileActivity extends NavigationDrawerActivity {
             if (requestCode == CAMERA_IMAGE_REQUEST) {
                 try {
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), currentPhotoURI);
-//                   ExifInterface ei = new ExifInterface(currentPhotoURI.getPath());
-//                    int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION,
-//                            ExifInterface.ORIENTATION_UNDEFINED);
-//
-//                    switch(orientation) {
-//
-//                        case ExifInterface.ORIENTATION_ROTATE_90:
-//                            profilePicture.setImageBitmap(rotateImage(bitmap, 90));
-//                            break;
-//
-//                        case ExifInterface.ORIENTATION_ROTATE_180:
-//                            profilePicture.setImageBitmap(rotateImage(bitmap, 180));
-//                            break;
-//
-//                        case ExifInterface.ORIENTATION_ROTATE_270:
-//                            profilePicture.setImageBitmap(rotateImage(bitmap, 270));
-//                            break;
-//
-//                        case ExifInterface.ORIENTATION_NORMAL:
-//
-//                        default:
-//                            profilePicture.setImageBitmap(bitmap);
-//                    }
-                        profilePicture.setImageBitmap(bitmap);
-                        uploadImage(bitmap);
+
+                    /* ExifInterface relies on paths, but paths are heavily discouraged, should use URIs, so lots of weird issues
+                    /  http://stackoverflow.com/questions/34696787/a-final-answer-on-how-to-get-exif-data-from-uri
+                    /  Apparently, to deal with this, in API 24 and up, Android allowed ExifInterfaces to use InputStreams, which works
+                    /  for people with Nougat, but still has a problem for us since we're using content:// URIs for ALL API levels.
+                    /  https://android-developers.googleblog.com/2016/12/introducing-the-exifinterface-support-library.html
+                    /  Thus, solution from one StackOverflow answer for lower API levels is used */
+                    int orientation;
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        InputStream in = getContentResolver().openInputStream(currentPhotoURI);
+                        ExifInterface ei = new ExifInterface(in);
+                        orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+                    } else {
+                        String path = null;
+
+                        String[] proj = { MediaStore.Images.Media.DATA };
+                        Cursor cursor = getApplicationContext().getContentResolver().query(currentPhotoURI, proj, null, null, null);
+                        if (cursor.moveToFirst()) {
+                            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                            path = cursor.getString(column_index);
+                        }
+                        cursor.close();
+
+                        ExifInterface ei = new ExifInterface(path);
+                        orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+                    }
+
+                    switch (orientation) {
+
+                        case ExifInterface.ORIENTATION_ROTATE_90:
+                            profilePicture.setImageBitmap(rotateImage(bitmap, 90));
+                            break;
+
+                        case ExifInterface.ORIENTATION_ROTATE_180:
+                            profilePicture.setImageBitmap(rotateImage(bitmap, 180));
+                            break;
+
+                        case ExifInterface.ORIENTATION_ROTATE_270:
+                            profilePicture.setImageBitmap(rotateImage(bitmap, 270));
+                            break;
+
+                        case ExifInterface.ORIENTATION_NORMAL:
+
+                        default:
+                            profilePicture.setImageBitmap(bitmap);
+                    }
+
+                    uploadImage(bitmap);
 
                 } catch (java.io.IOException e) {
                     Log.d(TAG, "Image selection failed: " + e.getMessage());
