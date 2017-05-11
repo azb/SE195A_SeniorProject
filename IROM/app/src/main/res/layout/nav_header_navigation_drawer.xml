@@ -61,6 +61,7 @@
             android:layout_marginBottom="8dp"
             android:layout_marginLeft="8dp"
             android:paddingEnd="2dp"
+            android:scaleType="centerCrop"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toLeftOf="@+id/nav_header_user_email" />

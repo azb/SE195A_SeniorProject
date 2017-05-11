@@ -47,7 +47,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".CloudVisionTestActivity"
-            android:label="CloudVisionTest"
+            android:label="Cloud Vision Test"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".NavigationDrawerActivity"
@@ -68,7 +68,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".IROMazonSearchActivity"
-            android:label="IROMazonSearch"
+            android:label="Add a new Item"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".InventoryItemDetailActivity"

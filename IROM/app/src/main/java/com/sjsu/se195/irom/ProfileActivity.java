@@ -8,7 +8,9 @@ import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -26,7 +28,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ScrollView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -75,7 +76,6 @@ public class ProfileActivity extends NavigationDrawerActivity {
     private EditText mFirstNameEditText;
     private EditText mLastNameEditText;
     private EditText mEmailEditText;
-    private Spinner mCurrencySpinner;
     private TextView mFirstNameTextView;
     private TextView mLastNameTextView;
     private TextView mEmailTextView;
@@ -237,9 +237,9 @@ public class ProfileActivity extends NavigationDrawerActivity {
             public void onClick(View view) {
                 String fn = mFirstNameEditText.getText().toString();
                 String ln =  mLastNameEditText.getText().toString();
-                Profile profile = new Profile(mUser.getUid(), fn, ln, mCurrencySpinner.getSelectedItem().toString());
+                Profile profile = new Profile(mUser.getUid(), fn, ln);
                 writeProfile(profile);
-                Toast.makeText(ProfileActivity.this, "you clicked save!", Toast.LENGTH_SHORT).show();
+               // Toast.makeText(ProfileActivity.this, "you clicked save!", Toast.LENGTH_SHORT).show();
                 //update labels
                 mFirstNameTextView.setText( "first name: " + fn);
                 mLastNameTextView.setText("last name: " + ln );
@@ -256,27 +256,9 @@ public class ProfileActivity extends NavigationDrawerActivity {
 
     private void startGalleryChooser() {
 
-
-        Intent pickImageIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-
-
-      //  startActivityForResult(pickImageIntent, RESULT_LOAD_IMAGE);
         if (PermissionUtils.requestPermission(this, GALLERY_PERMISSIONS_REQUEST, android.Manifest.permission.READ_EXTERNAL_STORAGE)) {
             dialog.dismiss();
             Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            //these are supposed to do cropping. it is not getting the bitmap from the cropped image. uri returns null
-            i.setType("image/*");
-            i.putExtra("crop", "true");
-            i.putExtra("outputX", 200);
-            i.putExtra("outputY", 200);
-            i.putExtra("aspectX", 1);
-            i.putExtra("aspectY", 1);
-            i.putExtra("scale", true);
-            i.putExtra(MediaStore.EXTRA_OUTPUT, currentPhotoURI);
-            i.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
-      //      i.putExtra("outputFormat", i.putExtra(MediaStore.EXTRA_OUTPUT, currentPhotoURI);
-          //  i.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
-
             startActivityForResult(i, GALLERY_IMAGE_REQUEST);
         }
     }
@@ -287,21 +269,9 @@ public class ProfileActivity extends NavigationDrawerActivity {
         if (PermissionUtils.requestPermission(this, CAMERA_PERMISSIONS_REQUEST, android.Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.CAMERA)) {
             dialog.dismiss();
-
             Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            //these are supposed to do cropping. it is not getting the bitmap from the cropped image. uri returns null
-//            i .putExtra("crop", "true");
-//            i .putExtra("outputX", 200);
-//            i .putExtra("outputY", 200);
-//            i .putExtra("aspectX", 1);
-//            i .putExtra("aspectY", 1);
-//            i .putExtra("scale", true);
-//            i.putExtra("return-data", true);
-
-
             // Make sure camera activity available
             if (i.resolveActivity(getPackageManager()) != null) {
-
                 // Create the file
                 File photoFile = null;
                 try {
@@ -310,7 +280,6 @@ public class ProfileActivity extends NavigationDrawerActivity {
                     // Error in file creation
                     e.printStackTrace();
                 }
-
                 // If file created
                 if (photoFile != null) {
                     Uri photoURI = FileProvider.getUriForFile(this, "com.sjsu.se195.irom.com.vansuita.pickimage.provider", photoFile);
@@ -346,16 +315,13 @@ public class ProfileActivity extends NavigationDrawerActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
             if (requestCode == GALLERY_IMAGE_REQUEST && data != null ) {
+
                 currentPhotoURI = data.getData();
                 try {
-
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), data.getData());
-
                     if(bitmap!=null){
-                       //TODO fixme
                         profilePicture.setImageBitmap(bitmap);
                         uploadImage(bitmap);
-
                     }
 
                 } catch (java.io.IOException e) {
@@ -364,12 +330,14 @@ public class ProfileActivity extends NavigationDrawerActivity {
                     Log.d(TAG, "image selection failed - null pointer " + e.getMessage());
                 }
             }
-            if (requestCode == CAMERA_IMAGE_REQUEST) {
+            if (requestCode == CAMERA_IMAGE_REQUEST  ) {
                 try {
+
+                    System.out.println("KRYSTLE GOT HERE");
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), currentPhotoURI);
                     if(bitmap!=null){
                         profilePicture.setImageBitmap(bitmap);
-                        //  uploadImage(bitmap);
+                        uploadImage(bitmap);
                     }
                 } catch (java.io.IOException e) {
                     Log.d(TAG, "Image selection failed: " + e.getMessage());
@@ -417,7 +385,8 @@ public class ProfileActivity extends NavigationDrawerActivity {
         uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-               // Toast.makeText(ProfileActivity.this, "Image upload success", Toast.LENGTH_SHORT).show();
+
+                Toast.makeText(ProfileActivity.this, "Image upload success", Toast.LENGTH_SHORT).show();
             }
         });
     }

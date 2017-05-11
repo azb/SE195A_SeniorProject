@@ -31,7 +31,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginBottom="18dp"
-            app:srcCompat="@drawable/irom_logo_placeholder_360x180"
+            app:srcCompat="@drawable/irom_logo_placeholder_360x180_black"
             android:layout_above="@+id/signin_button"
             android:layout_alignParentStart="true" />
 

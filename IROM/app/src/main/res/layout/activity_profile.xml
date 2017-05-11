@@ -9,6 +9,7 @@
         android:layout_height="200dp"
         android:layout_width="200dp"
         android:src="@drawable/user_large"
+        android:scaleType="centerCrop"
         android:layout_gravity="center"
         android:id="@+id/profile_picture" />
     <TextView
@@ -70,11 +71,6 @@
                 android:layout_width="match_parent"
                 android:id="@+id/email_edit_text"/>
 
-            <Spinner
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/currency_spinner"
-                android:prompt="@string/currency_spinner_prompt"/>
 
         <Button
             android:layout_width="wrap_content"
