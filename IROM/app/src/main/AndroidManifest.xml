@@ -91,7 +91,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
 
         <activity android:name=".PaymentTestActivity"
-            android:label="Payment Test"
+            android:label="Payment"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <provider

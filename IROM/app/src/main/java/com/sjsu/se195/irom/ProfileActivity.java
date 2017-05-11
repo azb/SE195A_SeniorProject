@@ -305,6 +305,7 @@ public class ProfileActivity extends NavigationDrawerActivity {
 
         File temp = File.createTempFile(imageFileName, ".jpg", storageDir);
 
+
         // Delete file on exit of app so we don't waste user storage
         temp.deleteOnExit();
 
@@ -330,15 +331,35 @@ public class ProfileActivity extends NavigationDrawerActivity {
                     Log.d(TAG, "image selection failed - null pointer " + e.getMessage());
                 }
             }
-            if (requestCode == CAMERA_IMAGE_REQUEST  ) {
+            if (requestCode == CAMERA_IMAGE_REQUEST) {
                 try {
-
-                    System.out.println("KRYSTLE GOT HERE");
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), currentPhotoURI);
-                    if(bitmap!=null){
+//                   ExifInterface ei = new ExifInterface(currentPhotoURI.getPath());
+//                    int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+//                            ExifInterface.ORIENTATION_UNDEFINED);
+//
+//                    switch(orientation) {
+//
+//                        case ExifInterface.ORIENTATION_ROTATE_90:
+//                            profilePicture.setImageBitmap(rotateImage(bitmap, 90));
+//                            break;
+//
+//                        case ExifInterface.ORIENTATION_ROTATE_180:
+//                            profilePicture.setImageBitmap(rotateImage(bitmap, 180));
+//                            break;
+//
+//                        case ExifInterface.ORIENTATION_ROTATE_270:
+//                            profilePicture.setImageBitmap(rotateImage(bitmap, 270));
+//                            break;
+//
+//                        case ExifInterface.ORIENTATION_NORMAL:
+//
+//                        default:
+//                            profilePicture.setImageBitmap(bitmap);
+//                    }
                         profilePicture.setImageBitmap(bitmap);
                         uploadImage(bitmap);
-                    }
+
                 } catch (java.io.IOException e) {
                     Log.d(TAG, "Image selection failed: " + e.getMessage());
                 }catch (java.lang.NullPointerException e){
@@ -350,7 +371,12 @@ public class ProfileActivity extends NavigationDrawerActivity {
             Log.d(TAG, "Result is not ok for some reason.");
         }
     }
-
+    public static Bitmap rotateImage(Bitmap source, float angle) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(),
+                matrix, true);
+    }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
