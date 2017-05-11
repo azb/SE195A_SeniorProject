@@ -225,7 +225,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
         EditText IROMazonDescription = (EditText) findViewById(R.id.descriptionText);
         EditText IROMazonPrice = (EditText) findViewById(R.id.priceText);
         final IROMazon newEntry = new IROMazon(IROMazonName.getText().toString(), IROMazonStringLists.get(0), IROMazonStringLists.get(1),
-                                               IROMazonStringLists.get(2), IROMazonStringLists.get(3), Double.parseDouble(IROMazonPrice.getText().toString()));
+                                               IROMazonStringLists.get(2), IROMazonStringLists.get(3), Long.parseLong(IROMazonPrice.getText().toString()));
         newEntry.description = IROMazonDescription.getText().toString();
 
         // Get key for entry

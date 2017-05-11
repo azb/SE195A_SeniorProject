@@ -21,6 +21,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -54,6 +55,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -75,8 +77,9 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
     private FirebaseStorage cStorageEntry;
     private StorageReference cImageUpload;
     private Bitmap imageToUpload;
-    private ArrayList<IROMazon> cEntryList = new ArrayList<>();
+    //private ArrayList<IROMazon> cEntryList = new ArrayList<>();
     private boolean createNewIROMazon;
+    private ArrayList<IROMazon> IROMazonList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,12 +126,32 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
         cWebEntitySearch = cFirebaseEntry.getReference().child("IROMazon");
         cStorageEntry = FirebaseStorage.getInstance();
         cImageUpload = cStorageEntry.getReference().child("IROMazon/");
-        cWebEntitySearch.addChildEventListener(new ChildEventListener() {
+        IROMazonList = new ArrayList<>();
+        cWebEntitySearch.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot IROMazonSnapshot : dataSnapshot.getChildren()) {
+                    IROMazon temp = IROMazonSnapshot.getValue(IROMazon.class);
+                    if (temp.key == null) { // Fill out key for entries created without it
+                        temp.key = IROMazonSnapshot.getKey();
+                    }
+                    IROMazonList.add(temp);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Get entries failed, log a message
+                Toast.makeText(CloudVisionTestActivity.this, "Download failed", Toast.LENGTH_SHORT).show();
+            }
+        });
+        /*cWebEntitySearch.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 IROMazon entry = new IROMazon(); //dataSnapshot.getValue();
+                entry = IROMazonSnapshot.getValue(IROMazon.class);
                 entry.name = (String) dataSnapshot.child("name").getValue();
-                entry.price = (Double) dataSnapshot.child("price").getValue();
+                entry.price = (Long) dataSnapshot.child("price").getValue().=;
                 entry.key = dataSnapshot.getKey();
                 for (DataSnapshot textSnapshot : dataSnapshot.child("text").getChildren()) {
                     entry.text.add(textSnapshot.getValue().toString());
@@ -140,24 +163,6 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
                     entry.label.add(textSnapshot.getValue().toString());
                 }
                 cEntryList.add(entry);
-                /*System.out.println("Key");
-                System.out.println(entry.key);
-                System.out.println("Object Name");
-                System.out.println(entry.name);
-                System.out.println("Price");
-                System.out.println(String.format("%.2f",entry.price));
-                if (entry.text.size() != 0) {
-                    System.out.println("Text of Object");
-                    System.out.println(entry.text.get(0));
-                }
-                if (entry.logo.size() != 0) {
-                    System.out.println("Logo of Object");
-                    System.out.println(entry.logo.get(0));
-                }
-                if(entry.label.size() != 0){
-                    System.out.println("Label of Object");
-                    System.out.println(entry.label.get(0));
-                }*/
             }
 
             @Override
@@ -179,7 +184,7 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        });*/
     }
 
     public void startGalleryChooser() {
@@ -467,11 +472,11 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
                }
            }
 
-           if(createNewIROMazon){
-               IROMazon newEntry = new IROMazon(entityResults.get(0),textResults,logoResults,labelResults,19.95d);
+           /*if(createNewIROMazon){
+               IROMazon newEntry = new IROMazon(entityResults.get(0),textResults,logoResults,labelResults,19.95L);
                createIROMazonEntry(newEntry);
                createNewIROMazon = false;
-           }
+           }*/
            }
         return message;
     }
@@ -569,10 +574,10 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
             }
         }
 
-        for(int i = 0;i<cEntryList.size();i++){
+        for(int i = 0;i<IROMazonList.size();i++){
             for(int j = 0;j<entityResults.size();j++){
-                if(cEntryList.get(i).name.equals(entityResults.get(j))){
-                    result.add(cEntryList.get(i));
+                if(IROMazonList.get(i).name.equals(entityResults.get(j))){
+                    result.add(IROMazonList.get(i));
                     //System.out.println("Adding to result");
                     //System.out.println(cEntryList.get(i).name);
                     //System.out.println("\n");
@@ -594,10 +599,10 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
                }
             }
         }
-        for(int i = 0;i<cEntryList.size();i++){
+        for(int i = 0;i<IROMazonList.size();i++){
 
-                if(getIROMazon_TLLScore(textResults,cEntryList.get(i).text) >= 0.5){
-                    result.add(cEntryList.get(i));
+                if(getIROMazon_TLLScore(textResults,IROMazonList.get(i).text) >= 0.5){
+                    result.add(IROMazonList.get(i));
                 }
         }
         return result;
@@ -624,10 +629,10 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
             }
         }
 
-        for(int i = 0;i<cEntryList.size();i++){
-            if(getIROMazon_TLLScore(logoResults,cEntryList.get(i).logo) >= 0.5){
-                if(getIROMazon_TLLScore(labelResults,cEntryList.get(i).label) >= 0.5) {
-                    result.add(cEntryList.get(i));
+        for(int i = 0;i<IROMazonList.size();i++){
+            if(getIROMazon_TLLScore(logoResults,IROMazonList.get(i).logo) >= 0.5){
+                if(getIROMazon_TLLScore(labelResults,IROMazonList.get(i).label) >= 0.5) {
+                    result.add(IROMazonList.get(i));
                 }
             }
         }
@@ -647,10 +652,10 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
                 }
             }
         }
-        for(int i = 0;i<cEntryList.size();i++){
+        for(int i = 0;i<IROMazonList.size();i++){
 
-            if(getIROMazon_TLLScore(labelResults,cEntryList.get(i).label) >= 0.5){
-                result.add(cEntryList.get(i));
+            if(getIROMazon_TLLScore(labelResults,IROMazonList.get(i).label) >= 0.5){
+                result.add(IROMazonList.get(i));
             }
         }
         return result;
