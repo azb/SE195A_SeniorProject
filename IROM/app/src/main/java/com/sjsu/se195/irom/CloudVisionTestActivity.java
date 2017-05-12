@@ -50,7 +50,6 @@ import java.util.Locale;
 
 import com.google.api.services.vision.v1.model.WebDetection;
 import com.google.api.services.vision.v1.model.WebEntity;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -77,7 +76,6 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
     private FirebaseStorage cStorageEntry;
     private StorageReference cImageUpload;
     private Bitmap imageToUpload;
-    //private ArrayList<IROMazon> cEntryList = new ArrayList<>();
     private boolean createNewIROMazon;
     private ArrayList<IROMazon> IROMazonList;
 
@@ -145,46 +143,6 @@ public class CloudVisionTestActivity extends NavigationDrawerActivity {
                 Toast.makeText(CloudVisionTestActivity.this, "Download failed", Toast.LENGTH_SHORT).show();
             }
         });
-        /*cWebEntitySearch.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                IROMazon entry = new IROMazon(); //dataSnapshot.getValue();
-                entry = IROMazonSnapshot.getValue(IROMazon.class);
-                entry.name = (String) dataSnapshot.child("name").getValue();
-                entry.price = (Long) dataSnapshot.child("price").getValue().=;
-                entry.key = dataSnapshot.getKey();
-                for (DataSnapshot textSnapshot : dataSnapshot.child("text").getChildren()) {
-                    entry.text.add(textSnapshot.getValue().toString());
-                }
-                for (DataSnapshot textSnapshot : dataSnapshot.child("logo").getChildren()) {
-                    entry.logo.add(textSnapshot.getValue().toString());
-                }
-                for (DataSnapshot textSnapshot : dataSnapshot.child("label").getChildren()) {
-                    entry.label.add(textSnapshot.getValue().toString());
-                }
-                cEntryList.add(entry);
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });*/
     }
 
     public void startGalleryChooser() {
