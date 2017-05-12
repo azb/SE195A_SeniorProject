@@ -1,16 +1,12 @@
 package com.sjsu.se195.irom;
 
-import android.*;
 import android.Manifest;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.graphics.drawable.BitmapDrawable;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
@@ -57,12 +53,11 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 /**
- * Created by Arthur on 11/9/2016.
+ * Activity for editing the user's profile
  */
 
 public class ProfileActivity extends NavigationDrawerActivity {
@@ -88,6 +83,7 @@ public class ProfileActivity extends NavigationDrawerActivity {
     private static final String TAG = ProfileActivity.class.getSimpleName();
     private final long ONE_MEGABYTE = 1024 * 1024; // Max image download size to avoid issues
     private Uri currentPhotoURI;
+    private File currentPhotoFile;
     private StorageReference storageRef;
 
     private static final FirebaseDatabase database = FirebaseDatabase.getInstance();//added by Arthur
@@ -116,6 +112,22 @@ public class ProfileActivity extends NavigationDrawerActivity {
         userEmailWelcome.setText(profileName);
 
         setupClickListeners();
+    }
+
+    @Override
+    protected void onDestroy() {
+        // Delete temp image file if not already deleted when this activity is fully killed
+        if (currentPhotoFile != null && currentPhotoFile.exists()) {
+            try {
+                if (currentPhotoFile.delete()) {
+                    Log.d(TAG, "Temp file deleted");
+                }
+            } catch (Exception e) {
+                Log.d(TAG, "Error deleting file: " + e);
+            }
+        }
+
+        super.onDestroy();
     }
 
     private void initializeAllTheThings() {
@@ -302,13 +314,26 @@ public class ProfileActivity extends NavigationDrawerActivity {
         String imageFileName = "JPEG_" + timestamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
 
-        File temp = File.createTempFile(imageFileName, ".jpg", storageDir);
+        // Delete existing file if one already present
+        if (currentPhotoFile != null && currentPhotoFile.exists()) {
+            try {
+                if (currentPhotoFile.delete()) {
+                    Log.d(TAG, "Temp file deleted");
+                }
+            } catch (Exception e) {
+                Log.d(TAG, "Error deleting file: " + e);
+            }
+        }
 
+        // Create new file
+        currentPhotoFile = File.createTempFile(imageFileName, ".jpg", storageDir);
 
-        // Delete file on exit of app so we don't waste user storage
-        temp.deleteOnExit();
+        // Set this up just in case? But apparently doesn't ensure files are actually deleted due to how
+        // apps work with VM termination
+        // https://developer.android.com/reference/java/io/File.html#deleteOnExit()
+        currentPhotoFile.deleteOnExit();
 
-        return temp;
+        return currentPhotoFile;
     }
 
     @Override

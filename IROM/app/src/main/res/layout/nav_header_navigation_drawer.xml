@@ -64,7 +64,8 @@
             android:scaleType="centerCrop"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toLeftOf="@+id/nav_header_user_email" />
+            app:layout_constraintRight_toLeftOf="@+id/nav_header_user_email"
+            app:srcCompat="@drawable/user_large" />
         <!--<TextView-->
         <!--android:id="@+id/nav_header_user_name"-->
         <!--android:layout_width="0dp"-->

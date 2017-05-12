@@ -83,6 +83,7 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
     private static final String TAG = IROMazonSearchActivity.class.getSimpleName();
     private static final String CLOUD_VISION_API_KEY = "AIzaSyAHnhDlz-V1OTUivtflxsQwFShuAzeh-6w";
     private Uri currentPhotoURI;
+    private File currentPhotoFile;
     private final long ONE_MEGABYTE = 1024 * 1024; // Max image download size to avoid issues
     private DatabaseReference IROMazonDatabaseRef;
     private StorageReference storageRef;
@@ -207,6 +208,22 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
         });
     }
 
+    @Override
+    protected void onDestroy() {
+        // Delete temp image file if not already deleted when this activity is fully killed
+        if (currentPhotoFile != null && currentPhotoFile.exists()) {
+            try {
+                if (currentPhotoFile.delete()) {
+                    Log.d(TAG, "Temp file deleted");
+                }
+            } catch (Exception e) {
+                Log.d(TAG, "Error deleting file: " + e);
+            }
+        }
+
+        super.onDestroy();
+    }
+
     private void searchIROMazon() {
         progressDialog.setMessage("Searching...");
         progressDialog.show();
@@ -277,12 +294,27 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         String imageFileName = "JPEG_" + timestamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File temp = File.createTempFile(imageFileName, ".jpg", storageDir);
 
-        // Delete file on exit of app so we don't waste user storage
-        temp.deleteOnExit();
+        // Delete existing file if one already present
+        if (currentPhotoFile != null && currentPhotoFile.exists()) {
+            try {
+                if (currentPhotoFile.delete()) {
+                    Log.d(TAG, "Temp file deleted");
+                }
+            } catch (Exception e) {
+                Log.d(TAG, "Error deleting file: " + e);
+            }
+        }
 
-        return temp;
+        // Create new file
+        currentPhotoFile = File.createTempFile(imageFileName, ".jpg", storageDir);
+
+        // Set this up just in case? But apparently doesn't ensure files are actually deleted due to how
+        // apps work with VM termination
+        // https://developer.android.com/reference/java/io/File.html#deleteOnExit()
+        currentPhotoFile.deleteOnExit();
+
+        return currentPhotoFile;
     }
 
     private void startCamera() throws IOException {
@@ -364,8 +396,6 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
         }
     }
 
-
-
     public void uploadImage() {
         try {
             ImageView imageView = (ImageView) findViewById(R.id.imageHolder);
@@ -381,8 +411,6 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
     }
 
     private void callCloudVision(final Bitmap bitmap) throws IOException {
-        // Show loading
-
         new AsyncTask<Object, Void, String>() {
             @Override
             protected String doInBackground(Object... params) {
@@ -521,6 +549,9 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
 
                     // Handle case that there were no matches found, no items added to ArrayList
                     if (potentialMatches.size() == 0) {
+                        // Remove dialog
+                        progressDialog.dismiss();
+
                         Toast.makeText(IROMazonSearchActivity.this, "No matches found in database", Toast.LENGTH_SHORT).show();
                     } else {
                         currentLoadedCount = 0;

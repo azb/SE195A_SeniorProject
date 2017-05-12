@@ -220,7 +220,7 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
             // Check if this listing is owned by current user or not
             if (profile.uID.equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
                 stopLoading();
-                purchaseButton.setVisibility(View.INVISIBLE);
+                purchaseButton.setVisibility(View.GONE);
             } else {
                 stopLoading();
                 purchaseButton.setEnabled(false);
@@ -248,7 +248,7 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
                         stopLoading();
 
                         // If coming from Item detail, can only be current user's own item
-                        purchaseButton.setVisibility(View.INVISIBLE);
+                        purchaseButton.setVisibility(View.GONE);
 
                         // Still can display sold/not sold
                         if (!listing.isLive) {
@@ -263,7 +263,7 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
                         stopLoading();
 
                         // If coming from Item detail, can only be current user's own item
-                        purchaseButton.setVisibility(View.INVISIBLE);
+                        purchaseButton.setVisibility(View.GONE);
 
                         // Still can display sold/not sold
                         if (!listing.isLive) {
