@@ -387,7 +387,6 @@ public class ProfileActivity extends NavigationDrawerActivity {
                     }
 
                     switch (orientation) {
-
                         case ExifInterface.ORIENTATION_ROTATE_90:
                             profilePicture.setImageBitmap(rotateImage(bitmap, 90));
                             break;
@@ -419,12 +418,14 @@ public class ProfileActivity extends NavigationDrawerActivity {
             Log.d(TAG, "Result is not ok for some reason.");
         }
     }
+
     public static Bitmap rotateImage(Bitmap source, float angle) {
         Matrix matrix = new Matrix();
         matrix.postRotate(angle);
         return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(),
                 matrix, true);
     }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -440,7 +441,6 @@ public class ProfileActivity extends NavigationDrawerActivity {
             }
         }
     }
-
 
     private void uploadImage(Bitmap b){
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
@@ -483,8 +483,4 @@ public class ProfileActivity extends NavigationDrawerActivity {
         }
         return Bitmap.createScaledBitmap(bitmap, resizedWidth, resizedHeight, false);
     }
-
-
-
-
 }
