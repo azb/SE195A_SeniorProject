@@ -15,7 +15,7 @@ public class IROMazon implements Parcelable {
     public ArrayList<String> text = new ArrayList<>();
     public ArrayList<String> logo = new ArrayList<>();
     public ArrayList<String> label = new ArrayList<>();
-    public double price;
+    public Long price;
     public String description;
 
     /*public double entityScore;
@@ -26,7 +26,7 @@ public class IROMazon implements Parcelable {
     public String key;
 
     // Keeping old constructor for the sake of not breaking stuff at the moment
-    public IROMazon(String name, ArrayList<String> text, ArrayList<String> logo, ArrayList<String> label, Double price) {
+    public IROMazon(String name, ArrayList<String> text, ArrayList<String> logo, ArrayList<String> label, Long price) {
         this.name = name;
         this.price = price;
         for (int i=0;i<text.size();i++)
@@ -37,7 +37,7 @@ public class IROMazon implements Parcelable {
             this.label.add(label.get(i));
     }
 
-    public IROMazon(String name, ArrayList<String> entity, ArrayList<String> text, ArrayList<String> logo, ArrayList<String> label, Double price){
+    public IROMazon(String name, ArrayList<String> entity, ArrayList<String> text, ArrayList<String> logo, ArrayList<String> label, Long price){
         this.name = name;
         this.price = price;
         for (String current : entity)
@@ -60,7 +60,7 @@ public class IROMazon implements Parcelable {
         this.text = (ArrayList<String>) in.readSerializable();
         this.logo = (ArrayList<String>) in.readSerializable();
         this.label = (ArrayList<String>) in.readSerializable();
-        this.price = in.readDouble();
+        this.price = in.readLong();
         this.description = in.readString();
         this.key = in.readString();
     }
@@ -148,7 +148,7 @@ public class IROMazon implements Parcelable {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(Long price) {
         this.price = price;
     }
 
