@@ -85,14 +85,14 @@ TODO: When user clicks "Manually Add Item" button it and the "add item from came
                 android:id="@+id/submitButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Submit"
+                android:text="Create Item"
                 android:textColor="@color/white"
                 android:paddingLeft="8dp"
                 android:paddingRight="8dp"
                 android:background="@drawable/green_button_shape"
                 android:layout_below="@+id/notesText"
                 android:layout_marginRight="5dp"
-                android:layout_alignParentEnd="true" />
+                android:layout_toStartOf="@+id/createListingButton" />
 
             <Button
                 android:id="@+id/createListingButton"
@@ -104,8 +104,8 @@ TODO: When user clicks "Manually Add Item" button it and the "add item from came
                 android:paddingRight="8dp"
                 android:layout_marginRight="5dp"
                 android:background="@drawable/green_button_shape"
-                android:layout_toStartOf="@+id/submitButton"
-                android:text="Listing" />
+                android:layout_alignParentEnd="true"
+                android:text="Create Listing" />
 
         </RelativeLayout>
 
