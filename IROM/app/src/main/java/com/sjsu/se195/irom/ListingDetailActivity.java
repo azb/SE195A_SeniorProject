@@ -223,7 +223,7 @@ public class ListingDetailActivity extends NavigationDrawerActivity {
                 purchaseButton.setVisibility(View.GONE);
             } else {
                 stopLoading();
-                purchaseButton.setEnabled(false);
+                purchaseButton.setVisibility(View.GONE);
             }
         }
     }
