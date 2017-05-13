@@ -375,7 +375,52 @@ public class IROMazonSearchActivity extends NavigationDrawerActivity {
                     // Set image to ImageView
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), currentPhotoURI);
                     ImageView imageHolder = (ImageView) findViewById(R.id.imageHolder);
-                    imageHolder.setImageBitmap(bitmap);
+
+                    /* ExifInterface relies on paths, but paths are heavily discouraged, should use URIs, so lots of weird issues
+                    /  http://stackoverflow.com/questions/34696787/a-final-answer-on-how-to-get-exif-data-from-uri
+                    /  Apparently, to deal with this, in API 24 and up, Android allowed ExifInterfaces to use InputStreams, which works
+                    /  for people with Nougat, but still has a problem for us since we're using content:// URIs for ALL API levels.
+                    /  https://android-developers.googleblog.com/2016/12/introducing-the-exifinterface-support-library.html
+                    /  Thus, solution from one StackOverflow answer for lower API levels is used */
+                    int orientation;
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        InputStream in = getContentResolver().openInputStream(currentPhotoURI);
+                        ExifInterface ei = new ExifInterface(in);
+                        orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+                    } else {
+                        String path = null;
+
+                        String[] proj = { MediaStore.Images.Media.DATA };
+                        Cursor cursor = getApplicationContext().getContentResolver().query(currentPhotoURI, proj, null, null, null);
+                        if (cursor.moveToFirst()) {
+                            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                            path = cursor.getString(column_index);
+                        }
+                        cursor.close();
+
+                        ExifInterface ei = new ExifInterface(path);
+                        orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+                    }
+
+                    switch (orientation) {
+                        case ExifInterface.ORIENTATION_ROTATE_90:
+                            imageHolder.setImageBitmap(rotateImage(bitmap, 90));
+                            break;
+
+                        case ExifInterface.ORIENTATION_ROTATE_180:
+                            imageHolder.setImageBitmap(rotateImage(bitmap, 180));
+                            break;
+
+                        case ExifInterface.ORIENTATION_ROTATE_270:
+                            imageHolder.setImageBitmap(rotateImage(bitmap, 270));
+                            break;
+
+                        case ExifInterface.ORIENTATION_NORMAL:
+
+                        default:
+                            imageHolder.setImageBitmap(bitmap);
+                    }
 
                     // Search IROMazon database automatically
                     searchIROMazon();
