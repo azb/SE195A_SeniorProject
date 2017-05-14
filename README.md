@@ -7,6 +7,7 @@ Date: November 18, 2016
 
 Github: https://github.com/azb/SE195A_SeniorProject
 
+Demonstration Video: https://www.youtube.com/watch?v=FVovLsx2wrk
 
 Install Requirements
 
@@ -33,6 +34,18 @@ Install Instructions
 
 4. Use a file browser application to locate the IROM APK and install it.
 
+
+Usage Instructions
+
+1. First time users will be greeted with the sign-up screen. Users need an e-mail to sign up. 
+
+2. After logging in, the users are directed to the marketplace, where they can purchase an item on a sales listing from other users. To purchase from a sales listing, simply click the sales listing, and tap the purchase button. Currently, the application is not set up to make anything but "test" credit card charges, so use the card number 4242 4242 4242 4242 if you want to make any purchase tests; the expiration date and CVC can be anything. 
+
+3. The user has an inventory that contains "items". To add an item to the inventory, click the "add item" button in the navigation drawer. Here, the user must upload a picture of the item they want to add. To do so, click the camera image, and take a picture with the device camera, or upload from the device gallery. After that, the application will attempt to identify the contents of the image. It will do so by comparing the image with existing products in the product database. If no match is found, the user can enter their item's name, description and suggested price and submit it to the product database. If a match is found, the user can select the matching item listed. From there, the user can either add the item to their inventory for future use, or create a sales listing for the item then.
+
+4. The user's inventory, the user can see what items they added, create sales listings from them, and manage sales listings. 
+
+
 Libraries Used:
 
    Firebase
@@ -44,6 +57,8 @@ Libraries Used:
    Stripe
 
    Noodlio Pay - https://noodliopay.com/
+   
+   Android Asynchronous Http Client - http://loopj.com/android-async-http/
 
 
 Vector Icon Credit:
