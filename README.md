@@ -46,6 +46,11 @@ Usage Instructions
 4. The user's inventory, the user can see what items they added, create sales listings from them, and manage sales listings. 
 
 
+Code Structure
+   Application code can be found in the IROM\app\src\main\java\com\sjsu\se195\irom folder. 
+   Display resources can be found in the IROM\app\src\main\res folder.
+   Stripe code used for Stripe payment libraries and resources can be found in the IROM\stripe\ folder.
+
 Libraries Used:
 
    Firebase
